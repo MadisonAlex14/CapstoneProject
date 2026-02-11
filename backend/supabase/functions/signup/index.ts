@@ -52,6 +52,9 @@ Deno.serve(async (req) => {
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
+    options: {
+      emailRedirectTo: `${req.headers.get('origin')}/auth/callback`,
+    },
   })
 
   if (error) {

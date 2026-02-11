@@ -18,13 +18,16 @@ export default function Login() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`
       },
       body: JSON.stringify({ email, password })
     })
     const data = await res.json()
     setLoading(false)
     if (res.ok) {
+      // Store the access token in localStorage
+      if (data.session?.access_token) {
+        localStorage.setItem('accessToken', data.session.access_token)
+      }
       console.log('Logged in', data)
       router.push('/dashboard')
     } else {

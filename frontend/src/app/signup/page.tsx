@@ -9,6 +9,7 @@ export default function Signup() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [signupComplete, setSignupComplete] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -18,7 +19,6 @@ export default function Signup() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`
       },
       body: JSON.stringify({ email, password })
     })
@@ -26,11 +26,37 @@ export default function Signup() {
     setLoading(false)
     if (res.ok) {
       console.log('Signed up', data)
-      router.push('/dashboard')
+      setSignupComplete(true)
     } else {
       setError(data.error || 'An error occurred during signup')
       console.error('Error', data.error)
     }
+  }
+
+  if (signupComplete) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-100">
+        <div className="bg-white p-6 rounded shadow-md w-full max-w-sm text-center">
+          <h2 className="text-2xl font-bold mb-4">Verify Your Email</h2>
+          <p className="text-gray-600 mb-4">
+            We've sent a verification link to <strong>{email}</strong>
+          </p>
+          <p className="text-gray-600 mb-6">
+            Please click the link in your email to verify your account. Once verified, you'll be able to access your dashboard.
+          </p>
+          <button
+            onClick={() => {
+              setSignupComplete(false)
+              setEmail('')
+              setPassword('')
+            }}
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+          >
+            Back to Signup
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
