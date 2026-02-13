@@ -30,9 +30,31 @@ Deno.serve(async (req) => {
 
   const { email, password } = await req.json()
 
+  // Check if email already exists
+  const { data: existingUser, error: checkError } = await supabase.auth.admin.listUsers()
+  
+  if (checkError) {
+    return new Response(JSON.stringify({ error: 'Failed to check existing users' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+    })
+  }
+
+  const emailExists = existingUser?.users?.some(user => user.email === email)
+  
+  if (emailExists) {
+    return new Response(JSON.stringify({ error: 'Email already registered' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+    })
+  }
+
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
+    options: {
+      emailRedirectTo: `${req.headers.get('origin')}/auth/callback`,
+    },
   })
 
   if (error) {
