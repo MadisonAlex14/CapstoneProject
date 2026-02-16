@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { login } from '@/lib/functions/login'
 
 export default function Login() {
   const router = useRouter()
@@ -14,25 +15,19 @@ export default function Login() {
     e.preventDefault()
     setError('')
     setLoading(true)
-    const res = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, password })
-    })
-    const data = await res.json()
-    setLoading(false)
-    if (res.ok) {
+    try {
+      const data = await login(email, password)
       // Store the access token in localStorage
       if (data.session?.access_token) {
         localStorage.setItem('accessToken', data.session.access_token)
       }
       console.log('Logged in', data)
       router.push('/dashboard')
-    } else {
-      setError(data.error || 'An error occurred during login')
-      console.error('Error', data.error)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred during login')
+      console.error('Error', err)
+    } finally {
+      setLoading(false)
     }
   }
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { validateEmail } from "@/lib/functions/validateEmail";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -28,22 +29,7 @@ export default function Dashboard() {
       }
 
       try {
-        // Call backend function to validate email status
-        const res = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/validate-email`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${accessToken}`
-          },
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          setError("Failed to verify email status");
-          setLoading(false);
-          return;
-        }
+        const data = await validateEmail(accessToken);
 
         if (data.emailVerified) {
           // Email is verified, store token and show dashboard
@@ -56,7 +42,7 @@ export default function Dashboard() {
           setLoading(false);
         }
       } catch (err) {
-        setError("An error occurred");
+        setError(err instanceof Error ? err.message : "An error occurred");
         setLoading(false);
       }
     };

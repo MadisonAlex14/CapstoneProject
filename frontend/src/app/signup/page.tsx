@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { signup } from '@/lib/functions/signup'
 
 export default function Signup() {
   const router = useRouter()
@@ -15,21 +16,15 @@ export default function Signup() {
     e.preventDefault()
     setError('')
     setLoading(true)
-    const res = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/signup`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, password })
-    })
-    const data = await res.json()
-    setLoading(false)
-    if (res.ok) {
+    try {
+      const data = await signup(email, password)
       console.log('Signed up', data)
       setSignupComplete(true)
-    } else {
-      setError(data.error || 'An error occurred during signup')
-      console.error('Error', data.error)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred during signup')
+      console.error('Error', err)
+    } finally {
+      setLoading(false)
     }
   }
 
