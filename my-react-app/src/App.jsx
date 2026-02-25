@@ -1,24 +1,26 @@
-import React from 'react'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import NavBar from './NavBar'
-import Home from './Home'
-import Rewards from './Rewards'
-import Transactions from './Transactions'
-import Help from './Help'
-import './App.css'
+import React from "react";
+import "./App.css";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-function App() {
+import NavBar from "./NavBar";
+import Home from "./Home";
+import Rewards from "./Rewards"; 
+import Transactions from "./Transactions";
+import Help from "./Help";
+
+export default function App() {
   return (
-    <Router>
+    <BrowserRouter>
       <NavBar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/rewards" element={<Rewards />} />
-        <Route path="/transactions" element={<Transactions />} />
-        <Route path="/help" element={<Help />} />
-      </Routes>
-    </Router>
-  )
-}
 
-export default App
+       <main className="main-content">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/rewards" element={<Rewards />} />
+          <Route path="/transactions" element={<Transactions />} />
+          <Route path="/help" element={<Help />} />
+        </Routes>
+      </main>
+    </BrowserRouter>
+  );
+}
