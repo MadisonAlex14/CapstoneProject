@@ -60,3 +60,27 @@ npm start
 The terminal will then print you out a URL. --> Shoudl be localhost:5173
 __________________________________________________________________________________
 
+# Pages/Routes 
+## This website is using client-side routing, these routes include:
+- / --> Home page
+- /rewards --> Rewards page
+- /transactions --> Transactions page
+- /help --> Help page
+
+# Styling
+## Global Css --> App.css 
+
+# Project Stucture 
+## Repo should look similar after download:
+- src/
+-   App.jsx (routing and layout)
+-   App.css (global css)
+-   NavBar,jsx (navbar links and sign in)
+-   Home.jsx (main dashboard)
+-   Rewards.jsx
+-   Transaction.jsx
+- Index.html
+- package.jsn
+- and WAYYYYYY more, but those are the most important
+
+
