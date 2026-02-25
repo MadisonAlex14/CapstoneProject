@@ -1,52 +1,62 @@
-# CapstoneProject - React Frontend (Homepage)
+# Frontend UI Dashboard/Outline
+A React web app with a navbar and multiple pages (Home, Rewards, Transactions, Sign In), styled with global and page-specific CSS. Runs locally on `localhost`.
 
-This branch contains the React frontend for the CapstoneProjec!
-
-Follow these steps to run the app locally:
+## Tech Stack
+- React
+- Vite
+- React Router
+- CSS (App.css + page-specific CSS)
+- Node.js / npm
 
 ---
+## Requirements (Install these first)
+### 1) Node.js (LTS recommended)
+This project requires Node + npm.
 
+Install from:
+- https://nodejs.org
 
-
-### 1. Clone the Repo (if you haven't already)
-
+Verify:
 ```bash
-git clone https://github.com/MadisonAlex14/CapstoneProject.git
-cd CapstoneProject
+node -v
+npm -v
 ```
-### 2. Checkout the Feature Branch 
+### 2) Git 
+Install from: 
+- https://git-scm.com/install/
+
+Verify:
 ```bash
-git fetch
-git checkout feat/homepage-ui
+git --version
 ```
-### 3. Install Dependecies 
+### 3) VS Code 
+
+Install from: 
+- https://code.visualstudio.com/
+
+## Download + Run Locally 
+### 1) Clone the repo 
 ```bash
-cd frontend
+git clone https://github.com/MadisonAlex14/CapstoneProject/tree/feat/homepage-ui
+```
+### 2)Go into the project folder 
+```bash
+cd C:/...../CapstoneProject/my-react-app
+```
+### 3)Install dependencies 
+Install everything your code will need from package.json:
+```bash
 npm install
 ```
-### 4. Run the Development Server 
+### 4)Install dependencies
+Run server via Vite: 
 ```bash
-npm run dev
+npm run dev 
 ```
-
-## 🚀 Built with ❤️ by team four!! 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Or through the React App:
+```bash
+npm start
+```
+The terminal will then print you out a URL. --> Shoudl be localhost:5173
+__________________________________________________________________________________
 
