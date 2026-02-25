@@ -68,7 +68,7 @@ ________________________________________________________________________________
 - /help --> Help page
 
 # Styling
-## Global Css --> App.css 
+### Global Css --> App.css 
 
 # Project Stucture 
 ## Repo should look similar after download:
