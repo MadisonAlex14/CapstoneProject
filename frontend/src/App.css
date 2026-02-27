@@ -1,0 +1,316 @@
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500&display=swap');
+
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+html, body {
+  margin: 0;
+  padding: 0;
+}
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+
+/* ----------------FONT---------------------- */
+* {
+  font-family: 'Lao Muang Don', sans-serif;
+}
+/* ------------------------------------------ */
+
+/* -----------------Nav Bar-------------------- */
+.nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  background-color: #9ecfad;
+  border-bottom: 1px solid #ddd;
+  width: 100%;
+  box-sizing: border-box;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+}
+.nav-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: white;
+}
+.nav-button {
+  background-color: grey;
+  color: white;
+  font-weight: 600;
+  padding: 0.5rem 1.2rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.nav-button:hover {
+  background-color: #e5e7eb; 
+  transform: scale(1.05);     
+}
+.nav-logo {
+  height: 50px;
+}
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+.nav-link {
+  text-decoration: none;
+  color: #333;
+  font-weight: bold;
+  font-size: 1rem;
+  transition: color 0.2s;
+}
+.nav-links-container {
+  display: flex;
+  gap: 1.5rem;
+}
+.nav-link:hover {
+  color: #A6A969; 
+}
+/* ------------------------------------------------ */
+
+h1,
+.h1 {
+  font-family: 'Lao Muang Don', sans-serif;
+  color: #424e4c;
+  font-weight: 700;      
+  font-size: 2rem;       
+  letter-spacing: 1px;   
+}
+.page {
+  text-align: center;
+  padding: 3rem;
+
+}
+.home-container {
+  padding: 0.5rem 2rem;
+  text-align: center;
+  font-family: Arial, sans-serif;
+}
+.home-logo {
+  width: 300px;        
+  max-width: 80%;        
+  height: auto;          
+  display: block;        
+  margin: 0 auto 1rem; 
+}
+.home-heading {
+  color: #A6A969;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+.home-subheading {
+  color: #555;
+  margin-bottom: 2rem;
+}
+.site-name {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #A6A969;
+  margin-bottom: 0.5rem;
+}
+.site-tagline {
+  font-size: 25px;
+  color: #A6A969;
+  margin-bottom: 2.5rem;
+  font-family: 'Dancing Script', cursive;
+}
+.dottedLine {
+  color: #A6A969;
+}
+
+/* ------------Pages----------------- */
+.main-content {
+  padding-top: 80px;   
+  min-height: 100vh;
+  background: #f3f4f6;  
+  text-align: center;
+}
+.home-page {
+  padding: 1rem 2rem;
+}
+.rewards-page {
+  padding: 3rem 2rem;
+}
+.transactions-page {
+  padding: 3rem 2rem;
+}
+.help-page {
+  padding: 3rem 2rem;
+}
+/* ---------------------------------- */
+
+/* ---------------- Home Sections---------------- */
+.home-sections {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 60px;
+  padding: 30px 0 70px;
+}
+.home-section {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  padding: 30px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+.home-section-reverse {
+  flex-direction: row-reverse;
+}
+.home-section-imgWrap {
+  flex: 1;
+  min-width: 260px;
+  display: flex;
+  justify-content: center;
+}
+.home-section-img {
+  width: 100%;
+  max-width: 420px;
+  max-height: 320px;
+  object-fit: contain;
+}
+.home-section-text {
+  flex: 1.2;
+  text-align: left;
+}
+.home-section-title {
+  margin: 0 0 12px;
+  font-size: 28px;
+  color: #617672;
+}
+.home-section-body {
+  margin: 0 0 10px;
+  line-height: 1.6;
+  color: #A6A969;
+}
+.home-section-subtle {
+  margin: 0;
+  opacity: 0.7;
+  font-style: italic;
+}
+.home-review-list {
+  margin: 10px 0 0;
+  padding-left: 18px;
+}
+.home-review-list li {
+  margin: 10px 0;
+  line-height: 1.5;
+}
+.home-feature-grid {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.home-feature-card {
+  padding: 14px;
+  border-radius: 14px;
+  background: #A6A969;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+.home-feature-card h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+  color: #617672;
+}
+.home-feature-card p {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.9;
+}
+@media (max-width: 900px) {
+  .home-section,
+  .home-section-reverse {
+    flex-direction: column;
+    text-align: center;
+  }
+  .home-section-text {
+    text-align: center;
+  }
+  .home-feature-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.home-image-contrast {
+  background: #ffffff;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.03);
+}
+.home-logo-fix {
+  filter: drop-shadow(0 6px 10px rgba(0,0,0,0.25));
+}
+.home-section-img {
+  border-radius: 14px;
+}
+.home-cta-btn {
+  margin-top: 16px;
+  background-color: #9ecfad;
+  color: #1f2b27;
+  font-weight: 700;
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+.home-cta-btn:hover {
+  transform: scale(1.03);
+  opacity: 0.95;
+}
+.nav-auth-buttons {
+  display: flex;
+  gap: 12px;
+}
+.signup-btn {
+  background-color: #617672;
+}
+.login-btn {
+  background-color: #A6A969;
+}
