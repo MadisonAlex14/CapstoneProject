@@ -1,15 +1,17 @@
+// frontend/src/app/dashboard/page.tsx
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { validateEmail } from "@/lib/functions/validateEmail";
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import styles from "./dashboard.module.css";
 
 export default function Dashboard() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
+
   const hasChecked = useRef(false);
 
   useEffect(() => {
@@ -17,55 +19,82 @@ export default function Dashboard() {
       if (hasChecked.current) return;
       hasChecked.current = true;
 
-      // Get the access token from URL params (email verification) or localStorage (login)
-      const urlToken = searchParams.get("access_token");
-      const storedToken = typeof window !== 'undefined' ? localStorage.getItem("accessToken") : null;
+      // Read access_token from URL (email verification redirect)
+      const urlToken =
+        typeof window !== "undefined"
+          ? new URLSearchParams(window.location.search).get("access_token")
+          : null;
+
+      // Or from localStorage (existing login)
+      const storedToken =
+        typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+
       const accessToken = urlToken || storedToken;
-      
+
       if (!accessToken) {
-        // No token found, redirect to login
         router.push("/login");
         return;
       }
 
       try {
-        const data = await validateEmail(accessToken);
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/validate-email`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        );
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          setError("Failed to verify email status");
+          setLoading(false);
+          return;
+        }
 
         if (data.emailVerified) {
-          // Email is verified, store token and show dashboard
           localStorage.setItem("accessToken", accessToken);
           setEmail(data.email);
           setLoading(false);
         } else {
-          // Email not verified yet
           setError("Please verify your email first");
           setLoading(false);
         }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
+      } catch {
+        setError("An error occurred");
         setLoading(false);
       }
     };
 
     checkEmailVerification();
-  }, [router, searchParams]);
+  }, [router]);
 
+  // Loading state
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-        <p className="text-lg text-gray-600">Loading...</p>
+      <div className={`min-h-screen ${styles.pageBg} bg-gray-100 flex items-center justify-center`}>
+        <div className={`bg-white/80 backdrop-blur p-6 rounded-xl ${styles.cardShadow}`}>
+          <p className="text-lg text-gray-700">Loading...</p>
+        </div>
       </div>
     );
   }
 
+  // Error state
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-        <div className="bg-white p-6 rounded shadow-md w-full max-w-sm text-center">
-          <p className="text-red-600 mb-4">{error}</p>
+      <div className={`min-h-screen ${styles.pageBg} bg-gray-100 flex items-center justify-center px-4`}>
+        <div
+          className={`bg-white p-6 rounded-xl w-full max-w-sm text-center ${styles.cardShadow} ${styles.fadeIn}`}
+        >
+          <p className="text-red-600 mb-4 font-medium">{error}</p>
           <button
             onClick={() => router.push("/login")}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition"
           >
             Back to Login
           </button>
@@ -74,10 +103,15 @@ export default function Dashboard() {
     );
   }
 
+ // Sucess state
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <h1 className="text-3xl font-bold mb-4">Dashboard</h1>
-      <p className="text-lg text-gray-600">Welcome to the dashboard, {email}!</p>
+    <div className={`min-h-screen ${styles.pageBg} bg-gray-100 flex items-center justify-center px-4`}>
+      <div className={`bg-white p-8 rounded-2xl w-full max-w-xl text-center ${styles.cardShadow} ${styles.fadeIn}`}>
+        <h1 className="text-3xl font-extrabold mb-3 text-gray-900">Dashboard</h1>
+        <p className="text-lg text-gray-700">
+          Welcome to the dashboard, <span className="font-semibold">{email}</span>!
+        </p>
+      </div>
     </div>
   );
 }
