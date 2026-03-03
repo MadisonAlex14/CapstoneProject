@@ -3,7 +3,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import styles from "./dashboard.module.css";
+import styles from "../../styles/auth.module.css";
 
 export default function Dashboard() {
   const router = useRouter();
