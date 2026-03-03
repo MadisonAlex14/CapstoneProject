@@ -1,0 +1,101 @@
+/* Center the whole page */
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f4f6f8;
+}
+
+/* The login box */
+.card {
+  width: 420px;
+  padding: 2.5rem;
+  background: #ffffff;
+  border-radius: 20px; /* smoother rounded edges */
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15); /* deeper shadow */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Slight lift on hover */
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
+}
+
+/* Login title */
+.title {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  color: #2c2c2c;
+}
+
+/* Labels (Email / Password) */
+.label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: 'Segoe UI', sans-serif; /* different clean font */
+  color: #333;
+}
+
+/* Inputs */
+.input {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  margin-bottom: 1.5rem;
+  border-radius: 10px;
+  border: 1px solid #dcdcdc;
+  background-color: #f9fafb;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #4f7c6b;
+  box-shadow: 0 0 0 3px rgba(79, 124, 107, 0.2);
+  background: #fff;
+}
+
+/* Button */
+.button {
+  width: 100%;
+  padding: 0.9rem;
+  border-radius: 12px;
+  border: none;
+  background: #4f7c6b;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.button:hover {
+  background: #3d6355;
+  transform: translateY(-2px);
+}
+.field {
+  margin-bottom: 1.25rem;
+}
+
+.error {
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  background: #ffe5e5;
+  border: 1px solid #ffb3b3;
+  color: #8a1f1f;
+  font-weight: 600;
+}
+/* Paragraph text inside card (used on Signup success screen) */
+.text {
+  margin-bottom: 1rem;
+  color: #4a4a4a;
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
