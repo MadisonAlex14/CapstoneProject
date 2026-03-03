@@ -7,12 +7,15 @@ import logo from "../assets/creditmaxing.png";
 export default function NavBar() {
   return (
     <header className="nav-bar">
+
       <div className="nav-left">
-        <img
-          src={logo.src ?? logo}
-          alt="CreditMaxing logo"
-          className="nav-logo"
-        />
+      <Link href="/">
+       <img
+        src={logo.src ?? logo}
+        alt="CreditMaxing logo"
+        className="nav-logo"
+      />
+      </Link>
 
         <div className="nav-links-container">
           <Link href="/" className="nav-link">Home</Link>
