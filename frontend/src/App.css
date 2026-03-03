@@ -88,6 +88,11 @@ html, body {
 }
 .nav-logo {
   height: 50px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.nav-logo:hover {
+  transform: scale(1.05);
 }
 .nav-left {
   display: flex;
@@ -232,6 +237,7 @@ h1,
   margin: 0;
   opacity: 0.7;
   font-style: italic;
+  color: #617672;
 }
 .home-review-list {
   margin: 10px 0 0;
@@ -240,6 +246,7 @@ h1,
 .home-review-list li {
   margin: 10px 0;
   line-height: 1.5;
+  color: #617672;
 }
 .home-feature-grid {
   margin-top: 14px;
@@ -250,7 +257,7 @@ h1,
 .home-feature-card {
   padding: 14px;
   border-radius: 14px;
-  background: #A6A969;
+  background: #C1CCCA;
   border: 1px solid rgba(0, 0, 0, 0.06);
 }
 .home-feature-card h3 {
