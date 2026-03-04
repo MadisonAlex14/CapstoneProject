@@ -1,4 +1,4 @@
-import "@supabase/functions-js/edge-runtime.d.ts"
+import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const supabase = createClient(
@@ -27,13 +27,16 @@ Deno.serve(async (req) => {
       headers: {
         'Access-Control-Allow-Origin': origin,
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'authorization, content-type',
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
       },
     })
   }
 
   if (req.method !== 'POST') {
-    return new Response('Method not allowed', { status: 405 })
+    return new Response('Method not allowed', { 
+      status: 405,
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': origin },
+    })
   }
 
   const authHeader = req.headers.get('authorization')
@@ -68,22 +71,27 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Check if email is verified
-    const emailVerified = !!user.email_confirmed_at
+    // Get user profile
+    const { data: profile, error: profileError } = await supabase
+      .from('profile')
+      .select('first_name, last_name, birth_date')
+      .eq('auth_id', userId)
+      .single()
 
     return new Response(JSON.stringify({
-      emailVerified,
       email: user.email,
       userId: user.id,
+      firstName: profile?.first_name || null,
+      lastName: profile?.last_name || null,
+      birthdate: profile?.birth_date || null,
     }), {
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': origin },
     })
   } catch (error) {
-    console.error('Error verifying token:', error)
-    return new Response(JSON.stringify({ error: 'Failed to verify token' }), {
+    console.error('Error getting user profile:', error)
+    return new Response(JSON.stringify({ error: 'Failed to get user profile' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': origin },
     })
   }
 })
-

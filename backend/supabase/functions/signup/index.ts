@@ -28,7 +28,15 @@ Deno.serve(async (req) => {
     return new Response('Method not allowed', { status: 405 })
   }
 
-  const { email, password } = await req.json()
+  const { email, password, firstName, lastName, birthdate } = await req.json()
+
+  // Validate required fields
+  if (!firstName || !lastName || !birthdate) {
+    return new Response(JSON.stringify({ error: 'First name, last name, and birthdate are required' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+    })
+  }
 
   // Check if email already exists
   const { data: existingUser, error: checkError } = await supabase.auth.admin.listUsers()
@@ -62,6 +70,24 @@ Deno.serve(async (req) => {
       status: 400,
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
     })
+  }
+
+  // If signup successful and user was created, create profile
+  if (data.user?.id) {
+    const { error: profileError } = await supabase
+      .from('profile')
+      .insert({
+        auth_id: data.user.id,
+        first_name: firstName,
+        last_name: lastName,
+        birth_date: birthdate,
+      })
+
+    if (profileError) {
+      console.error('Failed to create profile:', profileError)
+      // Note: We don't return an error here because the auth user was already created
+      // The profile creation is supplementary
+    }
   }
 
   return new Response(JSON.stringify(data), {
