@@ -3,7 +3,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { validateEmail } from "@/lib/functions/validateEmail";
+import { getSelf } from "@/lib/functions/getSelf";
 import styles from "../../styles/auth.module.css";
 
 export default function Dashboard() {
@@ -18,7 +18,7 @@ export default function Dashboard() {
   const hasChecked = useRef(false);
 
   useEffect(() => {
-    const checkEmailVerification = async () => {
+    const loadUserProfile = async () => {
       if (hasChecked.current) return;
       hasChecked.current = true;
 
@@ -40,25 +40,22 @@ export default function Dashboard() {
       }
 
       try {
-        const data = await validateEmail(accessToken);
+        // Get complete user profile
+        const profileData = await getSelf(accessToken);
+        
+        localStorage.setItem("accessToken", accessToken);
+        setEmail(profileData.email);
+        setFirstName(profileData.firstName || "");
+        setLastName(profileData.lastName || "");
+        setLoading(false);
 
-        if (data.emailVerified) {
-          localStorage.setItem("accessToken", accessToken);
-          setEmail(data.email);
-          setFirstName(data.firstName || "");
-          setLastName(data.lastName || "");
-          setLoading(false);
-        } else {
-          setError("Please verify your email first");
-          setLoading(false);
-        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred");
         setLoading(false);
       }
     };
 
-    checkEmailVerification();
+    loadUserProfile();
   }, [router]);
 
   // Loading state

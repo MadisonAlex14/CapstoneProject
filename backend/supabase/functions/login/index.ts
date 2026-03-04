@@ -45,7 +45,27 @@ Deno.serve(async (req) => {
     })
   }
 
-  return new Response(JSON.stringify(data), {
+  // Check if email is verified
+  if (!data.user?.email_confirmed_at) {
+    return new Response(JSON.stringify({ error: 'Please verify your email before logging in' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': origin },
+    })
+  }
+
+  // Return only what we need
+  return new Response(JSON.stringify({
+    session: {
+      access_token: data.session?.access_token,
+      refresh_token: data.session?.refresh_token,
+      expires_in: data.session?.expires_in,
+      token_type: data.session?.token_type,
+    },
+    user: {
+      id: data.user?.id,
+      email: data.user?.email,
+    }
+  }), {
     headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': origin },
   })
 })
