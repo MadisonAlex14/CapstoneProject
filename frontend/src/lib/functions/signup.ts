@@ -1,4 +1,4 @@
-export async function signup(email: string, password: string) {
+export async function signup(email: string, password: string, firstName: string, lastName: string, birthdate: string) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   
   if (!supabaseUrl) {
@@ -10,7 +10,7 @@ export async function signup(email: string, password: string) {
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ email, password })
+    body: JSON.stringify({ email, password, firstName, lastName, birthdate })
   })
 
   const data = await res.json()

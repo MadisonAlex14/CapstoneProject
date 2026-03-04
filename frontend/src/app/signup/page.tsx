@@ -2,12 +2,16 @@
 
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { signup } from '@/lib/functions/signup'
 import styles from '../../styles/auth.module.css'
 
 export default function Signup() {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
+  const [birthdate, setBirthdate] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [signupComplete, setSignupComplete] = useState(false)
@@ -16,25 +20,15 @@ export default function Signup() {
     e.preventDefault()
     setError('')
     setLoading(true)
-
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/signup`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      }
-    )
-
-    const data = await res.json()
-    setLoading(false)
-
-    if (res.ok) {
+    try {
+      const data = await signup(email, password, firstName, lastName, birthdate)
       console.log('Signed up', data)
       setSignupComplete(true)
-    } else {
-      setError(data.error || 'An error occurred during signup')
-      console.error('Error', data.error)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred during signup')
+      console.error('Error', err)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -59,6 +53,9 @@ export default function Signup() {
               setSignupComplete(false)
               setEmail('')
               setPassword('')
+              setFirstName('')
+              setLastName('')
+              setBirthdate('')
             }}
           >
             Back to Signup
@@ -74,6 +71,50 @@ export default function Signup() {
         <h2 className={styles.title}>Signup</h2>
 
         {error && <div className={styles.error}>{error}</div>}
+
+        <div className={styles.field}>
+          <label className={styles.label} htmlFor="firstName">
+            First Name
+          </label>
+          <input
+            className={styles.input}
+            id="firstName"
+            type="text"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            required
+            placeholder="Enter your first name"
+          />
+        </div>
+
+        <div className={styles.field}>
+          <label className={styles.label} htmlFor="lastName">
+            Last Name
+          </label>
+          <input
+            className={styles.input}
+            id="lastName"
+            type="text"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            required
+            placeholder="Enter your last name"
+          />
+        </div>
+
+        <div className={styles.field}>
+          <label className={styles.label} htmlFor="birthdate">
+            Date of Birth
+          </label>
+          <input
+            className={styles.input}
+            id="birthdate"
+            type="date"
+            value={birthdate}
+            onChange={(e) => setBirthdate(e.target.value)}
+            required
+          />
+        </div>
 
         <div className={styles.field}>
           <label className={styles.label} htmlFor="email">

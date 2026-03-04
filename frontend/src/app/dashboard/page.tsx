@@ -3,6 +3,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { validateEmail } from "@/lib/functions/validateEmail";
 import styles from "../../styles/auth.module.css";
 
 export default function Dashboard() {
@@ -10,6 +11,8 @@ export default function Dashboard() {
 
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [error, setError] = useState("");
 
   const hasChecked = useRef(false);
@@ -37,35 +40,20 @@ export default function Dashboard() {
       }
 
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/validate-email`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
-        );
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          setError("Failed to verify email status");
-          setLoading(false);
-          return;
-        }
+        const data = await validateEmail(accessToken);
 
         if (data.emailVerified) {
           localStorage.setItem("accessToken", accessToken);
           setEmail(data.email);
+          setFirstName(data.firstName || "");
+          setLastName(data.lastName || "");
           setLoading(false);
         } else {
           setError("Please verify your email first");
           setLoading(false);
         }
-      } catch {
-        setError("An error occurred");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An error occurred");
         setLoading(false);
       }
     };
@@ -109,7 +97,9 @@ export default function Dashboard() {
       <div className={`bg-white p-8 rounded-2xl w-full max-w-xl text-center ${styles.cardShadow} ${styles.fadeIn}`}>
         <h1 className="text-3xl font-extrabold mb-3 text-gray-900">Dashboard</h1>
         <p className="text-lg text-gray-700">
-          Welcome to the dashboard, <span className="font-semibold">{email}</span>!
+          Welcome to the dashboard, <span className="font-semibold">
+            {firstName && lastName ? `${firstName} ${lastName}` : email}
+          </span>!
         </p>
       </div>
     </div>

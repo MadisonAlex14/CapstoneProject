@@ -68,6 +68,13 @@ Deno.serve(async (req) => {
       })
     }
 
+    // Get user profile
+    const { data: profile, error: profileError } = await supabase
+      .from('profile')
+      .select('first_name, last_name, birth_date')
+      .eq('auth_id', userId)
+      .single()
+
     // Check if email is verified
     const emailVerified = !!user.email_confirmed_at
 
@@ -75,6 +82,9 @@ Deno.serve(async (req) => {
       emailVerified,
       email: user.email,
       userId: user.id,
+      firstName: profile?.first_name || null,
+      lastName: profile?.last_name || null,
+      birthdate: profile?.birth_date || null,
     }), {
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': origin },
     })
