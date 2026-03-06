@@ -1,28 +1,90 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import styles from '../../styles/auth.module.css'
 
 export default function ProfilePage() {
   const [firstName, setFirstName] = useState('')
   const [email, setEmail] = useState('')
-  const [memberSince] = useState('2026')
+  const [memberSince, setMemberSince] = useState('')
+
+  const [editFirstName, setEditFirstName] = useState('')
+  const [editEmail, setEditEmail] = useState('')
+
+  const [isEditing, setIsEditing] = useState(false)
+  const [showMenu, setShowMenu] = useState(false)
+
+  const menuRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     const savedFirstName = localStorage.getItem('firstName')
     const savedEmail = localStorage.getItem('userEmail')
+    const savedMemberSince = localStorage.getItem('memberSince')
 
-    if (savedFirstName) setFirstName(savedFirstName)
-    if (savedEmail) setEmail(savedEmail)
+    if (savedFirstName) {
+      setFirstName(savedFirstName)
+      setEditFirstName(savedFirstName)
+    }
+
+    if (savedEmail) {
+      setEmail(savedEmail)
+      setEditEmail(savedEmail)
+    }
+
+    if (savedMemberSince) {
+      setMemberSince(savedMemberSince)
+    } else {
+      const year = new Date().getFullYear().toString()
+      localStorage.setItem('memberSince', year)
+      setMemberSince(year)
+    }
   }, [])
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowMenu(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
+
+  const handleEditClick = () => {
+    setEditFirstName(firstName)
+    setEditEmail(email)
+    setIsEditing(true)
+    setShowMenu(false)
+  }
+
+  const handleCancel = () => {
+    setEditFirstName(firstName)
+    setEditEmail(email)
+    setIsEditing(false)
+  }
+
+  const handleSave = () => {
+    setFirstName(editFirstName)
+    setEmail(editEmail)
+
+    localStorage.setItem('firstName', editFirstName)
+    localStorage.setItem('userEmail', editEmail)
+
+    window.dispatchEvent(new Event('auth-changed'))
+    setIsEditing(false)
+  }
+
+  const userInitial = firstName ? firstName.charAt(0).toUpperCase() : 'U'
 
   return (
     <main className={styles['p-page']}>
       <section className={styles['p-container']}>
         <div className={styles['p-heroCard']}>
-          <div className={styles['p-avatar']}>
-            {firstName ? firstName.charAt(0).toUpperCase() : 'U'}
-          </div>
+          <div className={styles['p-avatar']}>{userInitial}</div>
 
           <div>
             <h1 className={styles.title}>My Profile</h1>
@@ -34,15 +96,40 @@ export default function ProfilePage() {
 
         <div className={styles['p-grid']}>
           <div className={styles.card}>
-            <h2 className={styles['p-cardTitle']}>Personal Information</h2>
+            <div className={styles['p-cardHeader']}>
+              <h2 className={styles['p-cardTitle']}>Personal Information</h2>
+
+              <div className={styles['p-menuWrap']} ref={menuRef}>
+                <button
+                  type="button"
+                  className={styles['p-menuButton']}
+                  onClick={() => setShowMenu(!showMenu)}
+                >
+                  ⋮
+                </button>
+
+                {showMenu && !isEditing && (
+                  <div className={styles['p-menuDropdown']}>
+                    <button
+                      type="button"
+                      className={styles['p-menuItem']}
+                      onClick={handleEditClick}
+                    >
+                      Edit
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
 
             <div className={styles['p-infoGroup']}>
               <label className={styles.label}>First Name</label>
               <input
                 className={styles.input}
                 type="text"
-                value={firstName}
-                readOnly
+                value={isEditing ? editFirstName : firstName}
+                onChange={(e) => setEditFirstName(e.target.value)}
+                readOnly={!isEditing}
               />
             </div>
 
@@ -51,8 +138,9 @@ export default function ProfilePage() {
               <input
                 className={styles.input}
                 type="email"
-                value={email}
-                readOnly
+                value={isEditing ? editEmail : email}
+                onChange={(e) => setEditEmail(e.target.value)}
+                readOnly={!isEditing}
               />
             </div>
 
@@ -61,10 +149,30 @@ export default function ProfilePage() {
               <input
                 className={styles.input}
                 type="text"
-                value={memberSince}
+                value={memberSince || ''}
                 readOnly
               />
             </div>
+
+            {isEditing && (
+              <div className={styles['p-editActions']}>
+                <button
+                  type="button"
+                  className={styles['p-saveButton']}
+                  onClick={handleSave}
+                >
+                  Save
+                </button>
+
+                <button
+                  type="button"
+                  className={styles['p-cancelButton']}
+                  onClick={handleCancel}
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
           </div>
 
           <div className={styles.card}>

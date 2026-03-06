@@ -201,6 +201,108 @@
   margin-top: 1rem;
   color: #6d7a74;
 }
+.p-cardHeader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.p-menuWrap {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-90%);
+
+}
+
+.p-menuButton {
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  font-weight: 700;
+  cursor: pointer;
+  color: #1f4d3a;
+  padding: 0 6px;
+  line-height: 1;
+}
+
+.p-menuButton:hover {
+  color: #16382b;
+}
+
+.p-menuDropdown {
+  position: absolute;
+  top: 30px;
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #d9e5dd;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  min-width: 120px;
+  z-index: 20;
+  overflow: hidden;
+}
+
+.p-menuItem {
+  width: 100%;
+  text-align: left;
+  padding: 10px 14px;
+  background: #ffffff;
+  border: none;
+  cursor: pointer;
+  color: #1f4d3a;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.p-menuItem:hover {
+  background: #f4f8f5;
+}
+
+.p-editActions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.p-saveButton {
+  background-color: #1f4d3a;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+
+.p-saveButton:hover {
+  background-color: #16382b;
+}
+
+.p-cancelButton {
+  background-color: #e8efeb;
+  color: #1f4d3a;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+
+.p-cancelButton:hover {
+  background-color: #dbe7df;
+}
+
+
+
+
+
+
+
 
 /* ------------Settings-------------------- */
 .s-container {

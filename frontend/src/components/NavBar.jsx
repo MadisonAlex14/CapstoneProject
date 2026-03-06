@@ -48,11 +48,15 @@ export default function NavBar() {
 
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
+    localStorage.removeItem("isLoggedIn");
     localStorage.removeItem("firstName");
     localStorage.removeItem("userEmail");
+    localStorage.removeItem("memberSince");
+
     setIsLoggedIn(false);
     setFirstName("");
     setShowDropdown(false);
+
     window.dispatchEvent(new Event("auth-changed"));
     router.push("/");
   };
