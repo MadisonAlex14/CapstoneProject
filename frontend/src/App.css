@@ -177,12 +177,17 @@ h1,
 }
 .rewards-page {
   padding: 3rem 2rem;
+  color: #555;
 }
 .transactions-page {
   padding: 3rem 2rem;
+  color: #555;
+
 }
 .help-page {
   padding: 3rem 2rem;
+  color: #555;
+
 }
 /* ---------------------------------- */
 
@@ -320,4 +325,87 @@ h1,
 }
 .login-btn {
   background-color: #A6A969;
+}
+.profile-menu {
+  position: relative;
+  display: inline-block;
+}
+/* ------------------------------------- */
+
+
+/* ----------------Profile Section---------------- */
+.profile-button {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.9rem;
+  border: none;
+  border-radius: 999px;
+  background: #4f7c6b;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.profile-button:hover {
+  background: #3d6355;
+  transform: translateY(-1px);
+}
+
+.profile-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: white;
+  color: #4f7c6b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.profile-name {
+  font-size: 0.95rem;
+}
+
+.dropdown-arrow {
+  font-size: 0.75rem;
+}
+
+.profile-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 180px;
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.14);
+  padding: 0.5rem;
+  z-index: 1000;
+}
+
+.dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: none;
+  background: transparent;
+  color: #2c2c2c;
+  text-align: left;
+  text-decoration: none;
+  font-size: 0.95rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background: #f3f7f5;
+  color: #23473b;
+}
+
+.logout-item {
+  font-family: inherit;
 }

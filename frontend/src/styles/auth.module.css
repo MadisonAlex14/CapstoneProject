@@ -5,12 +5,16 @@
   align-items: center;
   justify-content: center;
   background: #f4f6f8;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 2rem 1rem;
 }
 
 /* The login box */
 .card {
-  width: 420px;
-  padding: 2.5rem;
+  width: 100%;
+  padding: 2rem 1rem;
+  box-sizing: border-box;
   background: #ffffff;
   border-radius: 20px; /* smoother rounded edges */
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15); /* deeper shadow */
@@ -52,8 +56,12 @@
   background-color: #f9fafb;
   font-size: 1rem;
   transition: all 0.2s ease;
+  color: #23473b;
+  box-sizing: border-box;
 }
-
+.input::placeholder {
+  color: #6f8a80;
+}
 .input:focus {
   outline: none;
   border-color: #4f7c6b;
@@ -99,3 +107,163 @@
   line-height: 1.6;
   font-size: 0.95rem;
 }
+
+/* ---Profile--- */
+
+.p-page,
+.s-page {
+  min-height: 100vh;
+  width: 100%;
+  background: #f4f6f8;
+  padding: 4rem 1rem 2rem 1rem; /* more space at top */
+  box-sizing: border-box;
+}
+
+.p-container {
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.p-heroCard {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  background: linear-gradient(135deg, #dfeee7, #f7fbf8);
+  border: 1px solid #d8e7df;
+  border-radius: 24px;
+  padding: 2rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+  margin-bottom: 2rem;
+  width: 100%;
+  box-sizing: border-box;
+  flex-wrap: wrap;
+}
+
+.p-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #4f7c6b;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.p-subtitle {
+  color: #5f6f68;
+}
+
+.p-grid {
+ width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  gap: 1.5rem;
+}
+.p-grid > .card {
+  max-width: 100%;
+  width: 100%;
+}
+
+.p-cardTitle {
+  margin-bottom: 1.5rem;
+  color: #23473b;
+}
+
+.p-infoGroup {
+  margin-bottom: 1.2rem;
+}
+
+.p-statBox {
+  display: flex;
+  justify-content: space-between;
+  background: #f7faf8;
+  border: 1px solid #e1ebe5;
+  border-radius: 14px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.p-statLabel {
+  color: #5e6b65;
+}
+
+.p-statValue {
+  color: #2f5e4e;
+  font-weight: 700;
+}
+
+.p-helperText {
+  margin-top: 1rem;
+  color: #6d7a74;
+}
+
+/* ------------Settings-------------------- */
+.s-container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.s-cardTitle {
+  margin-bottom: 1.5rem;
+  color: #23473b;
+}
+
+.s-container .card {
+  width: 100%;
+  max-width: 100%;
+}
+
+.s-settingRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #edf1ef;
+}
+
+.s-settingTitle {
+  font-weight: 700;
+  color: #23473b;
+}
+
+.s-settingText {
+  color: #6a7771;
+  font-size: 0.95rem;
+}
+
+.s-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: #4f7c6b;
+  cursor: pointer;
+}
+
+.s-saveButton {
+  margin-top: 1.5rem;
+  background: #4f7c6b;
+  color: white;
+  border: none;
+  border-radius: 14px;
+  padding: 0.9rem 1.4rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.s-saveButton:hover {
+  background: #3d6355;
+  transform: translateY(-1px);
+}
+
+.s-successMessage {
+  margin-top: 1rem;
+  color: #2f5e4e;
+  font-weight: 600;
+}
+/* -------------------------------- */

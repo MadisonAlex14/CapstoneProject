@@ -32,6 +32,16 @@ export default function Login() {
       if (data.session?.access_token) {
         localStorage.setItem('accessToken', data.session.access_token)
       }
+
+      localStorage.setItem('isLoggedIn', 'true')
+      localStorage.setItem('userEmail', email)
+
+      if (data.user?.firstName) {
+        localStorage.setItem('firstName', data.user.firstName)
+      }
+
+      window.dispatchEvent(new Event('auth-changed'))
+
       router.push('/dashboard')
     } else {
       setError(data.error || 'An error occurred during login')
