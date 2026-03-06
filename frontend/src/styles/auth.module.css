@@ -266,4 +266,257 @@
   color: #2f5e4e;
   font-weight: 600;
 }
-/* -------------------------------- */
+
+
+
+/* --------CARDS----------- */
+.cardsPage {
+  padding: 7rem 2rem 3rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+.cardsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.cardsTitle {
+  margin: 0;
+  font-size: 2rem;
+  color: #617672;
+}
+
+.cardsSubtitle {
+  margin-top: 0.4rem;
+  color: #66706e;
+  font-size: 0.95rem;
+}
+
+.addCardBtn {
+  background-color: #9ecfad;
+  color: #1f2b27;
+  border: none;
+  border-radius: 12px;
+  padding: 0.8rem 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.addCardBtn:hover {
+  transform: scale(1.03);
+  opacity: 0.95;
+}
+
+.cardsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+
+.creditCardBox {
+  background: linear-gradient(135deg, #617672, #9ecfad);
+  color: white;
+  border-radius: 20px;
+  padding: 1.4rem;
+  min-height: 180px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+
+.creditCardTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  opacity: 0.95;
+}
+
+.cardIssuer {
+  font-weight: 700;
+}
+
+.cardRewards {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+}
+
+.cardName {
+  margin: 1.2rem 0 0.8rem;
+  font-size: 1.3rem;
+  color: white;
+}
+
+.cardNumber {
+  font-size: 1rem;
+  letter-spacing: 2px;
+  margin: 0;
+}
+
+.cardsEmptyState {
+  background: white;
+  border-radius: 18px;
+  padding: 2rem;
+  text-align: center;
+  color: #617672;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+.cardFormOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  z-index: 2000;
+}
+
+.cardFormBox {
+  width: 100%;
+  max-width: 520px;
+  background: white;
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+}
+
+.cardFormTitle {
+  margin: 0 0 1rem;
+  color: #617672;
+  font-size: 1.6rem;
+}
+
+.cardForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.formLabel {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #4d5b58;
+}
+
+.formInput {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border: 1px solid #d5ddda;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  outline: none;
+  box-sizing: border-box;
+  color: #23473b;
+  font-weight: 500;
+}
+
+.formInput:focus {
+  border-color: #9ecfad;
+  box-shadow: 0 0 0 3px rgba(158, 207, 173, 0.2);
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.cancelBtn {
+  border: 1px solid #cfd8d5;
+  background: white;
+  color: #4d5b58;
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.saveCardBtn {
+  border: none;
+  background: #9ecfad;
+  color: #1f2b27;
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cardMenuWrapper {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+}
+
+.cardMenuButton {
+  border: none;
+  background: rgba(255, 255, 255, 0.18);
+  color: white;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.cardMenuDropdown {
+  position: absolute;
+  top: 40px;
+  right: 0;
+  background: white;
+  min-width: 120px;
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+  padding: 0.35rem;
+  z-index: 10;
+}
+
+.cardMenuItem {
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 0.7rem 0.85rem;
+  border-radius: 10px;
+  cursor: pointer;
+  color: #33403d;
+  font-size: 0.9rem;
+}
+
+.cardMenuItem:hover {
+  background: #f4f7f6;
+}
+
+.cardMenuItemDelete {
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 0.7rem 0.85rem;
+  border-radius: 10px;
+  cursor: pointer;
+  color: #b42318;
+  font-size: 0.9rem;
+}
+
+.cardMenuItemDelete:hover {
+  background: #fff1f1;
+}

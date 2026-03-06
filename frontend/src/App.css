@@ -57,7 +57,7 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 2rem;
+  padding: 0.8rem 1.5rem;
   background-color: #9ecfad;
   border-bottom: 1px solid #ddd;
   width: 100%;
@@ -76,7 +76,7 @@ html, body {
   background-color: grey;
   color: white;
   font-weight: 600;
-  padding: 0.5rem 1.2rem;
+  padding: 0.45rem 1rem;
   border-radius: 0.5rem;
   border: none;
   cursor: pointer;
@@ -87,8 +87,9 @@ html, body {
   transform: scale(1.05);     
 }
 .nav-logo {
-  height: 50px;
+  height: 38px;
   cursor: pointer;
+  width: auto;
   transition: transform 0.2s ease;
 }
 .nav-logo:hover {
@@ -97,21 +98,28 @@ html, body {
 .nav-left {
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 22px;
 }
 .nav-link {
   text-decoration: none;
   color: #333;
-  font-weight: bold;
-  font-size: 1rem;
-  transition: color 0.2s;
+  font-size: 13px;
+  font-weight: 500;
+  transition: color 0.2s ease;
+  white-space: nowrap;
 }
 .nav-links-container {
   display: flex;
-  gap: 1.5rem;
+  align-items: center;
+  gap: 14px;
 }
 .nav-link:hover {
   color: #A6A969; 
+}
+.nav-auth-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 /* ------------------------------------------------ */
 
@@ -334,28 +342,35 @@ h1,
 
 
 /* ----------------Profile Section---------------- */
-.profile-button {
+.profile-menu {
+  position: relative;
+  display: inline-block;
+}
+
+.profile-button,
+.compact-profile-button {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.55rem 0.9rem;
+  gap: 0.35rem;
+  padding: 0.3rem 0.45rem;
   border: none;
   border-radius: 999px;
-  background: #4f7c6b;
+  background: transparent;
   color: white;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s ease, transform 0.2s ease;
 }
 
-.profile-button:hover {
-  background: #3d6355;
+.profile-button:hover,
+.compact-profile-button:hover {
+  background: rgba(255, 255, 255, 0.15);
   transform: translateY(-1px);
 }
 
 .profile-avatar {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   background: white;
   color: #4f7c6b;
@@ -363,39 +378,49 @@ h1,
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
 }
 
 .profile-name {
-  font-size: 0.95rem;
+  font-size: 0.85rem;
 }
 
 .dropdown-arrow {
-  font-size: 0.75rem;
+  font-size: 0.65rem;
+  color: #2f3e39;
 }
 
 .profile-dropdown {
   position: absolute;
-  top: calc(100% + 10px);
+  top: calc(100% + 8px);
   right: 0;
   min-width: 180px;
   background: white;
   border-radius: 14px;
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.14);
-  padding: 0.5rem;
+  padding: 0.4rem;
   z-index: 1000;
+}
+
+.dropdown-user-name {
+  padding: 0.7rem 0.9rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #4f5c58;
+  border-bottom: 1px solid #edf1ef;
+  margin-bottom: 0.25rem;
 }
 
 .dropdown-item {
   display: block;
   width: 100%;
-  padding: 0.8rem 1rem;
+  padding: 0.7rem 0.9rem;
   border: none;
   background: transparent;
   color: #2c2c2c;
   text-align: left;
   text-decoration: none;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   border-radius: 10px;
   cursor: pointer;
   transition: background 0.2s ease, color 0.2s ease;

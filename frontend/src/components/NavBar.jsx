@@ -75,6 +75,9 @@ export default function NavBar() {
             <Link href="/dashboard" className="nav-link">
               Home
             </Link>
+            <Link href="/cards" className="nav-link">
+              Cards
+            </Link>
             <Link href="/rewards" className="nav-link">
               Rewards
             </Link>
@@ -101,19 +104,20 @@ export default function NavBar() {
         ) : (
           <div className="profile-menu" ref={dropdownRef}>
             <button
-              className="profile-button"
+              className="profile-button compact-profile-button"
               onClick={() => setShowDropdown(!showDropdown)}
               type="button"
             >
               <div className="profile-avatar">{userInitial}</div>
-              <span className="profile-name">
-                {firstName ? `Hi, ${firstName}` : "My Account"}
-              </span>
               <span className="dropdown-arrow">▼</span>
             </button>
 
             {showDropdown && (
               <div className="profile-dropdown">
+                <div className="dropdown-user-name">
+                  {firstName ? `Hi, ${firstName}` : "My Account"}
+                </div>
+
                 <Link
                   href="/profile"
                   className="dropdown-item"
