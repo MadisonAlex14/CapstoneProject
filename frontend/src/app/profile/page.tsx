@@ -14,12 +14,22 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
   const [showMenu, setShowMenu] = useState(false)
 
+  const [currentScore, setCurrentScore] = useState('')
+  const [goalScore, setGoalScore] = useState('')
+  const [editCurrentScore, setEditCurrentScore] = useState('')
+  const [editGoalScore, setEditGoalScore] = useState('')
+  const [isEditingScores, setIsEditingScores] = useState(false)
+  const [showScoreMenu, setShowScoreMenu] = useState(false)
+
   const menuRef = useRef<HTMLDivElement | null>(null)
+  const scoreMenuRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     const savedFirstName = localStorage.getItem('firstName')
     const savedEmail = localStorage.getItem('userEmail')
     const savedMemberSince = localStorage.getItem('memberSince')
+    const savedCurrentScore = localStorage.getItem('currentCreditScore')
+    const savedGoalScore = localStorage.getItem('goalCreditScore')
 
     if (savedFirstName) {
       setFirstName(savedFirstName)
@@ -38,12 +48,29 @@ export default function ProfilePage() {
       localStorage.setItem('memberSince', year)
       setMemberSince(year)
     }
+
+    if (savedCurrentScore) {
+      setCurrentScore(savedCurrentScore)
+      setEditCurrentScore(savedCurrentScore)
+    }
+
+    if (savedGoalScore) {
+      setGoalScore(savedGoalScore)
+      setEditGoalScore(savedGoalScore)
+    }
   }, [])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setShowMenu(false)
+      }
+
+      if (
+        scoreMenuRef.current &&
+        !scoreMenuRef.current.contains(event.target as Node)
+      ) {
+        setShowScoreMenu(false)
       }
     }
 
@@ -76,6 +103,42 @@ export default function ProfilePage() {
 
     window.dispatchEvent(new Event('auth-changed'))
     setIsEditing(false)
+  }
+
+  const handleEditScores = () => {
+    setEditCurrentScore(currentScore)
+    setEditGoalScore(goalScore)
+    setIsEditingScores(true)
+    setShowScoreMenu(false)
+  }
+
+  const handleCancelScores = () => {
+    setEditCurrentScore(currentScore)
+    setEditGoalScore(goalScore)
+    setIsEditingScores(false)
+  }
+
+  const handleSaveScores = () => {
+    setCurrentScore(editCurrentScore)
+    setGoalScore(editGoalScore)
+
+    localStorage.setItem('currentCreditScore', editCurrentScore)
+    localStorage.setItem('goalCreditScore', editGoalScore)
+
+    setIsEditingScores(false)
+  }
+
+  const handleDeleteScores = () => {
+    setCurrentScore('')
+    setGoalScore('')
+    setEditCurrentScore('')
+    setEditGoalScore('')
+
+    localStorage.removeItem('currentCreditScore')
+    localStorage.removeItem('goalCreditScore')
+
+    setShowScoreMenu(false)
+    setIsEditingScores(false)
   }
 
   const userInitial = firstName ? firstName.charAt(0).toUpperCase() : 'U'
@@ -192,10 +255,99 @@ export default function ProfilePage() {
               <span className={styles['p-statLabel']}>Plan</span>
               <span className={styles['p-statValue']}>Standard</span>
             </div>
+          </div>
 
+          <div className={styles.card}>
+            <div className={styles['p-cardHeader']}>
+              <h2 className={styles['p-cardTitle']}>Credit Score Goals</h2>
+
+              <div className={styles['p-menuWrap']} ref={scoreMenuRef}>
+                <button
+                  type="button"
+                  className={styles['p-menuButton']}
+                  onClick={() => setShowScoreMenu(!showScoreMenu)}
+                >
+                  ⋮
+                </button>
+
+                {showScoreMenu && !isEditingScores && (
+                  <div className={styles['p-menuDropdown']}>
+                    <button
+                      type="button"
+                      className={styles['p-menuItem']}
+                      onClick={handleEditScores}
+                    >
+                      {currentScore || goalScore ? 'Edit' : 'Add'}
+                    </button>
+
+                    {(currentScore || goalScore) && (
+                      <button
+                        type="button"
+                        className={styles['p-menuItem']}
+                        onClick={handleDeleteScores}
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className={styles['p-infoGroup']}>
+              <label className={styles.label}>Current Credit Score</label>
+              <input
+                className={styles.input}
+                type="number"
+                min="300"
+                max="850"
+                placeholder="Enter current score"
+                value={isEditingScores ? editCurrentScore : currentScore}
+                onChange={(e) => setEditCurrentScore(e.target.value)}
+                readOnly={!isEditingScores}
+              />
+            </div>
+
+            <div className={styles['p-infoGroup']}>
+              <label className={styles.label}>Goal Credit Score</label>
+              <input
+                className={styles.input}
+                type="number"
+                min="300"
+                max="850"
+                placeholder="Enter goal score"
+                value={isEditingScores ? editGoalScore : goalScore}
+                onChange={(e) => setEditGoalScore(e.target.value)}
+                readOnly={!isEditingScores}
+              />
+            </div>
+
+            {isEditingScores && (
+              <div className={styles['p-editActions']}>
+                <button
+                  type="button"
+                  className={styles['p-saveButton']}
+                  onClick={handleSaveScores}
+                >
+                  Save
+                </button>
+
+                <button
+                  type="button"
+                  className={styles['p-cancelButton']}
+                  onClick={handleCancelScores}
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className={styles.card}>
+            <h2 className={styles['p-cardTitle']}>Coming Soon</h2>
             <p className={styles['p-helperText']}>
-              Later, this page can show connected cards, reward preferences,
-              and account activity.
+              This page can later show connected cards, reward preferences,
+              account activity, personalized credit tips, and financial goals.
             </p>
           </div>
         </div>
