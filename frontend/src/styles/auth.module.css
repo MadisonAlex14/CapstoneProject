@@ -1204,7 +1204,7 @@
   color: #173b29;
   font-size: clamp(2rem, 4vw, 3rem);
   line-height: 1.15;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .dSubtitle {
@@ -1280,17 +1280,17 @@
 }
 
 .dSectionTitle {
-  margin: 0 0 0.35rem 0;
   color: #173b29;
   font-size: 1.35rem;
   font-weight: 800;
+  text-align: center;
 }
 
 .dSectionSubtitle {
-  margin: 0;
   color: #66776f;
   line-height: 1.6;
   font-size: 0.95rem;
+  text-align: center;
 }
 
 .dScoreBadge {
