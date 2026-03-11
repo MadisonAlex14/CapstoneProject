@@ -230,11 +230,10 @@ export default function Dashboard() {
           <div>
             <p className={styles.dGreeting}>{timeGreeting}</p>
             <h1 className={styles.dTitle}>
-              Welcome, {displayName}, to your CreditMaxxing Dashboard
+              Welcome, {displayName}!
             </h1>
             <p className={styles.dSubtitle}>
-              Your smooth little space to track progress, stay motivated, and keep
-              building toward your credit goals.
+              Here is your personalized dashboard. You can see your credit score, have some personalized insight, and recommended next steps to boost your credit!
             </p>
           </div>
 
