@@ -1,92 +1,76 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { supabase } from "../_shared/createClient.ts";
-
-// Helper function to decode JWT payload
-function decodeJWT(token: string): Record<string, unknown> | null {
-  try {
-    const parts = token.split('.')
-    if (parts.length !== 3) return null
-    
-    const decoded = atob(parts[1])
-    return JSON.parse(decoded)
-  } catch {
-    return null
-  }
-}
+import { supabase } from "../_shared/createClient.ts"
+import { extractAuthToken, getProfileIdFromToken } from "../_shared/auth.ts"
+import { withCors } from "../_shared/cors.ts"
 
 Deno.serve(async (req) => {
-  const origin = req.headers.get('origin') || '*'
+  const origin = req.headers.get('origin')
   
   if (req.method === 'OPTIONS') {
-    return new Response('ok', {
-      headers: {
-        'Access-Control-Allow-Origin': origin,
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-      },
-    })
+    return new Response('ok', { headers: withCors() })
   }
 
   if (req.method !== 'POST') {
-    return new Response('Method not allowed', { 
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
       status: 405,
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': origin },
+      headers: withCors({ 'Content-Type': 'application/json' }),
     })
   }
-
-  const authHeader = req.headers.get('authorization')
-  if (!authHeader) {
-    return new Response(JSON.stringify({ error: 'Missing authorization header' }), {
-      status: 401,
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': origin },
-    })
-  }
-
-  const token = authHeader.replace('Bearer ', '')
 
   try {
-    // Decode the JWT to get the user ID
-    const payload = decodeJWT(token)
-    if (!payload || !payload.sub) {
-      return new Response(JSON.stringify({ error: 'Invalid token format' }), {
+    const token = extractAuthToken(req)
+
+    // Get profile using the shared helper
+    const profileId = await getProfileIdFromToken(token)
+    
+    if (!profileId) {
+      return new Response(JSON.stringify({ error: 'Profile not found' }), {
         status: 401,
-        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': origin },
+        headers: withCors({ 'Content-Type': 'application/json' }),
       })
     }
 
-    const userId = payload.sub as string
+    // Get full profile data
+    const { data: profile, error: profileError } = await supabase
+      .from('profile')
+      .select('first_name, last_name, birth_date, auth_id')
+      .eq('profile_id', profileId)
+      .single()
 
-    // Get user by ID using admin API
-    const { data: { user }, error: userError } = await supabase.auth.admin.getUserById(userId)
+    if (profileError || !profile) {
+      return new Response(JSON.stringify({ error: 'Failed to fetch profile' }), {
+        status: 500,
+        headers: withCors({ 'Content-Type': 'application/json' }),
+      })
+    }
+
+    // Get user from auth
+    const { data: { user }, error: userError } = await supabase.auth.admin.getUserById(profile.auth_id)
 
     if (userError || !user) {
       return new Response(JSON.stringify({ error: 'User not found' }), {
         status: 401,
-        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': origin },
+        headers: withCors({ 'Content-Type': 'application/json' }),
       })
     }
-
-    // Get user profile
-    const { data: profile, error: profileError } = await supabase
-      .from('profile')
-      .select('first_name, last_name, birth_date')
-      .eq('auth_id', userId)
-      .single()
 
     return new Response(JSON.stringify({
       email: user.email,
       userId: user.id,
-      firstName: profile?.first_name || null,
-      lastName: profile?.last_name || null,
-      birthdate: profile?.birth_date || null,
+      firstName: profile.first_name || null,
+      lastName: profile.last_name || null,
+      birthdate: profile.birth_date || null,
     }), {
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': origin },
+      headers: withCors({ 'Content-Type': 'application/json' }),
     })
   } catch (error) {
+    const err = error as Error
+    const statusCode = err.message?.includes('Authorization token required') ? 401 : 500
+    const message = err.message || 'Failed to get user profile'
     console.error('Error getting user profile:', error)
-    return new Response(JSON.stringify({ error: 'Failed to get user profile' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': origin },
+    return new Response(JSON.stringify({ error: message }), {
+      status: statusCode,
+      headers: withCors({ 'Content-Type': 'application/json' }),
     })
   }
 })

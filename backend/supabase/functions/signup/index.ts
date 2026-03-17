@@ -1,22 +1,17 @@
-// Setup type definitions for built-in Supabase Runtime APIs
 import "@supabase/functions-js/edge-runtime.d.ts"
-import { supabase } from "../_shared/createClient.ts";
-
-console.log("Hello from Functions!")
+import { supabase } from "../_shared/createClient.ts"
+import { withCors } from "../_shared/cors.ts"
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response('ok', {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-      },
-    })
+    return new Response('ok', { headers: withCors() })
   }
 
   if (req.method !== 'POST') {
-    return new Response('Method not allowed', { status: 405 })
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+      status: 405,
+      headers: withCors({ 'Content-Type': 'application/json' }),
+    })
   }
 
   const { email, password, firstName, lastName, birthdate } = await req.json()
@@ -25,7 +20,7 @@ Deno.serve(async (req) => {
   if (!firstName || !lastName || !birthdate) {
     return new Response(JSON.stringify({ error: 'First name, last name, and birthdate are required' }), {
       status: 400,
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      headers: withCors({ 'Content-Type': 'application/json' }),
     })
   }
 
@@ -35,16 +30,16 @@ Deno.serve(async (req) => {
   if (checkError) {
     return new Response(JSON.stringify({ error: 'Failed to check existing users' }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      headers: withCors({ 'Content-Type': 'application/json' }),
     })
   }
 
-  const emailExists = existingUser?.users?.some(user => user.email === email)
+  const emailExists = existingUser?.users?.some((user: any) => user.email === email)
   
   if (emailExists) {
     return new Response(JSON.stringify({ error: 'Email already registered' }), {
       status: 400,
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      headers: withCors({ 'Content-Type': 'application/json' }),
     })
   }
 
@@ -59,7 +54,7 @@ Deno.serve(async (req) => {
   if (error) {
     return new Response(JSON.stringify({ error: error.message }), {
       status: 400,
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      headers: withCors({ 'Content-Type': 'application/json' }),
     })
   }
 
@@ -82,6 +77,6 @@ Deno.serve(async (req) => {
   }
 
   return new Response(JSON.stringify(data), {
-    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+    headers: withCors({ 'Content-Type': 'application/json' }),
   })
 })

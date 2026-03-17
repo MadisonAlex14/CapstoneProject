@@ -1,25 +1,17 @@
-// Setup type definitions for built-in Supabase Runtime APIs
 import "@supabase/functions-js/edge-runtime.d.ts"
-import { supabase } from "../_shared/createClient.ts";
-
-console.log("Hello from Functions!")
+import { supabase } from "../_shared/createClient.ts"
+import { withCors } from "../_shared/cors.ts"
 
 Deno.serve(async (req) => {
-  const origin = req.headers.get('origin') || '*'
-  
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response('ok', {
-      headers: {
-        'Access-Control-Allow-Origin': origin,
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-      },
-    })
+    return new Response('ok', { headers: withCors() })
   }
 
   if (req.method !== 'POST') {
-    return new Response('Method not allowed', { status: 405 })
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+      status: 405,
+      headers: withCors({ 'Content-Type': 'application/json' }),
+    })
   }
 
   const { email, password } = await req.json()
@@ -32,7 +24,7 @@ Deno.serve(async (req) => {
   if (error) {
     return new Response(JSON.stringify({ error: error.message }), {
       status: 400,
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': origin },
+      headers: withCors({ 'Content-Type': 'application/json' }),
     })
   }
 
@@ -40,7 +32,7 @@ Deno.serve(async (req) => {
   if (!data.user?.email_confirmed_at) {
     return new Response(JSON.stringify({ error: 'Please verify your email before logging in' }), {
       status: 400,
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': origin },
+      headers: withCors({ 'Content-Type': 'application/json' }),
     })
   }
 
@@ -57,7 +49,6 @@ Deno.serve(async (req) => {
       email: data.user?.email,
     }
   }), {
-    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': origin },
+    headers: withCors({ 'Content-Type': 'application/json' }),
   })
 })
-
