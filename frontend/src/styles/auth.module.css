@@ -527,6 +527,7 @@
   flex-direction: column;
   justify-content: space-between;
   position: relative;
+  cursor: pointer;
 }
 
 .creditCardTop {
@@ -1095,6 +1096,357 @@
   cursor: pointer;
   box-shadow: 0 10px 22px rgba(34, 94, 64, 0.22);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* CARD DASHBOARD */
+.cardDashboardGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: auto;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.cardDashboardModule {
+  min-height: 340px;
+}
+
+.cardDashboardRightColumn {
+  display: grid;
+  grid-template-rows: repeat(3, minmax(0, auto));
+  gap: 1.5rem;
+}
+
+.cardDashboardStatGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.cardDashboardStat {
+  background: linear-gradient(135deg, #f7fbf8, #eef6f1);
+  border: 1px solid #dce8e1;
+  border-radius: 18px;
+  padding: 1rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+}
+
+.cardDashboardStatLabel {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #61716a;
+  margin-bottom: 0.4rem;
+}
+
+.cardDashboardStatValue {
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: #1f4d3a;
+}
+
+.cardDashboardNote {
+  margin-top: 1rem;
+  color: #5f6f68;
+  font-size: 0.95rem;
+}
+
+.cardDashboardList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+
+.cardDashboardListItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.95rem 1rem;
+  background: #f7fbf8;
+  border: 1px solid #dce8e1;
+  border-radius: 16px;
+}
+
+.cardDashboardListTitle {
+  font-weight: 700;
+  color: #223d33;
+  margin: 0;
+}
+
+.cardDashboardListSubtitle {
+  margin: 0;
+  color: #5f6f68;
+  font-size: 0.92rem;
+}
+
+.cardDashboardBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  background: #e1f1e8;
+  color: #1f4d3a;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.cardDashboardBulletList {
+  margin: 1rem 0 0;
+  padding-left: 1.25rem;
+  color: #1f4d3a;
+}
+
+.cardDashboardBulletItem {
+  margin-bottom: 0.65rem;
+}
+
+.cardDashboardPromoItem {
+  padding: 0.95rem 1rem;
+  background: #f7fbf8;
+  border: 1px solid #dce8e1;
+  border-radius: 16px;
+}
+
+.cardDashboardTableWrap {
+  overflow-x: auto;
+  margin-top: 1rem;
+}
+
+.cardDashboardTableWrapCompact {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 280px;
+  margin-top: 1rem;
+}
+
+.cardDashboardTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.cardDashboardTable th,
+.cardDashboardTable td {
+  padding: 0.85rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #e5ece8;
+  font-size: 0.95rem;
+  color: #1f4d3a;
+}
+
+.cardDashboardTable th {
+  font-weight: 700;
+  color: #4a655b;
+}
+
+.cardDashboardAmountColumn {
+  text-align: right;
+}
+
+.cardDashboardKpiBar {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, #f4f9f7, #eaf3ef);
+  align-items: stretch;
+}
+
+.cardDashboardKpiItem {
+  flex: 1 1 160px;
+  background: #ffffff;
+  border: 1px solid #dde7e1;
+  border-radius: 16px;
+  padding: 1rem;
+  min-width: 160px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.cardDashboardKpiLabel {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #5f6f68;
+  margin-bottom: 0.35rem;
+}
+
+.cardDashboardKpiValue {
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: #1f4d3a;
+}
+
+.cardSectionHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.cardModuleHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid #e6eeea;
+  margin-bottom: 1rem;
+}
+
+.cardModuleDragHandle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: rgba(31, 77, 58, 0.08);
+  cursor: grab;
+  user-select: none;
+  font-size: 18px;
+  color: #1f4d3a;
+}
+
+.cardModuleDragHandle:active {
+  cursor: grabbing;
+}
+
+.cardSectionActions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.cardSectionActionLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #61716a;
+}
+
+.cardSectionSelect {
+  padding: 0.55rem 0.65rem;
+  border-radius: 12px;
+  border: 1px solid #cfd8d4;
+  background: #fff;
+  font-size: 0.95rem;
+  color: #1f4d3a;
+}
+
+.cardSectionCustomRange {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.cardSectionCustomRange label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.85rem;
+  color: #5f6f68;
+  gap: 0.25rem;
+}
+
+.cardSectionCustomRange input {
+  padding: 0.55rem 0.65rem;
+  border-radius: 12px;
+  border: 1px solid #cfd8d4;
+  background: #fff;
+  font-size: 0.95rem;
+  color: #1f4d3a;
+}
+
+.cardDashboardListRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.cardDashboardSmallButton {
+  border: none;
+  background: #9ecfad;
+  color: #1f2b27;
+  border-radius: 12px;
+  padding: 0.5rem 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.cardDashboardSmallButton:hover {
+  transform: translateY(-1px);
+  opacity: 0.9;
+}
+
+.cardDashboardProgressRow {
+  margin-top: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.cardDashboardProgressLabel {
+  font-size: 0.85rem;
+  color: #5f6f68;
+}
+
+.cardDashboardProgress {
+  flex: 1;
+  height: 10px;
+  background: #f0f5f1;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid #dde7e1;
+}
+
+.cardDashboardProgressFill {
+  height: 100%;
+  background: #1f4d3a;
+  border-radius: 999px;
+  transition: width 0.35s ease;
+}
+
+.cardDashboardBenefitComplete {
+  opacity: 0.8;
+  border-color: #cfe6d6;
+}
+
+.cardDashboardBenefitExpiring {
+  border-color: #f2b94d;
+  background: #fff9ed;
+}
+
+.cardDashboardPromoComplete {
+  opacity: 0.85;
+}
+
+.cardDashboardPromoExpired {
+  opacity: 0.55;
+}
+
+.cardDashboardPromoMeta {
+  margin-top: 0.65rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  font-size: 0.85rem;
+  color: #5f6f68;
+}
+
+@media (max-width: 900px) {
+  .cardDashboardGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .cardDashboardRightColumn {
+    grid-template-rows: unset;
+  }
 }
 
 .helpSubmitButton:hover {

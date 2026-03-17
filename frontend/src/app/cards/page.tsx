@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import styles from "../../styles/auth.module.css";
 
 type CreditCard = {
@@ -32,6 +33,7 @@ export default function CardsPage() {
   const [formData, setFormData] = useState<CardFormData>(emptyForm);
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const savedCards = localStorage.getItem("userCards");
@@ -235,13 +237,18 @@ export default function CardsPage() {
       ) : (
         <div className={styles.cardsGrid}>
           {cards.map((card) => (
-            <div key={card.id} className={styles.creditCardBox}>
+            <div
+            key={card.id}
+            className={styles.creditCardBox}
+            onClick={() => router.push(`/cards/${card.id}`)}
+          >
               <div className={styles.cardMenuWrapper}>
                 <button
                   className={styles.cardMenuButton}
-                  onClick={() =>
-                    setOpenMenuId(openMenuId === card.id ? null : card.id)
-                  }
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setOpenMenuId(openMenuId === card.id ? null : card.id);
+                  }}
                 >
                   ⋮
                 </button>
@@ -250,14 +257,20 @@ export default function CardsPage() {
                   <div className={styles.cardMenuDropdown}>
                     <button
                       className={styles.cardMenuItem}
-                      onClick={() => handleEditCard(card)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditCard(card);
+                      }}
                     >
                       Edit
                     </button>
 
                     <button
                       className={styles.cardMenuItemDelete}
-                      onClick={() => handleDeleteCard(card.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteCard(card.id);
+                      }}
                     >
                       Delete
                     </button>
