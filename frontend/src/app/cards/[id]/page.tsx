@@ -5,15 +5,15 @@ import { useRouter } from "next/navigation";
 import styles from "../../../styles/auth.module.css";
 
 type CreditCard = {
-  id: number;
+  credit_card_type_id: number;
   cardName: string;
-  issuer: string;
+  issuer_id: string;
   last4: string;
   rewardsType: string;
 };
 
 type Transaction = {
-  id: string;
+  credit_card_type_id: string;
   date: string;
   description: string;
   amount: number;
@@ -22,10 +22,10 @@ type Transaction = {
 };
 
 type Promotion = {
-  id: string;
+  credit_card_type_id: string;
   title: string;
   details?: string;
-  startDate: string;
+  created_at: string;
   expires: string;
   threshold: number;
   reward: number;
@@ -33,7 +33,7 @@ type Promotion = {
 };
 
 type Benefit = {
-  id: string;
+  credit_card_type_id: string;
   name: string;
   merchant?: string;
   allotted: number;
@@ -61,7 +61,7 @@ export default function CardDashboard({
     if (storedCards) {
       try {
         const parsed = JSON.parse(storedCards) as CreditCard[];
-        const found = parsed.find((c) => String(c.id) === cardId);
+        const found = parsed.find((c) => String(c.credit_card_type_id) === cardId);
         if (found) {
           setCard(found);
           return;
@@ -72,22 +72,22 @@ export default function CardDashboard({
     }
 
     setCard({
-      id: Number(cardId),
+      credit_card_type_id: Number(cardId),
       cardName: "Everyday Rewards",
-      issuer: "Acme Bank",
+      issuer_id: "Acme Bank",
       last4: "1234",
       rewardsType: "Cash Back",
     });
   }, [cardId]);
 
-  const annualFee = 95.0;
+  const annual_fee = 95.0;
 
   const [rewardFilter, setRewardFilter] = useState<"month" | "year" | "all" | "custom">("month");
   const [customRange, setCustomRange] = useState({ start: "", end: "" });
 
   const [benefits, setBenefits] = useState<Benefit[]>([
     {
-      id: "benefit-1",
+      credit_card_type_id: "benefit-1",
       name: "Dining credit",
       merchant: "Any restaurant",
       allotted: 120,
@@ -95,7 +95,7 @@ export default function CardDashboard({
       resetDate: "2026-04-01",
     },
     {
-      id: "benefit-2",
+      credit_card_type_id: "benefit-2",
       name: "Travel reimbursement",
       merchant: "Airlines",
       allotted: 150,
@@ -103,7 +103,7 @@ export default function CardDashboard({
       resetDate: "2026-03-25",
     },
     {
-      id: "benefit-3",
+      credit_card_type_id: "benefit-3",
       name: "Streaming credit",
       merchant: "Entertainment",
       allotted: 60,
@@ -114,21 +114,21 @@ export default function CardDashboard({
 
   const [promotions, setPromotions] = useState<Promotion[]>([
     {
-      id: "promo-1",
+      credit_card_type_id: "promo-1",
       title: "Spend $500, earn $50 back",
       expires: "2026-04-15",
       details: "Earn $50 statement credit after $500 spend.",
-      startDate: "2026-03-01",
+      created_at: "2026-03-01",
       threshold: 500,
       reward: 50,
       spentToDate: 320,
     },
     {
-      id: "promo-2",
+      credit_card_type_id: "promo-2",
       title: "2x dining points",
       expires: "2026-03-22",
       details: "Earn double points on dining this month.",
-      startDate: "2026-03-01",
+      created_at: "2026-03-01",
       threshold: 0,
       reward: 0,
       spentToDate: 420,
@@ -137,7 +137,7 @@ export default function CardDashboard({
 
   const transactions: Transaction[] = [
     {
-      id: "tx-1",
+      credit_card_type_id: "tx-1",
       date: "Mar 15, 2026",
       description: "Coffee Shop",
       amount: -6.82,
@@ -145,7 +145,7 @@ export default function CardDashboard({
       rewardValue: 0.34,
     },
     {
-      id: "tx-2",
+      credit_card_type_id: "tx-2",
       date: "Mar 14, 2026",
       description: "Grocery Store",
       amount: -112.34,
@@ -153,7 +153,7 @@ export default function CardDashboard({
       rewardValue: 1.12,
     },
     {
-      id: "tx-3",
+      credit_card_type_id: "tx-3",
       date: "Mar 11, 2026",
       description: "Monthly Subscription",
       amount: -15.99,
@@ -161,7 +161,7 @@ export default function CardDashboard({
       rewardValue: 0.16,
     },
     {
-      id: "tx-4",
+      credit_card_type_id: "tx-4",
       date: "Mar 09, 2026",
       description: "Refund - Online Store",
       amount: 25.0,
@@ -192,7 +192,7 @@ export default function CardDashboard({
     []
   );
 
-  const annualFeeValue = annualFee;
+  const annual_feeValue = annual_fee;
 
   const rewardsEarned = useMemo(
     () => rewardsBreakdown.reduce((sum, row) => sum + row.earned, 0),
@@ -213,8 +213,8 @@ export default function CardDashboard({
   );
 
   const netValue = useMemo(
-    () => rewardsEarned + benefitsUsed + promotionsEarned - annualFeeValue,
-    [rewardsEarned, benefitsUsed, promotionsEarned, annualFeeValue]
+    () => rewardsEarned + benefitsUsed + promotionsEarned - annual_feeValue,
+    [rewardsEarned, benefitsUsed, promotionsEarned, annual_feeValue]
   );
 
   const defaultModuleOrder = ["rewards", "benefits", "promotions", "transactions"];
@@ -297,7 +297,7 @@ export default function CardDashboard({
   };
 
   const selectedBenefit = selectedBenefitId
-    ? benefits.find((b) => b.id === selectedBenefitId)
+    ? benefits.find((b) => b.credit_card_type_id === selectedBenefitId)
     : null;
 
   const handleMarkBenefitUsed = (e: React.FormEvent) => {
@@ -309,7 +309,7 @@ export default function CardDashboard({
 
     setBenefits((prev) =>
       prev.map((b) =>
-        b.id === selectedBenefit.id
+        b.credit_card_type_id === selectedBenefit.credit_card_type_id
           ? { ...b, used: Math.min(b.allotted, b.used + amount) }
           : b
       )
@@ -324,11 +324,11 @@ export default function CardDashboard({
     e.preventDefault();
 
     const newPromo: Promotion = {
-      id: `promo-${Date.now()}`,
+      credit_card_type_id: `promo-${Date.now()}`,
       title: newPromoTitle || "Custom promotion",
       expires: newPromoEnd || "",
       details: "",
-      startDate: newPromoStart || "",
+      created_at: newPromoStart || "",
       threshold: Number(newPromoThreshold) || 0,
       reward: Number(newPromoReward) || 0,
       spentToDate: Number(newPromoSpent) || 0,
@@ -370,8 +370,8 @@ export default function CardDashboard({
 
         <section className={styles.CardDetailsHero}>
           <h1 className={styles.CardDetailsTitle}>{card.cardName}</h1>
-          <p className={styles.CardDetailsIssuer}>
-            {card.issuer} • •••• {card.last4} • {card.rewardsType}
+          <p className={styles.CardDetailsIssuerID}>
+            {card.issuer_id} • •••• {card.last4} • {card.rewardsType}
           </p>
         </section>
 
@@ -379,7 +379,7 @@ export default function CardDashboard({
           <div className={styles.CardDetailsMetaGrid}>
             <div className={styles.CardDetailsStat}>
               <span className={styles.CardDetailsStatLabel}>Annual fee</span>
-              <span className={styles.CardDetailsStatValue}>-${annualFeeValue.toFixed(2)}</span>
+              <span className={styles.CardDetailsStatValue}>-${annual_feeValue.toFixed(2)}</span>
             </div>
             <div className={styles.CardDetailsStat}>
               <span className={styles.CardDetailsStatLabel}>Rewards earned</span>
@@ -591,7 +591,7 @@ export default function CardDashboard({
 
                           return (
                             <div
-                              key={benefit.id}
+                              key={benefit.credit_card_type_id}
                               className={styles.CardRewardsBox}
                               style={{
                                 borderColor: isComplete
@@ -628,7 +628,7 @@ export default function CardDashboard({
                                   type="button"
                                   className={styles.CardDetailsButtonSecondary}
                                   onClick={() => {
-                                    setSelectedBenefitId(benefit.id);
+                                    setSelectedBenefitId(benefit.credit_card_type_id);
                                     setShowBenefitModal(true);
                                   }}
                                 >
@@ -690,7 +690,7 @@ export default function CardDashboard({
 
                           return (
                             <div
-                              key={promo.id}
+                              key={promo.credit_card_type_id}
                               className={styles.CardRewardsBox}
                               style={{
                                 borderColor: completed
@@ -801,7 +801,7 @@ export default function CardDashboard({
                           </thead>
                           <tbody>
                             {transactions.slice(0, 10).map((tx) => (
-                              <tr key={tx.id}>
+                              <tr key={tx.credit_card_type_id}>
                                 <td>{tx.date}</td>
                                 <td>{tx.description}</td>
                                 <td>{tx.category}</td>

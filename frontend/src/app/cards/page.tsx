@@ -5,21 +5,21 @@ import { useRouter } from "next/navigation";
 import styles from "../../styles/auth.module.css";
 
 type CardBenefit = {
-  id: string;
+  credit_card_type_id: string;
   label: string;
 };
 
 type CardPromotion = {
-  id: string;
+  credit_card_type_id: string;
   label: string;
 };
 
 type CardType = {
-  id: string;
+  credit_card_type_id: string;
   cardName: string;
-  issuer: string;
-  network: string;
-  annualFee: number;
+  issuer_id: string;
+  network_id: string;
+  annual_fee: number;
   rewardsType: string;
   description?: string;
   benefits: CardBenefit[];
@@ -32,24 +32,22 @@ type PromotionState = Record<
   string,
   {
     active: boolean;
-    startDate: string;
+    created_at: string;
     spent: string;
   }
 >;
 
 type CreditCard = {
-  id: number;
+  credit_card_type_id: number;
   cardName: string;
-  issuer: string;
+  issuer_id: string;
   last4: string;
   rewardsType: string;
-
-  // extra fields for your cards page
   cardNickname: string;
-  network: string;
+  network_id: string;
   openDate: string;
   creditLimit: number | null;
-  annualFee: number | null;
+  annual_fee: number | null;
   notes: string;
   createdAt: string;
 
@@ -60,7 +58,7 @@ type CreditCard = {
       string,
       {
         active: boolean;
-        startDate: string;
+        created_at: string;
         spent: string;
       }
     >;
@@ -72,55 +70,55 @@ const STORAGE_KEY = "userCards";
 
 const CARD_TYPES: CardType[] = [
   {
-    id: "amex-gold",
+    credit_card_type_id: "amex-gold",
     cardName: "Amex Gold",
-    issuer: "American Express",
-    network: "Amex",
-    annualFee: 325,
+    issuer_id: "American Express",
+    network_id: "Amex",
+    annual_fee: 325,
     rewardsType: "Points",
     description: "Premium rewards on dining and groceries.",
     benefits: [
-      { id: "dining-credit", label: "Dining Credit" },
-      { id: "uber-cash", label: "Uber Cash" },
+      { credit_card_type_id: "dining-credit", label: "Dining Credit" },
+      { credit_card_type_id: "uber-cash", label: "Uber Cash" },
     ],
     promotions: [
-      { id: "restaurant-bonus", label: "Restaurant Bonus Offer" },
-      { id: "travel-credit-bonus", label: "Travel Credit Bonus" },
+      { credit_card_type_id: "restaurant-bonus", label: "Restaurant Bonus Offer" },
+      { credit_card_type_id: "travel-credit-bonus", label: "Travel Credit Bonus" },
     ],
   },
   {
-    id: "chase-sapphire-preferred",
+    credit_card_type_id: "chase-sapphire-preferred",
     cardName: "Chase Sapphire Preferred",
-    issuer: "Chase",
-    network: "Visa",
-    annualFee: 95,
+    issuer_id: "Chase",
+    network_id: "Visa",
+    annual_fee: 95,
     rewardsType: "Points",
     description: "Travel rewards card with flexible redemption options.",
     benefits: [
-      { id: "hotel-credit", label: "Hotel Credit" },
-      { id: "dashpass", label: "DashPass Benefit" },
+      { credit_card_type_id: "hotel-credit", label: "Hotel Credit" },
+      { credit_card_type_id: "dashpass", label: "DashPass Benefit" },
     ],
     promotions: [
-      { id: "welcome-offer", label: "Welcome Offer Tracker" },
-      { id: "travel-promo", label: "Limited Time Travel Promo" },
+      { credit_card_type_id: "welcome-offer", label: "Welcome Offer Tracker" },
+      { credit_card_type_id: "travel-promo", label: "Limited Time Travel Promo" },
     ],
   },
   {
-    id: "capital-one-venture-x",
+    credit_card_type_id: "capital-one-venture-x",
     cardName: "Capital One Venture X",
-    issuer: "Capital One",
-    network: "Visa",
-    annualFee: 395,
+    issuer_id: "Capital One",
+    network_id: "Visa",
+    annual_fee: 395,
     rewardsType: "Miles",
     description: "Premium travel card with lounge access and miles rewards.",
     benefits: [
-      { id: "travel-credit", label: "Annual Travel Credit" },
-      { id: "anniversary-miles", label: "Anniversary Miles" },
-      { id: "lounge-access", label: "Lounge Benefit Usage" },
+      { credit_card_type_id: "travel-credit", label: "Annual Travel Credit" },
+      { credit_card_type_id: "anniversary-miles", label: "Anniversary Miles" },
+      { credit_card_type_id: "lounge-access", label: "Lounge Benefit Usage" },
     ],
     promotions: [
-      { id: "spend-bonus", label: "Spend Bonus Promotion" },
-      { id: "transfer-bonus", label: "Transfer Bonus Promotion" },
+      { credit_card_type_id: "spend-bonus", label: "Spend Bonus Promotion" },
+      { credit_card_type_id: "transfer-bonus", label: "Transfer Bonus Promotion" },
     ],
   },
 ];
@@ -129,18 +127,18 @@ function normalizeStoredCards(rawCards: any[]): CreditCard[] {
   return rawCards.map((card, index) => {
     const matchedType =
       CARD_TYPES.find(
-        (type) => type.id === card.cardTypeId || type.cardName === card.cardName
+        (type) => type.credit_card_type_id === card.cardTypeId || type.cardName === card.cardName
       ) || null;
 
     return {
-      id: Number(card.id ?? Date.now() + index),
+      credit_card_type_id: Number(card.id ?? Date.now() + index),
       cardName: card.cardName ?? matchedType?.cardName ?? "",
-      issuer: card.issuer ?? matchedType?.issuer ?? "",
+      issuer_id: card.issuer_id ?? card.issuer ?? matchedType?.issuer_id ?? matchedType?.issuer_id ?? "",
       last4: card.last4 ?? "",
       rewardsType: card.rewardsType ?? matchedType?.rewardsType ?? "Points",
-
       cardNickname: card.cardNickname ?? card.cardName ?? matchedType?.cardName ?? "",
-      network: card.network ?? matchedType?.network ?? "",
+      network_id: card.network_id ?? card.network ?? matchedType?.network_id ?? "",
+
       openDate: card.openDate ?? "",
       creditLimit:
         card.creditLimit !== null &&
@@ -148,12 +146,12 @@ function normalizeStoredCards(rawCards: any[]): CreditCard[] {
         card.creditLimit !== ""
           ? Number(card.creditLimit)
           : null,
-      annualFee:
-        card.annualFee !== null &&
-        card.annualFee !== undefined &&
-        card.annualFee !== ""
-          ? Number(card.annualFee)
-          : matchedType?.annualFee ?? null,
+      annual_fee:
+        card.annual_fee !== null &&
+        card.annual_fee !== undefined &&
+        card.annual_fee !== ""
+          ? Number(card.annual_fee)
+          : matchedType?.annual_fee ?? null,
       notes: card.notes ?? "",
       createdAt: card.createdAt ?? new Date().toISOString(),
 
@@ -196,7 +194,7 @@ export default function CardsPage() {
   const [last4, setLast4] = useState("");
   const [openDate, setOpenDate] = useState("");
   const [creditLimit, setCreditLimit] = useState("");
-  const [annualFee, setAnnualFee] = useState("");
+  const [annual_fee, setAnnualFee] = useState("");
   const [notes, setNotes] = useState("");
 
   // Step 3
@@ -239,7 +237,7 @@ export default function CardsPage() {
   }, [cards, hasLoadedCards]);
 
   const selectedCardType = useMemo(() => {
-    return CARD_TYPES.find((card) => card.id === selectedCardTypeId) || null;
+    return CARD_TYPES.find((card) => card.credit_card_type_id === selectedCardTypeId) || null;
   }, [selectedCardTypeId]);
 
   const step1Complete = !!selectedCardTypeId;
@@ -315,7 +313,7 @@ export default function CardsPage() {
     setActivePromotions((prev) => {
       const current = prev[promotionId] || {
         active: false,
-        startDate: "",
+        created_at: "",
         spent: "",
       };
 
@@ -331,13 +329,13 @@ export default function CardsPage() {
 
   const handlePromotionFieldChange = (
     promotionId: string,
-    field: "startDate" | "spent",
+    field: "created_at" | "spent",
     value: string
   ) => {
     setActivePromotions((prev) => {
       const current = prev[promotionId] || {
         active: true,
-        startDate: "",
+        created_at: "",
         spent: "",
       };
 
@@ -357,7 +355,7 @@ export default function CardsPage() {
     );
     if (!confirmed) return;
 
-    setCards((prev) => prev.filter((card) => card.id !== cardId));
+    setCards((prev) => prev.filter((card) => card.credit_card_type_id !== cardId));
     setOpenMenuId(null);
   };
 
@@ -369,14 +367,14 @@ export default function CardsPage() {
     const matchedType =
       CARD_TYPES.find((type) => type.cardName === card.cardName) || null;
 
-    setEditingCardId(card.id);
+    setEditingCardId(card.credit_card_type_id);
     setFormError("");
-    setSelectedCardTypeId(matchedType?.id || "");
+    setSelectedCardTypeId(matchedType?.credit_card_type_id || "");
     setCardNickname(card.cardNickname || "");
     setLast4(card.last4 || "");
     setOpenDate(card.openDate || "");
     setCreditLimit(card.creditLimit?.toString() || "");
-    setAnnualFee(card.annualFee?.toString() || "");
+    setAnnualFee(card.annual_fee?.toString() || "");
     setNotes(card.notes || "");
     setCurrentRewardsBalance(
       card.initialCardState.currentRewardsBalance?.toString() || ""
@@ -395,7 +393,7 @@ export default function CardsPage() {
       ([key, value]) => {
         loadedPromotions[key] = {
           active: value.active,
-          startDate: value.startDate || "",
+          created_at: value.created_at || "",
           spent: value.spent || "",
         };
       }
@@ -428,20 +426,20 @@ export default function CardsPage() {
     const finalNickname = cardNickname.trim() || selectedCardType.cardName;
 
     const cardToSave: CreditCard = {
-      id: editingCardId ?? Date.now(),
+      credit_card_type_id: editingCardId ?? Date.now(),
       cardName: selectedCardType.cardName,
-      issuer: selectedCardType.issuer,
+      issuer_id: selectedCardType.issuer_id,
       last4: last4,
       rewardsType: selectedCardType.rewardsType,
 
       cardNickname: finalNickname,
-      network: selectedCardType.network,
+      network_id: selectedCardType.network_id,
       openDate: openDate,
       creditLimit: creditLimit ? Number(creditLimit) : null,
-      annualFee: annualFee ? Number(annualFee) : selectedCardType.annualFee,
+      annual_fee: annual_fee ? Number(annual_fee) : selectedCardType.annual_fee,
       notes: notes.trim(),
       createdAt: editingCardId
-        ? cards.find((card) => card.id === editingCardId)?.createdAt ||
+        ? cards.find((card) => card.credit_card_type_id === editingCardId)?.createdAt ||
           new Date().toISOString()
         : new Date().toISOString(),
 
@@ -466,7 +464,7 @@ export default function CardsPage() {
     setCards((prevCards) => {
       if (editingCardId !== null) {
         return prevCards.map((card) =>
-          card.id === editingCardId ? cardToSave : card
+          card.credit_card_type_id === editingCardId ? cardToSave : card
         );
       }
 
@@ -515,20 +513,20 @@ export default function CardsPage() {
         <div className={styles.CardGrid}>
           {cards.map((card) => (
             <div
-              key={card.id}
+              key={card.credit_card_type_id}
               className={styles.CardBox}
-              onClick={() => handleCardClick(card.id)}
+              onClick={() => handleCardClick(card.credit_card_type_id)}
               role="button"
               tabIndex={0}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
-                  handleCardClick(card.id);
+                  handleCardClick(card.credit_card_type_id);
                 }
               }}
             >
               <div className={styles.CardTop}>
-                <span className={styles.CardIssuer}>{card.issuer}</span>
+                <span className={styles.CardIssuerID}>{card.issuer_id}</span>
 
                 <div
                   className={styles.CardMenuWrapper}
@@ -542,13 +540,13 @@ export default function CardsPage() {
                     }`}
                     onClick={(e) => {
                       e.stopPropagation();
-                      setOpenMenuId((prev) => (prev === card.id ? null : card.id));
+                      setOpenMenuId((prev) => (prev === card.credit_card_type_id ? null : card.credit_card_type_id));
                     }}
                   >
                     ⋯
                   </button>
 
-                  {openMenuId === card.id && (
+                  {openMenuId === card.credit_card_type_id && (
                     <div className={styles.CardMenuDropdown}>
                       <button
                         type="button"
@@ -565,7 +563,7 @@ export default function CardsPage() {
                         className={styles.CardMenuDelete}
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleDeleteCard(card.id);
+                          handleDeleteCard(card.credit_card_type_id);
                         }}
                       >
                         Delete
@@ -645,13 +643,13 @@ export default function CardsPage() {
                   <div className={styles.CardStepContent}>
                     <div className={styles.CardTypeGrid}>
                       {CARD_TYPES.map((card) => {
-                        const selected = selectedCardTypeId === card.id;
+                        const selected = selectedCardTypeId === card.credit_card_type_id;
 
                         return (
                           <button
-                            key={card.id}
+                            key={card.credit_card_type_id}
                             type="button"
-                            onClick={() => setSelectedCardTypeId(card.id)}
+                            onClick={() => setSelectedCardTypeId(card.credit_card_type_id)}
                             className={`${styles.CardTypeOption} ${
                               selected ? styles.CardTypeOptionSelected : ""
                             }`}
@@ -660,14 +658,14 @@ export default function CardsPage() {
                               <span className={styles.CardTypeName}>
                                 {card.cardName}
                               </span>
-                              <span className={styles.CardTypeIssuer}>
-                                {card.issuer}
+                              <span className={styles.CardTypeIssuerID}>
+                                {card.issuer_id}
                               </span>
                             </div>
 
                             <div className={styles.CardTypeMeta}>
-                              <span>{card.network}</span>
-                              <span>${card.annualFee} AF</span>
+                              <span>{card.network_id}</span>
+                              <span>${card.annual_fee} AF</span>
                             </div>
                           </button>
                         );
@@ -775,7 +773,7 @@ export default function CardsPage() {
                         <input
                           type="number"
                           min="0"
-                          value={annualFee}
+                          value={annual_fee}
                           onChange={(e) => setAnnualFee(e.target.value)}
                           className={styles.FormInput}
                           placeholder="95"
@@ -870,17 +868,17 @@ export default function CardsPage() {
                         {selectedCardType?.benefits.length ? (
                           <div className={styles.DynamicFieldList}>
                             {selectedCardType.benefits.map((benefit) => (
-                              <div key={benefit.id} className={styles.FormGroup}>
+                              <div key={benefit.credit_card_type_id} className={styles.FormGroup}>
                                 <label className={styles.FormLabel}>
                                   {benefit.label}
                                 </label>
                                 <input
                                   type="number"
                                   min="0"
-                                  value={benefitsUsed[benefit.id] || ""}
+                                  value={benefitsUsed[benefit.credit_card_type_id] || ""}
                                   onChange={(e) =>
                                     handleBenefitUsedChange(
-                                      benefit.id,
+                                      benefit.credit_card_type_id,
                                       e.target.value
                                     )
                                   }
@@ -906,15 +904,15 @@ export default function CardsPage() {
                           <div className={styles.CheckboxList}>
                             {selectedCardType.promotions.map((promotion) => {
                               const promotionState =
-                                activePromotions[promotion.id] || {
+                                activePromotions[promotion.credit_card_type_id] || {
                                   active: false,
-                                  startDate: "",
+                                  created_at: "",
                                   spent: "",
                                 };
 
                               return (
                                 <div
-                                  key={promotion.id}
+                                  key={promotion.credit_card_type_id}
                                   className={styles.PromotionItem}
                                 >
                                   <label className={styles.CheckboxRow}>
@@ -922,7 +920,7 @@ export default function CardsPage() {
                                       type="checkbox"
                                       checked={promotionState.active}
                                       onChange={() =>
-                                        handlePromotionToggle(promotion.id)
+                                        handlePromotionToggle(promotion.credit_card_type_id)
                                       }
                                     />
                                     <span>{promotion.label}</span>
@@ -936,11 +934,11 @@ export default function CardsPage() {
                                         </label>
                                         <input
                                           type="date"
-                                          value={promotionState.startDate}
+                                          value={promotionState.created_at}
                                           onChange={(e) =>
                                             handlePromotionFieldChange(
-                                              promotion.id,
-                                              "startDate",
+                                              promotion.credit_card_type_id,
+                                              "created_at",
                                               e.target.value
                                             )
                                           }
@@ -958,7 +956,7 @@ export default function CardsPage() {
                                           value={promotionState.spent}
                                           onChange={(e) =>
                                             handlePromotionFieldChange(
-                                              promotion.id,
+                                              promotion.credit_card_type_id,
                                               "spent",
                                               e.target.value
                                             )
