@@ -10,7 +10,7 @@ Deno.serve(async (req) => {
     return new Response('ok', { headers: withCors() })
   }
 
-  if (req.method !== 'POST') {
+  if (req.method !== 'GET') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), {
       status: 405,
       headers: withCors({ 'Content-Type': 'application/json' }),
