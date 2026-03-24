@@ -33,31 +33,16 @@ Deno.serve(async (req) => {
       transaction_date,
       merchant_name,
       amount,
-      mcc_code,
+      mcc_id,
       booked_through_issuer_portal,
     } = body
 
-    if (!credit_card_id || !transaction_date || !merchant_name || amount == null || !mcc_code) {
-      return new Response(JSON.stringify({ error: 'Missing required fields: credit_card_id, transaction_date, merchant_name, amount, mcc_code' }), {
+    if (!credit_card_id || !transaction_date || !merchant_name || amount == null || !mcc_id) {
+      return new Response(JSON.stringify({ error: 'Missing required fields: credit_card_id, transaction_date, merchant_name, amount, mcc_id' }), {
         status: 400,
         headers: withCors({ 'Content-Type': 'application/json' }),
       })
     }
-
-    const { data: mcc, error: mccError } = await supabase
-      .from('mcc')
-      .select('mcc_id')
-      .eq('code', mcc_code)
-      .single()
-
-    if (mccError || !mcc) {
-      return new Response(JSON.stringify({ error: 'MCC code not found' }), {
-        status: 400,
-        headers: withCors({ 'Content-Type': 'application/json' }),
-      })
-    }
-
-    const mcc_id = mcc.mcc_id
 
     // Ensure the card belongs to the profile
     const { data: card, error: cardError } = await supabase
