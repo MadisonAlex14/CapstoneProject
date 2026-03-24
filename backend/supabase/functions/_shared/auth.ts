@@ -56,13 +56,14 @@ export async function getUserFromRequest(req: Request) {
  * @throws Error if the token is invalid or the user is not found
  */
 export async function getProfileIdFromToken(token: string): Promise<string | null> {
-  // Decode the JWT to get the user ID
-  const payload = decodeJWT(token)
-  if (!payload || !payload.sub) {
-    throw new Error('Invalid token format')
+  // Validate token with Supabase to ensure it is active and valid
+  const { data: userData, error: userError } = await supabase.auth.getUser(token)
+
+  if (userError || !userData?.user) {
+    throw new Error('Invalid or expired authentication token')
   }
 
-  const userId = payload.sub as string
+  const userId = userData.user.id
 
   // Fetch the profile_id from the profile table
   const { data, error } = await supabase
