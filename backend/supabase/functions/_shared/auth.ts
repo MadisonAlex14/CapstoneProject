@@ -25,7 +25,7 @@ export function extractAuthToken(req: Request) {
  * @returns The profile ID or null if not found
  * @throws Error if the token is invalid or the user is not found
  */
-export async function getProfileIdFromToken(token: string): Promise<string | null> {
+export async function getProfileIdFromToken(token: string): Promise<string> {
   // Validate token with Supabase to ensure it is active and valid
   const { data: userData, error: userError } = await supabase.auth.getUser(token)
 
@@ -42,10 +42,10 @@ export async function getProfileIdFromToken(token: string): Promise<string | nul
     .eq('auth_id', userId)
     .single()
 
-  if (error) {
-    throw new Error(`Failed to fetch profile: ${error.message}`)
+  if (error || !data?.profile_id) {
+    throw new Error(`Failed to fetch profile: ${error?.message ?? 'Profile not found'}`)
   }
 
-  return data?.profile_id || null
+  return data.profile_id
 }
 
