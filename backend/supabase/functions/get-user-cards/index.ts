@@ -21,7 +21,17 @@ Deno.serve(async (req) => {
 
     const { data, error } = await supabase
       .from('credit_card')
-      .select('credit_card_id, nickname, last_four, open_date, expiration_date, statement_close_day, initial_rewards_balance, tracking_start_date, is_active, credit_card_type(name)')
+      .select(`
+        credit_card_id, 
+        nickname, 
+        last_four, 
+        open_date, 
+        expiration_date, 
+        statement_close_day, 
+        initial_rewards_balance, 
+        tracking_start_date, 
+        is_active, 
+        credit_card_type(name, image_url)`)
       .eq('profile_id', profileId)
 
     if (error) {
