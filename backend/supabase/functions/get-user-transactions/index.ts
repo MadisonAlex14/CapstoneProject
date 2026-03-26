@@ -28,6 +28,7 @@ function normalizeCardTransactions(rows: any[]) {
       rewards_currency: row.rewards_currency,
       transaction_date: row.transaction_date,
       booked_through_issuer_portal: row.booked_through_issuer_portal,
+      notes: row.notes,
       mcc: row.mcc,
     })
   }
@@ -68,8 +69,8 @@ Deno.serve(async (req) => {
         rewards_currency,
         booked_through_issuer_portal,
         notes,
-        credit_card(credit_card_id, nickname, last_four, credit_card_type(credit_card_type_id, name)),
-        mcc(code,description)
+        credit_card(credit_card_id, nickname, last_four, credit_card_type(credit_card_type_id, name, image_url)),
+        mcc(code, description)
       `)
       .eq('credit_card.profile_id', profileId)
       .order('transaction_date', { ascending: false })
