@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
         booked_through_issuer_portal,
         notes,
         credit_card(credit_card_id, nickname, last_four, credit_card_type(credit_card_type_id, name)),
-        mcc(description)
+        mcc(code,description)
       `)
       .eq('credit_card.profile_id', profileId)
       .order('transaction_date', { ascending: false })
