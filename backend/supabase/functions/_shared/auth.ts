@@ -1,4 +1,3 @@
-import { AuthError } from "npm:@supabase/supabase-js@2";
 import { supabase } from "./createClient.ts";
 
 
