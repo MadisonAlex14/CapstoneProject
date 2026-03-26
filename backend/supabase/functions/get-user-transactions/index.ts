@@ -74,6 +74,7 @@ Deno.serve(async (req) => {
         rewards_earned,
         rewards_currency,
         booked_through_issuer_portal,
+        notes,
         credit_card(credit_card_id, nickname, last_four, credit_card_type(credit_card_type_id, name)),
         mcc(description)
       `)
