@@ -1,22 +1,5 @@
-import { AuthError } from "npm:@supabase/supabase-js@2";
-import { supabase } from "./createClient.ts";
+import { supabase, authClient } from "./createClient.ts";
 
-/**
- * Decode JWT token to extract the user ID (sub claim)
- * @param token - The JWT token to decode
- * @returns The decoded payload or null if invalid
- */
-function decodeJWT(token: string): Record<string, unknown> | null {
-  try {
-    const parts = token.split('.')
-    if (parts.length !== 3) return null
-    
-    const decoded = atob(parts[1])
-    return JSON.parse(decoded)
-  } catch {
-    return null
-  }
-}
 
 /**
  * Extract an authentication token from the request headers.
@@ -36,33 +19,21 @@ export function extractAuthToken(req: Request) {
     return userToken;
 }
 
-
-/**
- * Get the authenticated user from the request.
- * @returns An object containing the user data and any authentication error
- * @param req The incoming HTTP request
- */
-export async function getUserFromRequest(req: Request) {
-    const userToken = extractAuthToken(req);
-    const { data, error } = await supabase.auth.getUser(userToken);
-
-    return { user_data: data, user_error: error };
-}
-
 /**
  * Get the profile ID from an authentication token
  * @param token - The JWT authentication token
  * @returns The profile ID or null if not found
  * @throws Error if the token is invalid or the user is not found
  */
-export async function getProfileIdFromToken(token: string): Promise<string | null> {
-  // Decode the JWT to get the user ID
-  const payload = decodeJWT(token)
-  if (!payload || !payload.sub) {
-    throw new Error('Invalid token format')
+export async function getProfileIdFromToken(token: string): Promise<string> {
+  // Validate token with Supabase to ensure it is active and valid
+  const { data: userData, error: userError } = await authClient.auth.getUser(token)
+
+  if (userError || !userData?.user) {
+    throw new Error('Invalid or expired authentication token')
   }
 
-  const userId = payload.sub as string
+  const userId = userData.user.id
 
   // Fetch the profile_id from the profile table
   const { data, error } = await supabase
@@ -71,10 +42,10 @@ export async function getProfileIdFromToken(token: string): Promise<string | nul
     .eq('auth_id', userId)
     .single()
 
-  if (error) {
-    throw new Error(`Failed to fetch profile: ${error.message}`)
+  if (error || !data?.profile_id) {
+    throw new Error(`Failed to fetch profile: ${error?.message ?? 'Profile not found'}`)
   }
 
-  return data?.profile_id || null
+  return data.profile_id
 }
 
