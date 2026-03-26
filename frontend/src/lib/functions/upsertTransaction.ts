@@ -6,6 +6,7 @@ export interface UpsertTransactionBody {
   amount: number
   booked_through_issuer_portal?: boolean
   mcc_id: string
+  notes?: string
 }
 
 export async function upsertTransaction(accessToken: string, body: UpsertTransactionBody) {
