@@ -53,13 +53,6 @@ Deno.serve(async (req) => {
     const token = extractAuthToken(req)
     const profileId = await getProfileIdFromToken(token)
 
-    if (!profileId) {
-      return new Response(JSON.stringify({ error: 'Profile not found' }), {
-        status: 401,
-        headers: withCors({ 'Content-Type': 'application/json' }),
-      })
-    }
-
     const url = new URL(req.url)
     const limitParam = url.searchParams.get('limit')
     const limit = limitParam ? Number(limitParam) : null
