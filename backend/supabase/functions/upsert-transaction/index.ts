@@ -28,6 +28,7 @@ Deno.serve(async (req) => {
       amount,
       mcc_id,
       booked_through_issuer_portal,
+      notes,
     } = body
 
     if (!credit_card_id || !transaction_date || !merchant_name || amount == null || !mcc_id) {
@@ -62,7 +63,7 @@ Deno.serve(async (req) => {
           amount,
           mcc_id,
           booked_through_issuer_portal,
-          notes: body.notes,
+          notes,
         })
         .eq('transaction_id', transaction_id)
         .eq('credit_card_id', credit_card_id)
@@ -84,11 +85,13 @@ Deno.serve(async (req) => {
     const { data, error } = await supabase
       .from('transaction')
       .insert({
-        credit_card_id,
-        transaction_date,
-        merchant_name,
-        amount,
-        mcc_id,
+          credit_card_id,
+          transaction_date,
+          merchant_name,
+          amount,
+          mcc_id,
+          booked_through_issuer_portal,
+          notes,
       })
       .select('*')
       .single()
