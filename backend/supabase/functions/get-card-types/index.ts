@@ -23,13 +23,6 @@ Deno.serve(async (req) => {
     // Get profile using the shared helper
     const profileId = await getProfileIdFromToken(token)
     
-    if (!profileId) {
-      return new Response(JSON.stringify({ error: 'Profile not found' }), {
-        status: 401,
-        headers: withCors({ 'Content-Type': 'application/json' }),
-      })
-    }
-
     const { data, error } = await supabase
       .from('credit_card_type')
       .select('*')
