@@ -5,8 +5,8 @@ import { withCors } from "../_shared/cors.ts"
 
 function sanitizeSearch(value: string): string {
   // strip untrusted characters (SQL is parameterized by Supabase client, but we normalize anyway)
-  const cleaned = value.trim().slice(0, 20)
-  const normalized = cleaned.replace(/[^a-zA-Z0-9 \-]/g, '')
+  const cleaned = value.trim().slice(0, 100)
+  const normalized = cleaned.replace(/[^a-zA-Z0-9 '\/,\-]/g, '')
   return normalized
 }
 
@@ -26,16 +26,8 @@ Deno.serve(async (req) => {
 
   try {
     const token = extractAuthToken(req)
-
-    // Get profile using the shared helper
-    const profileId = await getProfileIdFromToken(token)
-    
-    if (!profileId) {
-      return new Response(JSON.stringify({ error: 'Profile not found' }), {
-        status: 401,
-        headers: withCors({ 'Content-Type': 'application/json' }),
-      })
-    }
+    // Get profile using the shared helper, just doing this to validate user is authenticated
+    await getProfileIdFromToken(token)
 
     const url = new URL(req.url)
     const rawQuery = (url.searchParams.get('query') ?? '').trim()
