@@ -19,13 +19,6 @@ Deno.serve(async (req) => {
     const token = extractAuthToken(req)
     const profileId = await getProfileIdFromToken(token)
 
-    if (!profileId) {
-      return new Response(JSON.stringify({ error: 'Profile not found' }), {
-        status: 401,
-        headers: withCors({ 'Content-Type': 'application/json' }),
-      })
-    }
-
     const body = await req.json()
     const {
       credit_card_id,
@@ -46,11 +39,24 @@ Deno.serve(async (req) => {
       })
     }
 
+    if (!/^\d{4}$/.test(last_four)) {
+      return new Response(JSON.stringify({ error: 'last_four must be exactly 4 digits' }), {
+        status: 400,
+        headers: withCors({ 'Content-Type': 'application/json' }),
+      })
+    }
+
+    if (!Number.isInteger(statement_close_day) || statement_close_day < 1 || statement_close_day > 31) {
+      return new Response(JSON.stringify({ error: 'statement_close_day must be an integer between 1 and 31' }), {
+        status: 400,
+        headers: withCors({ 'Content-Type': 'application/json' }),
+      })
+    }
+
     if (credit_card_id) {
       const { data, error } = await supabase
         .from('credit_card')
         .update({
-          credit_card_type_id,
           nickname,
           last_four,
           open_date,
@@ -61,12 +67,19 @@ Deno.serve(async (req) => {
         })
         .eq('credit_card_id', credit_card_id)
         .eq('profile_id', profileId)
-        .select('*, credit_card_type(name)')
+        .select('*')
         .single()
 
       if (error) {
         return new Response(JSON.stringify({ error: error.message || 'Update failed' }), {
           status: 500,
+          headers: withCors({ 'Content-Type': 'application/json' }),
+        })
+      }
+
+      if (!data) {
+        return new Response(JSON.stringify({ action: 'updated', data }), {
+          status: 403,
           headers: withCors({ 'Content-Type': 'application/json' }),
         })
       }
