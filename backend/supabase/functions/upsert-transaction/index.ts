@@ -19,13 +19,6 @@ Deno.serve(async (req) => {
     const token = extractAuthToken(req)
     const profileId = await getProfileIdFromToken(token)
 
-    if (!profileId) {
-      return new Response(JSON.stringify({ error: 'Profile not found' }), {
-        status: 401,
-        headers: withCors({ 'Content-Type': 'application/json' }),
-      })
-    }
-
     const body = await req.json()
     const {
       transaction_id,
@@ -64,14 +57,15 @@ Deno.serve(async (req) => {
       const { data, error } = await supabase
         .from('transaction')
         .update({
-          credit_card_id,
           transaction_date,
           merchant_name,
           amount,
           mcc_id,
           booked_through_issuer_portal,
+          notes: body.notes,
         })
         .eq('transaction_id', transaction_id)
+        .eq('credit_card_id', credit_card_id)
         .select('*')
         .single()
 
