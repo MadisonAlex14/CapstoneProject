@@ -22,13 +22,6 @@ Deno.serve(async (req) => {
 
     // Get profile using the shared helper
     const profileId = await getProfileIdFromToken(token)
-    
-    if (!profileId) {
-      return new Response(JSON.stringify({ error: 'Profile not found' }), {
-        status: 401,
-        headers: withCors({ 'Content-Type': 'application/json' }),
-      })
-    }
 
     // Get full profile data
     const { data: profile, error: profileError } = await supabase
@@ -49,7 +42,7 @@ Deno.serve(async (req) => {
 
     if (userError || !user) {
       return new Response(JSON.stringify({ error: 'User not found' }), {
-        status: 401,
+        status: 500,
         headers: withCors({ 'Content-Type': 'application/json' }),
       })
     }
