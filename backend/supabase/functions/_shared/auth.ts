@@ -1,22 +1,6 @@
 import { AuthError } from "npm:@supabase/supabase-js@2";
 import { supabase } from "./createClient.ts";
 
-/**
- * Decode JWT token to extract the user ID (sub claim)
- * @param token - The JWT token to decode
- * @returns The decoded payload or null if invalid
- */
-function decodeJWT(token: string): Record<string, unknown> | null {
-  try {
-    const parts = token.split('.')
-    if (parts.length !== 3) return null
-    
-    const decoded = atob(parts[1])
-    return JSON.parse(decoded)
-  } catch {
-    return null
-  }
-}
 
 /**
  * Extract an authentication token from the request headers.
@@ -34,19 +18,6 @@ export function extractAuthToken(req: Request) {
     }
 
     return userToken;
-}
-
-
-/**
- * Get the authenticated user from the request.
- * @returns An object containing the user data and any authentication error
- * @param req The incoming HTTP request
- */
-export async function getUserFromRequest(req: Request) {
-    const userToken = extractAuthToken(req);
-    const { data, error } = await supabase.auth.getUser(userToken);
-
-    return { user_data: data, user_error: error };
 }
 
 /**
