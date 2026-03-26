@@ -1,4 +1,4 @@
-import { supabase } from "./createClient.ts";
+import { supabase, authClient } from "./createClient.ts";
 
 
 /**
@@ -27,7 +27,7 @@ export function extractAuthToken(req: Request) {
  */
 export async function getProfileIdFromToken(token: string): Promise<string> {
   // Validate token with Supabase to ensure it is active and valid
-  const { data: userData, error: userError } = await supabase.auth.getUser(token)
+  const { data: userData, error: userError } = await authClient.auth.getUser(token)
 
   if (userError || !userData?.user) {
     throw new Error('Invalid or expired authentication token')
