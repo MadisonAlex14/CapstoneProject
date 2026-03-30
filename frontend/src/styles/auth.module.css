@@ -2314,26 +2314,60 @@
 
 .CardDashboardTable th,
 .CardDashboardTable td {
-  padding: 0.9rem 1rem;
+  padding: 1.2rem 1rem;
   text-align: left;
   border-bottom: 1px solid #e2e8f0;
   font-size: 0.95rem;
   color: #163827;
-
 }
 
 .CardDashboardTable th {
   background: #f8fafc;
-  color: #334155;
-  font-weight: 700;
   color: #163827;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
 
+.CardDashboardTable tbody tr:hover {
+  background: #f6fbf9;
 }
 
 .CardDashboardTable tfoot td {
   font-weight: 700;
   background: #fcfcfd;
   color: #163827;
+}
+
+.transactions-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.8rem;
+  align-items: center;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.transactions-actions {
+  display: flex;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+
+.transactions-table-wrapper {
+  border: 1px solid #dde8e1;
+  border-radius: 14px;
+  background: #ffffff;
+  padding: 0.9rem;
+  box-shadow: 0 10px 18px rgba(31, 77, 58, 0.08);
+}
+
+.transactions-pagination {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .CardMoveMenuWrapper {
