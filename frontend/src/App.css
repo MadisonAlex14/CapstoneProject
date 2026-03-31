@@ -1,4 +1,37 @@
 @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500&display=swap');
+.modular-form .form-field {
+  background: #f8fafc;
+  border: 1px solid #dde8e1;
+  border-radius: 12px;
+  padding: 1.1rem 1.2rem 1.2rem 1.2rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 8px rgba(31, 77, 58, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.modular-form .form-field label {
+  font-weight: 600;
+  font-size: 1.05rem;
+  margin-bottom: 0.2rem;
+}
+
+.modular-form .form-field input,
+.modular-form .form-field select,
+.modular-form .form-field textarea {
+  font-size: 1rem;
+  padding: 0.55rem 0.8rem;
+  border-radius: 7px;
+  border: 1px solid #c1ccca;
+  background: #fff;
+  margin-top: 0.1rem;
+}
+
+.modular-form .form-field textarea {
+  min-height: 80px;
+  resize: vertical;
+}
 
 #root {
   max-width: 1280px;
@@ -279,6 +312,26 @@ h1,
   margin-bottom: 1rem;
 }
 
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-grid label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 500;
+  font-size: 1rem;
+  gap: 0.4rem;
+}
+
+.form-grid textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
 .CardDetailsSection h2 {
   margin: 0 0 0.75rem;
   font-size: 1.2rem;
@@ -358,6 +411,8 @@ h1,
   border-bottom: 1px solid #e2e8f0;
   font-size: 0.95rem;
   color: #163827;
+  width: 150px; /* Set a fixed width for consistent column sizes */
+  box-sizing: border-box; /* Ensure padding is included in the width */
 }
 
 .CardDashboardTable th {

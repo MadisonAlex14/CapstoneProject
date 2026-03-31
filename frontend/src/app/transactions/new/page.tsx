@@ -156,9 +156,9 @@ export default function Page() {
       <h1>Add Transaction</h1>
       <p>Enter transaction details to add it into your portfolio.</p>
 
-      <form className="CardDetailsSection" onSubmit={handleSubmit}>
-        <label>
-          Card (Required)
+      <form className="CardDetailsSection modular-form" onSubmit={handleSubmit}>
+        <div className="form-field">
+          <label>Card (Required)</label>
           <select
             value={form.card}
             onChange={(e) => setForm((prev) => ({ ...prev, card: e.target.value }))}
@@ -170,20 +170,20 @@ export default function Page() {
               </option>
             ))}
           </select>
-        </label>
+        </div>
 
-        <label>
-          Transaction Date (Required)
+        <div className="form-field">
+          <label>Transaction Date (Required)</label>
           <input
             type="date"
             value={form.date}
             onChange={(e) => setForm((prev) => ({ ...prev, date: e.target.value }))}
             required
           />
-        </label>
+        </div>
 
-        <label>
-          Merchant Name (Required)
+        <div className="form-field">
+          <label>Merchant Name (Required)</label>
           <input
             type="text"
             value={form.merchant}
@@ -194,24 +194,23 @@ export default function Page() {
             placeholder="e.g. Chipotle Mexican Grill"
             required
           />
-        </label>
+          {merchantSuggestions.length > 0 && form.merchant && (
+            <ul style={{ listStyle: 'none', margin: '0.4rem 0', padding: 0, border: '1px solid #d8e5de', borderRadius: 10, maxHeight: 150, overflowY: 'auto', background: 'white' }}>
+              {merchantSuggestions.map((name) => (
+                <li
+                  key={name}
+                  style={{ padding: '0.45rem 0.65rem', cursor: 'pointer', borderBottom: '1px solid #edf2f7' }}
+                  onClick={() => handleMerchantSelect(name)}
+                >
+                  {name}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
 
-        {merchantSuggestions.length > 0 && form.merchant && (
-          <ul style={{ listStyle: 'none', margin: '0.4rem 0', padding: 0, border: '1px solid #d8e5de', borderRadius: 10, maxHeight: 150, overflowY: 'auto', background: 'white' }}>
-            {merchantSuggestions.map((name) => (
-              <li
-                key={name}
-                style={{ padding: '0.45rem 0.65rem', cursor: 'pointer', borderBottom: '1px solid #edf2f7' }}
-                onClick={() => handleMerchantSelect(name)}
-              >
-                {name}
-              </li>
-            ))}
-          </ul>
-        )}
-
-        <label>
-          Merchant Category Code (MCC) (Required)
+        <div className="form-field">
+          <label>Merchant Category Code (MCC) (Required)</label>
           <input
             type="text"
             value={mccSearch}
@@ -229,10 +228,10 @@ export default function Page() {
               </option>
             ))}
           </select>
-        </label>
+        </div>
 
-        <label>
-          Amount (USD) (Required)
+        <div className="form-field">
+          <label>Amount (USD) (Required)</label>
           <input
             type="number"
             min="0.01"
@@ -241,25 +240,27 @@ export default function Page() {
             onChange={(e) => setForm((prev) => ({ ...prev, amount: e.target.value }))}
             required
           />
-        </label>
+        </div>
 
-        <label>
-          Notes (Optional)
+        <div className="form-field">
+          <label>Notes (Optional)</label>
           <textarea
             value={form.notes}
             onChange={(e) => setForm((prev) => ({ ...prev, notes: e.target.value }))}
           />
-        </label>
+        </div>
 
         {portalEligible && (
-          <label>
-            <input
-              type="checkbox"
-              checked={form.bookedThroughPortal}
-              onChange={(e) => setForm((prev) => ({ ...prev, bookedThroughPortal: e.target.checked }))}
-            />
-            Booked through issuer portal for portal bonus (e.g., Chase 5x travel)
-          </label>
+          <div className="form-field">
+            <label>
+              <input
+                type="checkbox"
+                checked={form.bookedThroughPortal}
+                onChange={(e) => setForm((prev) => ({ ...prev, bookedThroughPortal: e.target.checked }))}
+              />
+              Booked through issuer portal for portal bonus (e.g., Chase 5x travel)
+            </label>
+          </div>
         )}
 
         <div className="CardDetailsActionRow">

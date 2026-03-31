@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CreditMaxing",
+  title: "CreditMaxxing",
   description: "Track rewards, spending, and promotions effortlessly.",
 };
 
