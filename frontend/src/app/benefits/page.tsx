@@ -8,6 +8,7 @@ type BenefitHistory = {
   id: number;
   amount: number;
   date: string;
+  merchant: string;
   notes: string;
 };
 
@@ -20,13 +21,13 @@ type Benefit = {
   used: number;
   remaining: number;
   resetDate: string;
-  resetType: "monthly" | "yearly" | "4years";
+  resetType: string;
   history: BenefitHistory[];
 };
 
 const STORAGE_KEY = "creditmaxxing_benefits";
 
-// ---------------------- DATA ----------------------
+// ---------------------- CARDS & BENEFITS ----------------------
 const CARD_OPTIONS = ["Chase Freedom Unlimited", "Amex Platinum", "Citi Double Cash"];
 
 const BENEFIT_OPTIONS: Record<string, string[]> = {
@@ -35,18 +36,21 @@ const BENEFIT_OPTIONS: Record<string, string[]> = {
   "Citi Double Cash": ["2% Cashback All Purchases", "0% Intro APR", "Balance Transfer Fee Waiver"],
 };
 
+// Card color themes
+const CARD_THEMES: Record<string, { bg: string; gradient: string }> = {
+  "Chase Freedom Unlimited": { bg: "#e0f7f1", gradient: "linear-gradient(135deg, #06b6d4, #22d3ee)" },
+  "Amex Platinum": { bg: "#f0f4ff", gradient: "linear-gradient(135deg, #6366f1, #818cf8)" },
+  "Citi Double Cash": { bg: "#fff4e6", gradient: "linear-gradient(135deg, #f59e0b, #fcd34d)" },
+};
+
 // ---------------------- COMPONENT ----------------------
 export default function BenefitsPage() {
-  // ---------------------- STATE ----------------------
   const [benefits, setBenefits] = useState<Benefit[]>([]);
-  const [isLoaded, setIsLoaded] = useState(false);
-
   const [showModal, setShowModal] = useState(false);
-  const [editingBenefitId, setEditingBenefitId] = useState<number | null>(null);
-
   const [selectedCard, setSelectedCard] = useState("");
   const [selectedBenefit, setSelectedBenefit] = useState("");
-  const [selectedResetType, setSelectedResetType] = useState<"monthly" | "yearly" | "4years" | "">("");
+  const [editingBenefitId, setEditingBenefitId] = useState<number | null>(null);
+  const [menuOpenId, setMenuOpenId] = useState<number | null>(null);
 
   const [form, setForm] = useState({
     card: "",
@@ -54,27 +58,41 @@ export default function BenefitsPage() {
     appliesTo: "",
     allotted: "",
     used: "",
-    resetType: "monthly" as "monthly" | "yearly" | "4years",
-    startDate: "",
+    resetType: "",
+    date: "",
+    merchant: "",
     notes: "",
   });
 
   // ---------------------- EFFECTS ----------------------
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) setBenefits(JSON.parse(stored));
-    setIsLoaded(true);
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) setBenefits(JSON.parse(stored));
+    } catch (err) {
+      console.error("Failed to load benefits from localStorage", err);
+    }
   }, []);
 
-  useEffect(() => {
-    if (isLoaded) localStorage.setItem(STORAGE_KEY, JSON.stringify(benefits));
-  }, [benefits, isLoaded]);
+  const saveBenefitsToStorage = (data: Benefit[]) => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch (err) {
+      console.error("Failed to save benefits to localStorage", err);
+    }
+  };
 
   // ---------------------- HELPERS ----------------------
+  const getNextResetDate = (type: string) => {
+    const now = new Date();
+    if (type === "monthly") return new Date(now.setMonth(now.getMonth() + 1));
+    if (type === "4years") return new Date(now.setFullYear(now.getFullYear() + 4));
+    return new Date(now.setFullYear(now.getFullYear() + 1));
+  };
+
   const resetForm = () => {
     setSelectedCard("");
     setSelectedBenefit("");
-    setSelectedResetType("");
     setEditingBenefitId(null);
     setForm({
       card: "",
@@ -82,91 +100,58 @@ export default function BenefitsPage() {
       appliesTo: "",
       allotted: "",
       used: "",
-      resetType: "monthly",
-      startDate: "",
+      resetType: "",
+      date: "",
+      merchant: "",
       notes: "",
     });
   };
 
-  const getNextResetDate = (type: "monthly" | "yearly" | "4years") => {
-    const now = new Date();
-    if (type === "monthly") return new Date(now.getFullYear(), now.getMonth() + 1, now.getDate());
-    if (type === "4years") return new Date(now.getFullYear() + 4, now.getMonth(), now.getDate());
-    return new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
+  const getDaysLeft = (resetDate: string) => {
+    const today = new Date();
+    const reset = new Date(resetDate);
+    const diff = Math.ceil((reset.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    return diff >= 0 ? diff : 0;
   };
 
-  const getProgress = (benefit: Benefit) => {
-    const now = new Date();
-    const reset = new Date(benefit.resetDate);
-    if (benefit.resetType === "monthly") {
-      const totalDays = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-      const daysLeft = Math.max(0, (reset.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-      return Math.min((daysLeft / totalDays) * 100, 100);
+  const calculateReward = (b: Benefit) => {
+    const percentMatch = b.benefitName.match(/(\d+(\.\d+)?)%/);
+    if (percentMatch) {
+      const percent = Number(percentMatch[1]);
+      return ((percent / 100) * b.used).toFixed(2);
     }
-    if (benefit.resetType === "yearly") {
-      const monthsLeft = 12 - now.getMonth();
-      return (monthsLeft / 12) * 100;
-    }
-    if (benefit.resetType === "4years") {
-      const yearsLeft = reset.getFullYear() - now.getFullYear();
-      const monthsLeft = 12 - now.getMonth();
-      return Math.min(((yearsLeft * 12 + monthsLeft) / 48) * 100, 100);
-    }
-    return 0;
+    const flatMatch = b.benefitName.match(/\$(\d+)/);
+    if (flatMatch) return flatMatch[1];
+    return "0";
   };
 
-  const getProgressText = (benefit: Benefit) => {
-    const now = new Date();
-    const reset = new Date(benefit.resetDate);
-    if (benefit.resetType === "monthly") {
-      const daysLeft = Math.max(0, Math.ceil((reset.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
-      return `${daysLeft} days left`;
-    }
-    if (benefit.resetType === "yearly") {
-      const monthsLeft = Math.max(0, 12 - now.getMonth());
-      return `${monthsLeft} months left`;
-    }
-    if (benefit.resetType === "4years") {
-      const yearsLeft = reset.getFullYear() - now.getFullYear();
-      const monthsLeft = Math.max(0, 12 - now.getMonth());
-      return `${yearsLeft} yrs ${monthsLeft} months left`;
-    }
-    return "";
-  };
-
-  const getCashback = (b: Benefit) => {
-    let rate = 0;
-    if (b.card === "Chase Freedom Unlimited" && b.benefitName === "5% Grocery") rate = 0.05;
-    if (b.card === "Chase Freedom Unlimited" && b.benefitName === "3% Gas") rate = 0.03;
-    if (b.card === "Chase Freedom Unlimited" && b.benefitName === "1.5% Cashback Everywhere") rate = 0.015;
-    if (b.card === "Citi Double Cash" && b.benefitName === "2% Cashback All Purchases") rate = 0.02;
-    if (b.card === "Amex Platinum" && b.benefitName === "$100 Uber Credit") rate = 0.1;
-    if (b.card === "Amex Platinum" && b.benefitName === "$200 Airline Credit") rate = 1;
-    return b.used * rate;
-  };
-
-  // ---------------------- MEMO ----------------------
+  // ---------------------- SUMMARY ----------------------
   const summary = useMemo(() => {
     let totalSpent = 0;
-    let cashbackUsed = 0;
-    let benefitsRemaining = 0;
-    let benefitsExpiring = 0;
-    const now = new Date();
+    let cashBack = 0;
+    let remaining = 0;
+    let expiring = 0;
+
     benefits.forEach((b) => {
+      const daysLeft = getDaysLeft(b.resetDate);
       totalSpent += b.used;
-      cashbackUsed += getCashback(b);
-      benefitsRemaining += b.remaining;
-      const diffDays = Math.ceil((new Date(b.resetDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-      if (diffDays <= 7 && b.remaining > 0) benefitsExpiring += 1;
+      cashBack += Number(calculateReward(b));
+      if (daysLeft > 30) remaining += 1;
+      if (daysLeft <= 10) expiring += 1;
     });
-    return { totalSpent, cashbackUsed, benefitsRemaining, benefitsExpiring };
+
+    return { totalSpent, cashBack, remaining, expiring };
   }, [benefits]);
 
   // ---------------------- HANDLERS ----------------------
   const handleSave = () => {
-    const allotted = Number(form.allotted);
-    const usedAmount = Number(form.used) || 0;
-    if (!form.card || !form.benefitName || isNaN(allotted)) return;
+    const allotted = Number(form.allotted) || 100;
+    const usedAmount = Number(form.used);
+
+    if (!form.card || !form.benefitName || isNaN(usedAmount) || !form.resetType) {
+      alert("Please fill all required fields correctly!");
+      return;
+    }
 
     const resetDate = getNextResetDate(form.resetType).toISOString().split("T")[0];
 
@@ -174,7 +159,7 @@ export default function BenefitsPage() {
       id: editingBenefitId || Date.now(),
       card: form.card,
       benefitName: form.benefitName,
-      appliesTo: form.appliesTo,
+      appliesTo: form.appliesTo || "Default",
       allotted,
       used: usedAmount,
       remaining: allotted - usedAmount,
@@ -184,33 +169,39 @@ export default function BenefitsPage() {
         {
           id: Date.now(),
           amount: usedAmount,
-          date: new Date().toISOString().split("T")[0],
+          date: form.date,
+          merchant: form.merchant,
           notes: form.notes,
         },
       ],
     };
 
+    let updatedBenefits: Benefit[];
     if (editingBenefitId) {
-      setBenefits((prev) => prev.map((b) => (b.id === editingBenefitId ? benefitData : b)));
+      updatedBenefits = benefits.map((b) => (b.id === editingBenefitId ? benefitData : b));
     } else {
-      setBenefits((prev) => [...prev, benefitData]);
+      updatedBenefits = [...benefits, benefitData];
     }
 
+    setBenefits(updatedBenefits);
+    saveBenefitsToStorage(updatedBenefits);
     resetForm();
     setShowModal(false);
   };
 
   const handleDelete = (id: number) => {
     if (confirm("Are you sure you want to delete this benefit?")) {
-      setBenefits((prev) => prev.filter((b) => b.id !== id));
+      const updated = benefits.filter((b) => b.id !== id);
+      setBenefits(updated);
+      saveBenefitsToStorage(updated);
     }
+    setMenuOpenId(null);
   };
 
   const handleEdit = (b: Benefit) => {
     setEditingBenefitId(b.id);
     setSelectedCard(b.card);
     setSelectedBenefit(b.benefitName);
-    setSelectedResetType(b.resetType);
     setForm({
       card: b.card,
       benefitName: b.benefitName,
@@ -218,168 +209,199 @@ export default function BenefitsPage() {
       allotted: b.allotted.toString(),
       used: b.used.toString(),
       resetType: b.resetType,
-      startDate: b.resetDate,
+      date: b.history?.[0]?.date || "",
+      merchant: b.history?.[0]?.merchant || "",
       notes: b.history?.[0]?.notes || "",
     });
     setShowModal(true);
+    setMenuOpenId(null);
   };
-
-  if (!isLoaded) return null;
 
   // ---------------------- RENDER ----------------------
   return (
     <div className={styles.BenefitContainer}>
-      {/* Summary */}
-      <div className={styles.BenefitOverviewCard}>
-        <h2 className={styles.BenefitOverviewTitle}>✨ Perks Overview</h2>
-        <div className={styles.BenefitOverviewStats}>
-          <div className={styles.BenefitOverviewItem}>
-            <span>Total Spent</span>
+      {/* ---------- Perks Summary ---------- */}
+      <div className={styles.BenefitPerksSummary}>
+        <h2>Perks Summary</h2>
+
+        <div className={styles.BenefitSummaryGrid}>
+          <div className={styles.BenefitSummaryCard}>
+            <h3>Total Spent</h3>
             <p>${summary.totalSpent}</p>
           </div>
-          <div className={styles.BenefitOverviewItem}>
-            <span>Cashback Used</span>
-            <p>${summary.cashbackUsed.toFixed(2)}</p>
+          <div className={styles.BenefitSummaryCard}>
+            <h3>Cash Back</h3>
+            <p>${summary.cashBack}</p>
           </div>
-          <div className={styles.BenefitOverviewItem}>
-            <span>Benefits Remaining</span>
-            <p>{summary.benefitsRemaining}</p>
+          <div className={styles.BenefitSummaryCard}>
+            <h3>Remaining</h3>
+            <p>{summary.remaining}</p>
           </div>
-          <div className={styles.BenefitOverviewItemExpiring}>
-            <span>Benefits Expiring</span>
-            <p>{summary.benefitsExpiring}</p>
+          <div className={styles.BenefitSummaryCardExpiring}>
+            <h3>Expiring</h3>
+            <p>{summary.expiring}</p>
           </div>
         </div>
       </div>
 
-      {/* Tracked Benefits */}
-      <div className={styles.BenefitTrackedCard}>
-        <h2 className={styles.BenefitTrackedTitle}>Tracked Benefits</h2>
-        <div className={styles.BenefitCardsContainer}>
-          {benefits.map((b) => (
-            <div key={b.id} className={styles.BenefitCardItem}>
-              <div className={styles.BenefitCardHeader}>
-                <h3>{b.card}</h3>
-                <p>{b.benefitName}</p>
-              </div>
-              <p className={styles.BenefitAppliesTo}>{b.appliesTo}</p>
+      {/* ---------- Tracked Benefits Heading ---------- */}
+      <div className={styles.BenefitTracked}>
+        <h2>Tracked Benefits</h2>
+      </div>
 
-              {/* Progress Bar */}
+      {/* ---------- Benefit Cards ---------- */}
+      <div className={styles.BenefitCardsContainer}>
+        {benefits.map((b) => {
+          const daysLeft = getDaysLeft(b.resetDate);
+          return (
+            <div
+              key={b.id}
+              className={styles.BenefitCardItem}
+              style={{ background: CARD_THEMES[b.card].bg }}
+            >
+              <div className={styles.BenefitCardTop}>
+                <h3>{b.card}</h3>
+                <div className={styles.BenefitCardMenu}>
+                  <button onClick={() => setMenuOpenId(menuOpenId === b.id ? null : b.id)}>⋮</button>
+                  {menuOpenId === b.id && (
+                    <div className={styles.BenefitCardMenuDropdown}>
+                      <button onClick={() => handleEdit(b)}>Edit</button>
+                      <button onClick={() => handleDelete(b.id)}>Delete</button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div className={styles.ProgressBarContainer}>
                 <div
                   className={styles.ProgressBar}
                   style={{
-                    width: `${getProgress(b)}%`,
-                    backgroundColor: getProgress(b) > 30 ? "#4ade80" : "#facc15",
+                    width: `${Math.min((b.used / b.allotted) * 100, 100)}%`,
+                    background: CARD_THEMES[b.card].gradient,
                   }}
                 >
-                  <span className={styles.BenefitProgressBarText}>{getProgressText(b)}</span>
+                  {daysLeft} days left
                 </div>
               </div>
 
-              <p className={styles.CashbackText}>💰 Estimated Cashback: ${getCashback(b).toFixed(2)}</p>
-
-              <div className={styles.BenefitCardActions}>
-                <button className={styles.BenefitEditBtn} onClick={() => handleEdit(b)}>Edit</button>
-                <button className={styles.BenefitDeleteBtn} onClick={() => handleDelete(b.id)}>Delete</button>
+              <div className={styles.BenefitCardBottom}>
+                <span>${calculateReward(b)}</span>
+                <span>{b.benefitName}</span>
               </div>
             </div>
-          ))}
-        </div>
+          );
+        })}
       </div>
 
-      <button className={styles.BenefitPrimaryBtn} onClick={() => { resetForm(); setShowModal(true); }}>
-        + Add a Benefit
+      {/* ---------- Log Benefit Button ---------- */}
+      <button
+        className={styles.BenefitPrimaryBtn}
+        onClick={() => { resetForm(); setShowModal(true); }}
+      >
+        Log Benefit Usage
       </button>
 
-      {/* Modal */}
+      {/* ---------- Modal (Wizard Steps) ---------- */}
       {showModal && (
         <div className={styles.BenefitModalOverlay}>
           <div className={styles.BenefitModal}>
-            {/* Card Selection */}
+            <div className={styles.BenefitModalHeader}>
+              <h2>{editingBenefitId ? "Edit Benefit Usage" : "Log Benefit Usage"}</h2>
+              <button
+                className={styles.BenefitModalCloseBtn}
+                onClick={() => { setShowModal(false); resetForm(); }}
+              >
+                ×
+              </button>
+            </div>
+
             <select
               className={styles.BenefitInput}
-              value={selectedCard}
+              value={form.card}
               onChange={(e) => {
                 const card = e.target.value;
+                setForm({ ...form, card });
                 setSelectedCard(card);
                 setSelectedBenefit("");
-                setSelectedResetType("");
-                setForm({ ...form, card, benefitName: "" });
               }}
             >
-              <option value="">Select Card</option>
+              <option value="">Select a Card</option>
               {CARD_OPTIONS.map((card) => (
                 <option key={card} value={card}>{card}</option>
               ))}
             </select>
 
-            {/* Benefit Selection */}
             {selectedCard && (
               <select
                 className={styles.BenefitInput}
-                value={selectedBenefit}
+                value={form.benefitName}
                 onChange={(e) => {
                   const benefit = e.target.value;
+                  setForm((prev) => ({
+                    ...prev,
+                    benefitName: benefit,
+                    date: editingBenefitId ? prev.date : new Date().toISOString().split("T")[0],
+                  }));
                   setSelectedBenefit(benefit);
-                  setForm({ ...form, benefitName: benefit });
                 }}
               >
-                <option value="">Select Benefit</option>
+                <option value="">Select a Benefit</option>
                 {BENEFIT_OPTIONS[selectedCard].map((b) => (
                   <option key={b} value={b}>{b}</option>
                 ))}
               </select>
             )}
 
-            {/* Reset Type Selection */}
             {selectedBenefit && (
-              <select
+              <input
+                type="number"
+                placeholder="Input Amount Spent"
                 className={styles.BenefitInput}
-                value={selectedResetType}
-                onChange={(e) => {
-                  const type = e.target.value as "monthly" | "yearly" | "4years";
-                  setSelectedResetType(type);
-                  setForm({ ...form, resetType: type });
-                }}
-              >
-                <option value="">Select Reset Type</option>
-                <option value="monthly">Monthly</option>
-                <option value="yearly">Yearly</option>
-                <option value="4years">4 Years</option>
-              </select>
+                value={form.used}
+                onChange={(e) => setForm({ ...form, used: e.target.value })}
+              />
             )}
 
-            {/* Used Amount & Notes */}
-            {selectedResetType && (
+            {selectedBenefit && (
               <>
-                <input
-                  type="number"
-                  placeholder="Used Amount"
+                <select
                   className={styles.BenefitInput}
-                  value={form.used}
-                  onChange={(e) => setForm({ ...form, used: e.target.value })}
-                />
-                <textarea
-                  placeholder="Notes"
-                  className={styles.BenefitTextarea}
-                  value={form.notes}
-                  onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                />
+                  value={form.resetType}
+                  onChange={(e) => setForm({ ...form, resetType: e.target.value })}
+                >
+                  <option value="">Choose Time Frame</option>
+                  <option value="monthly">1 Month</option>
+                  <option value="yearly">1 Year</option>
+                  <option value="4years">4 Years</option>
+                </select>
+
+                {form.resetType && (
+                  <div className={styles.BenefitStartDateContainer}>
+                    <label className={styles.BenefitStartDateLabel}>Start Date</label>
+                    <input
+                      type="date"
+                      className={styles.BenefitInput}
+                      value={form.date}
+                      onChange={(e) => setForm({ ...form, date: e.target.value })}
+                    />
+                  </div>
+                )}
               </>
             )}
 
-            <div className={styles.BenefitModalActions}>
-              <button className={styles.BenefitSaveBtn} onClick={handleSave}>
-                {editingBenefitId ? "Update" : "Save"}
-              </button>
-              <button
-                className={styles.BenefitCancelBtn}
-                onClick={() => { setShowModal(false); resetForm(); }}
-              >
-                Cancel
-              </button>
-            </div>
+            {selectedBenefit && (
+              <div className={styles.BenefitModalActions}>
+                <button className={styles.BenefitSaveBtn} onClick={handleSave}>
+                  {editingBenefitId ? "Update" : "Save"}
+                </button>
+                <button
+                  className={styles.BenefitCancelBtn}
+                  onClick={() => { setShowModal(false); resetForm(); }}
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

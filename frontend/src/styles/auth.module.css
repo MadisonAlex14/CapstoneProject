@@ -3105,9 +3105,6 @@
 
 
 
-
-
-
 /* -------------------- CONTAINER -------------------- */
 .BenefitContainer {
   padding: 2rem;
@@ -3115,63 +3112,67 @@
   flex-direction: column;
   gap: 2rem;
   font-family: 'Inter', sans-serif;
-  background-color: #f5f7fa;
+  background-color: #f0fdf4;
 }
 
-/* -------------------- SUMMARY CARD -------------------- */
-.BenefitOverviewCard {
-  background: #ffffff;
-  border-radius: 1rem;
+/* -------------------- PERKS SUMMARY -------------------- */
+.BenefitPerksSummary {
+  background: white;         /* White background for the card */
+  border-radius: 12px;          /* Rounded corners */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Soft shadow */
   padding: 1.5rem 2rem;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-  transition: transform 0.2s ease;
+  margin-bottom: 2rem;
 }
 
-.BenefitOverviewCard:hover {
-  transform: translateY(-3px);
+
+.BenefitPerksSummary h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #065f46;
+  padding-bottom: 1rem;
 }
 
-.BenefitOverviewTitle {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  color: #16a34a; /* green accent */
-}
 
-.BenefitOverviewStats {
+
+.BenefitSummaryTopRow {
   display: flex;
+  justify-content: space-between;
   gap: 2rem;
-  flex-wrap: wrap;
+  margin-top: 1rem;
 }
 
-.BenefitOverviewItem,
-.BenefitOverviewItemExpiring {
-  background: #f0fdf4;
-  border-radius: 0.75rem;
+.BenefitSummaryCard,
+.BenefitSummaryCardExpiring {
+  background: #d2f8dd;          /* Light green-ish background */
+  border-radius: 20px;
   padding: 1rem;
-  flex: 1 1 150px;
+  padding-bottom: 15px;
+  padding-top: 15px;
   text-align: center;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
-  transition: background 0.2s ease;
-}
-
-.BenefitOverviewItemExpiring {
-  background: #fef3c7; /* subtle yellow for expiring benefits */
-}
-
-.BenefitOverviewItem span,
-.BenefitOverviewItemExpiring span {
-  display: block;
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: #6b7280;
-}
-
-.BenefitOverviewItem p,
-.BenefitOverviewItemExpiring p {
-  font-size: 1.2rem;
   font-weight: 600;
-  margin-top: 0.25rem;
+  color: #065f46;               /* Dark green text */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.BenefitSummaryCardExpiring {
+  background: #ffdbd8;          /* Light red-ish background for expiring */
+  color: #b91c1c;
+}
+
+.BenefitSummaryCard:hover, .BenefitSummaryCardExpiring:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+}
+
+.BenefitSummaryCard h3, .BenefitSummaryCardExpiring h3 {
+  color: #16a34a;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.BenefitSummaryCard p, .BenefitSummaryCardExpiring p {
+  font-size: 1.2rem;
+  font-weight: 700;
   color: #111827;
 }
 
@@ -3183,299 +3184,260 @@
 }
 
 .BenefitCardItem {
-  background: #c3f4ac;
   border-radius: 1rem;
-  padding: 1.25rem 1.5rem;
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  position: relative;
-}
-
-.BenefitCardItem:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.12);
-  background: #d1fae5;
-}
-
-.BenefitCardHeader h3 {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: 0.25rem;
-  color: #16a34a;
-}
-
-.BenefitCardHeader p {
-  font-size: 0.95rem;
-  color: #374151;
-}
-
-.BenefitAppliesTo {
-  font-size: 0.85rem;
-  color: #6b7280;
-  margin-bottom: 0.75rem;
-}
-
-/* -------------------- PROGRESS BAR -------------------- */
-.ProgressBarContainer {
-  background: #a8e9b5;
-  border-radius: 1rem;
-  overflow: hidden;
-  height: 2rem;
-  margin-bottom: 0.5rem;
-}
-
-.ProgressBar {
-  height: 100%;
-  border-radius: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: #ffffff;
-  padding-right: 0.5rem;
-  transition: width 0.3s ease, background-color 0.3s ease;
-}
-
-.BenefitProgressBarText {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #ffffff;
-}
-
-/* -------------------- CASHBACK & ACTIONS -------------------- */
-.CashbackText {
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: #16a34a;
-  margin-bottom: 0.75rem;
-}
-
-.BenefitCardActions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.BenefitEditBtn,
-.BenefitDeleteBtn {
-  flex: 1;
-  padding: 0.45rem 0;
-  border-radius: 0.5rem;
-  font-size: 0.85rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.BenefitEditBtn {
-  background: #d1fae5;
-  color: #092208;
-}
-
-.BenefitEditBtn:hover {
-  background: #16a34a;
-  color: #ffffff;
-}
-
-.BenefitDeleteBtn {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.BenefitDeleteBtn:hover {
-  background: #b91c1c;
-  color: #ffffff;
-}
-
-/* -------------------- PRIMARY BUTTON -------------------- */
-.BenefitPrimaryBtn {
-  background: #16a34a;
-  color: #ffffff;
-  font-weight: 300;
-  border-radius: 2.75rem;
-  padding: 0.75rem 1.5rem;
-  align-self: middle;
-  transition: background 0.2s ease, transform 0.2s ease;
-}
-
-.BenefitPrimaryBtn:hover {
-  background: #059669;
-  transform: translateY(-2px);
-}
-
-/* -------------------- MODAL -------------------- */
-.BenefitModalOverlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 50;
-}
-
-.BenefitModal {
-  background: #ffffff;
-  border-radius: 1rem;
-  padding: 2rem;
-  width: 100%;
-  max-width: 450px;
+  padding: 1rem 1.5rem;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  color: #111827;
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.BenefitInput,
-.BenefitTextarea {
-  width: 100%;
-  padding: 0.55rem 0.75rem;
-  border-radius: 0.5rem;
+.BenefitCardItem:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+}
+
+/* Top Section */
+.BenefitCardTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.BenefitCardTop h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.BenefitCardMenu {
+  position: relative;
+}
+
+.BenefitCardMenu button {
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.BenefitCardMenuDropdown {
+  position: absolute;
+  top: 1.5rem;
+  right: 0;
+  background: white;
   border: 1px solid #d1d5db;
-  font-size: 0.9rem;
-  outline: none;
-  color: #111827;
-  transition: border 0.2s ease, box-shadow 0.2s ease;
-}
-
-.BenefitInput:focus,
-.BenefitTextarea:focus {
-  border-color: #16a34a;
-  box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.2);
-}
-
-.BenefitTextarea {
-  min-height: 60px;
-  resize: vertical;
-}
-
-.BenefitModalActions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.BenefitSaveBtn {
-  flex: 1;
-  background: #16a34a;
-  color: #ffffff;
-  font-weight: 600;
   border-radius: 0.5rem;
-  padding: 0.55rem 0;
-  transition: background 0.2s ease, transform 0.2s ease;
-}
-
-.BenefitSaveBtn:hover {
-  background: #059669;
-  transform: translateY(-2px);
-}
-
-.BenefitCancelBtn {
-  flex: 1;
-  background: #e5e7eb;
-  color: #374151;
-  font-weight: 600;
-  border-radius: 0.5rem;
-  padding: 0.55rem 0;
-  transition: background 0.2s ease, transform 0.2s ease;
-}
-
-.BenefitCancelBtn:hover {
-  background: #d1d5db;
-  transform: translateY(-2px);
-}
-
-/* ---------------------- Tracked Benefits Card ---------------------- */
-.BenefitTrackedCard {
-  background-color: #f0fdf4; /* soft green background */
-  border-radius: 12px;
-  padding: 20px;
-  margin-top: 20px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
 }
 
-.BenefitTrackedTitle {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #166534; /* darker green */
-  margin-bottom: 15px;
+.BenefitCardMenuDropdown button {
+  padding: 0.5rem 1rem;
+  background: white;
+  border: none;
+  text-align: left;
+  cursor: pointer;
 }
 
-/* Reuse BenefitCardsContainer for grid layout inside tracked benefits */
-.BenefitCardsContainer {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 15px;
+.BenefitCardMenuDropdown button:hover {
+  background: #d1fae5;
 }
 
-.BenefitCardItem {
-  background-color: #ffffff;
-  border-radius: 10px;
-  padding: 15px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.BenefitCardHeader h3 {
-  font-weight: 600;
-  color: #16a34a;
-}
-
-.BenefitCardHeader p {
-  font-weight: 500;
-  color: #4b5563;
-}
-
+/* Progress Bar */
 .ProgressBarContainer {
-  width: 100%;
-  height: 12px;
-  background-color: #e5e7eb;
-  border-radius: 6px;
+  background: #e5e7eb;
+  border-radius: 12px;
+  height: 20px;
   overflow: hidden;
 }
 
 .ProgressBar {
   height: 100%;
-  border-radius: 6px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
   transition: width 0.3s ease;
 }
 
-.BenefitProgressBarText {
-  font-size: 0.75rem;
-  color: #fff;
-  text-align: center;
-  display: block;
-}
-
-.CashbackText {
-  font-weight: 500;
-  color: #065f46;
-}
-
-.BenefitCardActions {
+/* Bottom Section */
+.BenefitCardBottom {
   display: flex;
-  gap: 10px;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* -------------------- BUTTONS -------------------- */
+.BenefitPrimaryBtn {
+  margin-top: 1rem;
+  background: linear-gradient(135deg, #22c55e, #a7f3d0);
+  border: none;
+  padding: 12px;
+  border-radius: 12px;
+  color: black;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.BenefitPrimaryBtn:hover {
+  transform: translateY(-2)
+}
+
+
+
+/* -------------------- MODAL OVERLAY -------------------- */
+.BenefitModalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  animation: fadeIn 0.25s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* -------------------- MODAL BOX -------------------- */
+.BenefitModal {
+  background: #83a087;
+  border-radius: 12px;
+  padding: 2rem;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* -------------------- INPUTS & SELECTS -------------------- */
+.BenefitInput, .BenefitTextarea {
+  padding: 0.8rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 0.95rem;
+  transition: border 0.2s, box-shadow 0.2s;
+  width: 100%;
+  background-color: #83a087;
+}
+
+.BenefitInput:focus, .BenefitTextarea:focus {
+  outline: none;
+  border-color: #22d3ee;
+  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.3);
+}
+
+/* -------------------- TEXTAREA -------------------- */
+.BenefitTextarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* -------------------- ACTION BUTTONS -------------------- */
+.BenefitModalActions {
+  display: flex;
+  gap: 1rem;
   justify-content: flex-end;
 }
 
-.BenefitEditBtn, .BenefitDeleteBtn {
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-weight: 500;
-  cursor: pointer;
+.BenefitSaveBtn {
+  background: #22d3ee;
+  color: white;
   border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
 }
 
-.BenefitEditBtn {
-  background-color: #4ade80;
-  color: #065f46;
+.BenefitSaveBtn:hover {
+  background: #06b6d4;
 }
 
-.BenefitDeleteBtn {
-  background-color: #f87171;
-  color: #7f1d1d;
+.BenefitCancelBtn {
+  background: #f3f3f3;
+  color: #333;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.BenefitCancelBtn:hover {
+  background: #e5e5e5;
+}
+
+/* -------------------- Modal Header -------------------- */
+.BenefitModalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+/* -------------------- X Close Button -------------------- */
+.BenefitModalCloseBtn {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  color: #333;
+  transition: color 0.2s ease;
+}
+
+.BenefitModalCloseBtn:hover {
+  color: #ef4444; /* bright red on hover */
+}
+
+.BenefitInput::placeholder {
+  color: ffff; /* dark green */
+  opacity: 1; /* ensures full color in all browsers */
+}
+
+/* Wrapper for calendar and label */
+.BenefitStartDateWrapper {
+  display: flex;
+  flex-direction: column;
+  margin-top: 0.5rem;
+}
+
+/* Small heading above the calendar */
+.BenefitStartDateLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 10px;
+}
+
+.BenefitTracked h2 {
+  font-size: 1.75rem;        /* same size as Perks Summary */
+  font-weight: 600;          /* semi-bold */
+  color: #059669;            /* green vibe matching your summary */
+  margin-bottom: 1rem;       /* spacing below the heading */
 }
