@@ -82,8 +82,12 @@ export default function NavBar() {
             <Link href="/cards" className="nav-link">
               Cards
             </Link>
-            <Link href="/rewards" className="nav-link">
-              Rewards
+            {/* Updated Nav: Promotions & Benefits instead of Rewards */}
+            <Link href="/promotions" className="nav-link">
+              Promotions
+            </Link>
+            <Link href="/benefits" className="nav-link">
+              Benefits
             </Link>
             <Link href="/transactions" className="nav-link">
               Transactions
