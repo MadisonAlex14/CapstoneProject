@@ -1,4 +1,37 @@
 @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500&display=swap');
+.modular-form .form-field {
+  background: #f8fafc;
+  border: 1px solid #dde8e1;
+  border-radius: 12px;
+  padding: 1.1rem 1.2rem 1.2rem 1.2rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 8px rgba(31, 77, 58, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.modular-form .form-field label {
+  font-weight: 600;
+  font-size: 1.05rem;
+  margin-bottom: 0.2rem;
+}
+
+.modular-form .form-field input,
+.modular-form .form-field select,
+.modular-form .form-field textarea {
+  font-size: 1rem;
+  padding: 0.55rem 0.8rem;
+  border-radius: 7px;
+  border: 1px solid #c1ccca;
+  background: #fff;
+  margin-top: 0.1rem;
+}
+
+.modular-form .form-field textarea {
+  min-height: 80px;
+  resize: vertical;
+}
 
 #root {
   max-width: 1280px;
@@ -190,7 +223,9 @@ h1,
 .transactions-page {
   padding: 3rem 2rem;
   color: #555;
-
+  text-align: left;
+  max-width: 1100px;
+  margin: 0 auto;
 }
 .help-page {
   padding: 3rem 2rem;
@@ -260,6 +295,151 @@ h1,
   margin: 10px 0;
   line-height: 1.5;
   color: #617672;
+}
+
+/* Transactions module shared with card dashboard */
+.CardDetailsPage {
+  padding: 2rem 1.2rem 3rem;
+  background: #f3f4f6;
+}
+
+.CardDetailsSection {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #dde8e1;
+  border-radius: 20px;
+  padding: 1.25rem;
+  box-shadow: 0 10px 24px rgba(31, 77, 58, 0.12);
+  margin-bottom: 1rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-grid label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 500;
+  font-size: 1rem;
+  gap: 0.4rem;
+}
+
+.form-grid textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.CardDetailsSection h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1f3b2d;
+}
+
+.CardDetailsActionRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1.5rem 2.5rem; /* row gap, column gap */
+  margin-bottom: 1.5rem;
+}
+
+.CardDetailsActionRow label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 500;
+  font-size: 1rem;
+  gap: 0.4rem;
+  background: #f8fafc;
+  padding: 0.7rem 1rem 0.9rem 1rem;
+  border-radius: 10px;
+  border: 1px solid #dde8e1;
+  min-width: 160px;
+  margin-bottom: 0.2rem;
+}
+
+.CardDetailsActionRow input,
+.CardDetailsActionRow select {
+  font-size: 1rem;
+  padding: 0.45rem 0.7rem;
+  border-radius: 7px;
+  border: 1px solid #c1ccca;
+  background: #fff;
+  margin-top: 0.1rem;
+}
+
+.CardDetailsActionRow button {
+  margin-left: 0.2rem;
+  margin-right: 0.2rem;
+  margin-top: 0.5rem;
+}
+
+.CardDetailsButtonPrimary,
+.CardDetailsButtonSecondary {
+  border-radius: 12px;
+  padding: 0.7rem 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.CardDetailsButtonPrimary {
+  border: none;
+  background: linear-gradient(135deg, #1f4d3a, #2d6a4f);
+  color: #fff;
+}
+
+.CardDetailsButtonSecondary {
+  border: 1px solid #dde8e1;
+  background: #fff;
+  color: #294838;
+}
+
+.CardDashboardTable {
+  width: 100%;
+  min-width: 700px;
+  border-collapse: collapse;
+  background: #ffffff;
+}
+
+.CardDashboardTable th,
+.CardDashboardTable td {
+  padding: 0.9rem 0.95rem;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 0.95rem;
+  color: #163827;
+  width: 150px; /* Set a fixed width for consistent column sizes */
+  box-sizing: border-box; /* Ensure padding is included in the width */
+}
+
+.CardDashboardTable th {
+  background: #f8fafc;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.CardDashboardTable tbody tr:hover {
+  background: #f6fbf9;
+}
+
+.transactions-table-wrapper {
+  border: 1px solid #dde8e1;
+  border-radius: 14px;
+  background: #fff;
+  padding: 1rem;
+  box-shadow: 0 10px 18px rgba(31, 77, 58, 0.08);
+}
+
+.transactions-pagination {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
 }
 .home-feature-grid {
   margin-top: 14px;
