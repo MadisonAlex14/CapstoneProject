@@ -83,7 +83,7 @@ export default function Signup() {
   return (
     <main className={styles.page}>
       <form onSubmit={handleSubmit} className={styles.card}>
-        <h2 className={styles.title}>Signup</h2>
+        <h2 className={styles.title}>Create Account</h2>
 
         {error && <div className={styles.error}>{error}</div>}
 

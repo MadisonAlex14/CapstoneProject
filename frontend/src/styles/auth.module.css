@@ -10,9 +10,10 @@
   padding: 2rem 1rem;
 }
 
-/* The login box */
+/* The login & signup box */
 .card {
   width: 100%;
+  max-width: 500px;
   padding: 2rem 1rem;
   box-sizing: border-box;
   background: #ffffff;
@@ -27,13 +28,37 @@
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
 }
 
-/* Login title */
+/* Login & signup titles */
 .title {
   text-align: center;
-  font-size: 2rem;
-  font-weight: 700;
+  font-size: 2.2rem;
+  font-weight: 800;
   margin-bottom: 2rem;
-  color: #2c2c2c;
+  color: #32724f;
+  position: relative;
+  letter-spacing: -0.5px;
+  animation: fadeInUp 0.6s ease;
+}
+
+.title::after {
+  content: "";
+  display: block;
+  width: 50px;
+  height: 4px;
+  margin: 0.5rem auto 0;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #315832, #b5d49b);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Labels (Email / Password) */
@@ -58,6 +83,7 @@
   transition: all 0.2s ease;
   color: #23473b;
   box-sizing: border-box;
+  text-align: center;
 }
 .input::placeholder {
   color: #6f8a80;
