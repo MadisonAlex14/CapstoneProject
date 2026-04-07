@@ -614,3 +614,73 @@ h1,
 .logout-item {
   font-family: inherit;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.NavDropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.NavDropdown-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2c2c2c;
+  padding: 0.5rem 1rem;
+  transition: color 0.2s ease;
+}
+
+.NavDropdown-button:hover {
+  color: #6d8c6e;
+}
+
+.NavDropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 160px;
+  background-color: #e3eee3;
+  border-radius: 8px;
+  box-shadow: 0 8px 16px rgba(98, 150, 96, 0.15);
+  z-index: 1000;
+  padding: 0.5rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  animation: NavDropdown-fadeIn 0.2s ease-out;
+}
+
+.NavDropdown-item {
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  color: #2c2c2c;
+  font-weight: 300;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.NavDropdown-item:hover {
+  background-color: #f0f0f0;
+  color: #8fad8c;
+  border-radius: 6px;
+}
+
+@keyframes NavDropdown-fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}

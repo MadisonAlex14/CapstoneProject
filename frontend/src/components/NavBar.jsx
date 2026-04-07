@@ -8,10 +8,12 @@ import logo from "../assets/creditmaxing.png";
 
 export default function NavBar() {
   const router = useRouter();
-  const dropdownRef = useRef(null);
+  const profileRef = useRef(null);
+  const dashboardRef = useRef(null);
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [showDashboardDropdown, setShowDashboardDropdown] = useState(false);
   const [firstName, setFirstName] = useState("");
 
   useEffect(() => {
@@ -25,13 +27,14 @@ export default function NavBar() {
 
     syncAuthState();
 
-    const handleAuthChange = () => {
-      syncAuthState();
-    };
+    const handleAuthChange = () => syncAuthState();
 
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setShowDropdown(false);
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setShowProfileDropdown(false);
+      }
+      if (dashboardRef.current && !dashboardRef.current.contains(event.target)) {
+        setShowDashboardDropdown(false);
       }
     };
 
@@ -55,7 +58,7 @@ export default function NavBar() {
 
     setIsLoggedIn(false);
     setFirstName("");
-    setShowDropdown(false);
+    setShowProfileDropdown(false);
 
     window.dispatchEvent(new Event("auth-changed"));
     router.push("/");
@@ -76,18 +79,52 @@ export default function NavBar() {
 
         {isLoggedIn && (
           <div className="nav-links-container">
-            <Link href="/dashboard" className="nav-link">
-              Home
-            </Link>
+            {/* My Dashboard Dropdown */}
+            <div className="NavDropdown" ref={dashboardRef}>
+              <button
+                className="NavDropdown-button"
+                onClick={() => setShowDashboardDropdown(!showDashboardDropdown)}
+                type="button"
+              >
+                My Account ▼
+              </button>
+              {showDashboardDropdown && (
+                <div className="NavDropdown-menu">
+                  <Link
+                    href="/dashboard"
+                    className="NavDropdown-item"
+                    onClick={() => setShowDashboardDropdown(false)}
+                  >
+                    Dashboard
+                  </Link>
+                  <Link
+                    href="/promotions"
+                    className="NavDropdown-item"
+                    onClick={() => setShowDashboardDropdown(false)}
+                  >
+                    Promotions
+                  </Link>
+                  <Link
+                    href="/benefits"
+                    className="NavDropdown-item"
+                    onClick={() => setShowDashboardDropdown(false)}
+                  >
+                    Benefits
+                  </Link>
+                  <Link
+                    href="/rewards"
+                    className="NavDropdown-item"
+                    onClick={() => setShowDashboardDropdown(false)}
+                  >
+                    Rewards
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Other nav links */}
             <Link href="/cards" className="nav-link">
               Cards
-            </Link>
-            {/* Updated Nav: Promotions & Benefits instead of Rewards */}
-            <Link href="/promotions" className="nav-link">
-              Promotions
-            </Link>
-            <Link href="/benefits" className="nav-link">
-              Benefits
             </Link>
             <Link href="/transactions" className="nav-link">
               Transactions
@@ -110,17 +147,17 @@ export default function NavBar() {
             </Link>
           </>
         ) : (
-          <div className="profile-menu" ref={dropdownRef}>
+          <div className="profile-menu" ref={profileRef}>
             <button
               className="profile-button compact-profile-button"
-              onClick={() => setShowDropdown(!showDropdown)}
+              onClick={() => setShowProfileDropdown(!showProfileDropdown)}
               type="button"
             >
               <div className="profile-avatar">{userInitial}</div>
               <span className="dropdown-arrow">▼</span>
             </button>
 
-            {showDropdown && (
+            {showProfileDropdown && (
               <div className="profile-dropdown">
                 <div className="dropdown-user-name">
                   {firstName ? `Hi, ${firstName}` : "My Account"}
@@ -129,7 +166,7 @@ export default function NavBar() {
                 <Link
                   href="/profile"
                   className="dropdown-item"
-                  onClick={() => setShowDropdown(false)}
+                  onClick={() => setShowProfileDropdown(false)}
                 >
                   Profile
                 </Link>
@@ -137,7 +174,7 @@ export default function NavBar() {
                 <Link
                   href="/settings"
                   className="dropdown-item"
-                  onClick={() => setShowDropdown(false)}
+                  onClick={() => setShowProfileDropdown(false)}
                 >
                   Settings
                 </Link>
