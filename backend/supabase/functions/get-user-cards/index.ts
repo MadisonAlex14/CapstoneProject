@@ -31,7 +31,45 @@ Deno.serve(async (req) => {
         initial_rewards_balance, 
         tracking_start_date, 
         is_active, 
-        credit_card_type(name, image_url)`)
+        credit_card_type(
+          credit_card_type_id,
+          name, 
+          image_url,
+          issuer_id,
+          network_id,
+          annual_fee,
+          reward_currency_type,
+          reward_unit_name,
+          reward_unit_symbol,
+          cash_value_per_unit
+        ),
+        user_benefit(
+          user_benefit_id,
+          benefit_id,
+          cycle_start_date,
+          initial_amount_used,
+          benefit(
+            benefit_id,
+            name,
+            description,
+            value_unit,
+            reset_frequency
+          )
+        ),
+        user_promotion(
+          user_promotion_id,
+          promotion_id,
+          start_date,
+          end_date,
+          initial_spend,
+          promotion(
+            promotion_id,
+            name,
+            description,
+            promotion_category
+          )
+        )
+      `)
       .eq('profile_id', profileId)
 
     if (error) {

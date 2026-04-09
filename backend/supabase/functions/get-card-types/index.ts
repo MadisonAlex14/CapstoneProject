@@ -25,7 +25,8 @@ Deno.serve(async (req) => {
     
     const { data, error } = await supabase
       .from('credit_card_type')
-      .select('*')
+      .select('*, benefit(benefit_id, name, description, value_unit, value_amount, reset_frequency), promotion(promotion_id, name, description, promotion_category)')
+      .eq('promotion.is_active', true)
 
     if (error) {
       return new Response(JSON.stringify({ error: error.message || 'Failed to load card types' }), {
