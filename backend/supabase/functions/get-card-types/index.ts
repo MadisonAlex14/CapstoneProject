@@ -23,10 +23,12 @@ Deno.serve(async (req) => {
     // Get profile using the shared helper
     const profileId = await getProfileIdFromToken(token)
     
+    const now = new Date().toISOString().split('T')[0]
+    
     const { data, error } = await supabase
       .from('credit_card_type')
-      .select('*, benefit(benefit_id, name, description, value_unit, value_amount, reset_frequency), promotion(promotion_id, name, description, promotion_category)')
-      .or(`promotion.valid_until.is.null,promotion.valid_until.gt.${new Date().toISOString()}`)
+      .select('*, benefit(benefit_id, name, description, value_unit, value_amount, reset_frequency), promotion(promotion_id, name, description, promotion_category, valid_until)')
+      .or(`valid_until.is.null,valid_until.gt.${now}`, { foreignTable: 'promotion' })
 
     if (error) {
       return new Response(JSON.stringify({ error: error.message || 'Failed to load card types' }), {

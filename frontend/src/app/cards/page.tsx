@@ -22,6 +22,7 @@ type ApiBenefit = {
   name: string;
   description: string;
   value_unit: string;
+  value_amount: number;
   reset_frequency: string;
 };
 
@@ -496,6 +497,20 @@ export default function CardsPage() {
     }
 
     const finalNickname = cardNickname.trim() || selectedCardType.name;
+
+    // Validate benefits - check that usage doesn't exceed benefit value_amount
+    for (const benefit of selectedCardType?.benefit || []) {
+      const usedAmount = benefitsUsed[benefit.benefit_id]
+        ? Number(benefitsUsed[benefit.benefit_id])
+        : 0;
+      
+      if (usedAmount > benefit.value_amount) {
+        alert(
+          `Invalid benefit usage for "${benefit.name}": Usage (${usedAmount}) cannot exceed the benefit value (${benefit.value_amount})`
+        );
+        return;
+      }
+    }
 
     // Prepare benefits data
     const benefits = (selectedCardType?.benefit || [])

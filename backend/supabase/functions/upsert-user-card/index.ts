@@ -202,12 +202,12 @@ Deno.serve(async (req) => {
 
     // Insert benefits if provided
     if (benefits && Array.isArray(benefits) && benefits.length > 0) {
-      // Fetch benefit details to get reset_frequency
+      // Fetch benefit details to get reset_frequency and value_amount for validation
       const benefitIds = benefits.map((b: any) => b.benefit_id);
       
       const { data: benefitDetails, error: benefitDetailsError } = await supabase
         .from('benefit')
-        .select('benefit_id, reset_frequency')
+        .select('benefit_id, reset_frequency, value_amount')
         .in('benefit_id', benefitIds);
 
       if (benefitDetailsError) {
@@ -218,6 +218,25 @@ Deno.serve(async (req) => {
       const benefitDetailsMap = new Map(
         (benefitDetails || []).map((b: any) => [b.benefit_id, b])
       );
+
+      // Validate that initial_amount_used doesn't exceed value_amount
+      for (const benefit of benefits) {
+        const details = benefitDetailsMap.get(benefit.benefit_id) as any;
+        const valueAmount = details?.value_amount || 0;
+        const initialAmountUsed = benefit.initial_amount_used || 0;
+
+        if (initialAmountUsed > valueAmount) {
+          return new Response(
+            JSON.stringify({
+              error: `Invalid benefit usage: initial_amount_used (${initialAmountUsed}) cannot exceed benefit value_amount (${valueAmount}) for benefit ${benefit.benefit_id}`,
+            }),
+            {
+              status: 400,
+              headers: withCors({ 'Content-Type': 'application/json' }),
+            }
+          );
+        }
+      }
 
       const benefitsToInsert = benefits.map((benefit: any) => {
         const details = benefitDetailsMap.get(benefit.benefit_id) as any;
