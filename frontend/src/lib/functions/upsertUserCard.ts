@@ -10,7 +10,7 @@ export interface UpsertUserCardBody {
   tracking_start_date: string
   benefits?: Array<{
     benefit_id: string
-    cycle_start_date: string
+    cycle_start_date?: string
     initial_amount_used: number
   }>
   promotions?: Array<{

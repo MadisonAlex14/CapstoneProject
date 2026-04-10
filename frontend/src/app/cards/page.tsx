@@ -499,10 +499,8 @@ export default function CardsPage() {
 
     // Prepare benefits data
     const benefits = (selectedCardType?.benefit || [])
-      .filter((benefit: ApiBenefit) => benefitCycleDates[benefit.benefit_id]) // Only include if cycle date is set
       .map((benefit: ApiBenefit) => ({
         benefit_id: benefit.benefit_id,
-        cycle_start_date: benefitCycleDates[benefit.benefit_id],
         initial_amount_used: benefitsUsed[benefit.benefit_id]
           ? Number(benefitsUsed[benefit.benefit_id])
           : 0,
@@ -1027,22 +1025,6 @@ export default function CardsPage() {
                                       }
                                       className={styles.FormInput}
                                       placeholder="0"
-                                    />
-                                  </div>
-                                  <div className={styles.FormGroup}>
-                                    <label className={styles.FormLabel}>
-                                      Cycle Start Date
-                                    </label>
-                                    <input
-                                      type="date"
-                                      value={benefitCycleDates[benefit.benefit_id] || ""}
-                                      onChange={(e) =>
-                                        handleBenefitCycleDateChange(
-                                          benefit.benefit_id,
-                                          e.target.value
-                                        )
-                                      }
-                                      className={styles.FormInput}
                                     />
                                   </div>
                                 </div>

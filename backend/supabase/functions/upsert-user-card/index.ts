@@ -3,6 +3,90 @@ import { supabase } from "../_shared/createClient.ts"
 import { extractAuthToken, getProfileIdFromToken } from "../_shared/auth.ts"
 import { withCors } from "../_shared/cors.ts"
 
+// Helper function to calculate cycle dates based on reset frequency
+function calculateBenefitCycleDates(
+  resetFrequency: string,
+  openDate: string,
+  statementCloseDay: number,
+  initialAmountUsed?: number
+): { cycle_start_date: string; cycle_end_date: string } {
+  const today = new Date();
+  
+  if (resetFrequency === 'annual') {
+    const openDateObj = new Date(openDate);
+    const cycleStartDate = new Date(openDateObj);
+    const cycleEndDate = new Date(openDateObj);
+    cycleEndDate.setFullYear(cycleEndDate.getFullYear() + 1);
+    
+    return {
+      cycle_start_date: cycleStartDate.toISOString().split('T')[0],
+      cycle_end_date: cycleEndDate.toISOString().split('T')[0],
+    };
+  }
+  
+  if (resetFrequency === 'monthly') {
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth();
+    const currentDay = today.getDate();
+    
+    let cycleStartDate: Date;
+    
+    // If statement_close_day is before or equal to today, use it for the current month
+    if (statementCloseDay <= currentDay) {
+      cycleStartDate = new Date(currentYear, currentMonth, statementCloseDay);
+    } else {
+      // If statement_close_day is after today, use it for the previous month
+      cycleStartDate = new Date(currentYear, currentMonth - 1, statementCloseDay);
+      // Handle case where the day doesn't exist in the previous month (e.g., 31st in February)
+      if (cycleStartDate.getDate() !== statementCloseDay) {
+        cycleStartDate = new Date(currentYear, currentMonth, 0); // Last day of previous month
+      }
+    }
+    
+    // Calculate cycle_end_date as one month after cycle_start_date
+    const cycleEndDate = new Date(cycleStartDate);
+    cycleEndDate.setMonth(cycleEndDate.getMonth() + 1);
+    
+    // Handle case where the end date day doesn't exist in the target month
+    if (cycleEndDate.getDate() !== statementCloseDay) {
+      cycleEndDate.setDate(0); // Last day of the month
+    }
+    
+    return {
+      cycle_start_date: cycleStartDate.toISOString().split('T')[0],
+      cycle_end_date: cycleEndDate.toISOString().split('T')[0],
+    };
+  }
+  
+  if (resetFrequency === 'semi_annual') {
+    const jan1 = new Date(today.getFullYear(), 0, 1);
+    const jul1 = new Date(today.getFullYear(), 6, 1);
+    
+    let cycleStartDate: Date;
+    let cycleEndDate: Date;
+    
+    // Determine which was most recently in the past
+    if (today >= jul1) {
+      cycleStartDate = jul1;
+      cycleEndDate = new Date(today.getFullYear() + 1, 0, 1); // Next January 1st
+    } else {
+      cycleStartDate = jan1;
+      cycleEndDate = jul1;
+    }
+    
+    return {
+      cycle_start_date: cycleStartDate.toISOString().split('T')[0],
+      cycle_end_date: cycleEndDate.toISOString().split('T')[0],
+    };
+  }
+  
+  // Default fallback
+  return {
+    cycle_start_date: new Date().toISOString().split('T')[0],
+    cycle_end_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+  };
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: withCors() })
@@ -118,12 +202,42 @@ Deno.serve(async (req) => {
 
     // Insert benefits if provided
     if (benefits && Array.isArray(benefits) && benefits.length > 0) {
-      const benefitsToInsert = benefits.map((benefit: any) => ({
-        credit_card_id: newCardId,
-        benefit_id: benefit.benefit_id,
-        cycle_start_date: benefit.cycle_start_date,
-        initial_amount_used: benefit.initial_amount_used,
-      }))
+      // Fetch benefit details to get reset_frequency
+      const benefitIds = benefits.map((b: any) => b.benefit_id);
+      
+      const { data: benefitDetails, error: benefitDetailsError } = await supabase
+        .from('benefit')
+        .select('benefit_id, reset_frequency')
+        .in('benefit_id', benefitIds);
+
+      if (benefitDetailsError) {
+        console.error('Failed to fetch benefit details:', benefitDetailsError);
+      }
+
+      // Create a map of benefit details for quick lookup
+      const benefitDetailsMap = new Map(
+        (benefitDetails || []).map((b: any) => [b.benefit_id, b])
+      );
+
+      const benefitsToInsert = benefits.map((benefit: any) => {
+        const details = benefitDetailsMap.get(benefit.benefit_id) as any;
+        const resetFrequency = details?.reset_frequency || 'annual';
+        
+        const cycleDates = calculateBenefitCycleDates(
+          resetFrequency,
+          open_date,
+          statement_close_day,
+          benefit.initial_amount_used
+        );
+
+        return {
+          credit_card_id: newCardId,
+          benefit_id: benefit.benefit_id,
+          cycle_start_date: cycleDates.cycle_start_date,
+          cycle_end_date: cycleDates.cycle_end_date,
+          initial_amount_used: benefit.initial_amount_used,
+        };
+      });
 
       const { error: benefitsError } = await supabase
         .from('user_benefit')
