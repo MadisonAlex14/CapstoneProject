@@ -934,6 +934,28 @@ export default function CardsPage() {
                           className={styles.FormInput}
                         />
                       </div>
+
+                      <div className={styles.FormGroup}>
+                        <label className={styles.FormLabel}>
+                          Statement Closing Date
+                        </label>
+                        <select
+                          value={statementClosingDate}
+                          onChange={(e) =>
+                            setStatementClosingDate(e.target.value)
+                          }
+                          className={styles.FormInput}
+                        >
+                          <option value="">Select a day</option>
+                          {Array.from({ length: 31 }, (_, i) => i + 1).map(
+                            (day) => (
+                              <option key={day} value={day}>
+                                {day}
+                              </option>
+                            )
+                          )}
+                        </select>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -966,7 +988,7 @@ export default function CardsPage() {
                 {openSections.step3 && (
                   <div className={styles.CardStepContent}>
                     <div className={styles.FormGrid}>
-                      <div className={styles.FormGroup}>
+                      <div className={`${styles.FormGroup} ${styles.CenteredFormGroup}`}>
                         <label className={styles.FormLabel}>
                           Current Rewards Balance
                         </label>
@@ -980,28 +1002,6 @@ export default function CardsPage() {
                           className={styles.FormInput}
                           placeholder="0"
                         />
-                      </div>
-
-                      <div className={styles.FormGroup}>
-                        <label className={styles.FormLabel}>
-                          Statement Closing Date
-                        </label>
-                        <select
-                          value={statementClosingDate}
-                          onChange={(e) =>
-                            setStatementClosingDate(e.target.value)
-                          }
-                          className={styles.FormInput}
-                        >
-                          <option value="">Select a day</option>
-                          {Array.from({ length: 31 }, (_, i) => i + 1).map(
-                            (day) => (
-                              <option key={day} value={day}>
-                                {day}
-                              </option>
-                            )
-                          )}
-                        </select>
                       </div>
 
                       <div className={styles.FormGroupFull}>
