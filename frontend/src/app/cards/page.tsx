@@ -1,7 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { getUserCards } from "../../lib/functions/getUserCards";
+import { getCardTypes } from "../../lib/functions/getCardTypes";
+import { upsertUserCard } from "../../lib/functions/upsertUserCard";
 import styles from "../../styles/auth.module.css";
 
 type CardBenefit = {
@@ -14,16 +17,36 @@ type CardPromotion = {
   label: string;
 };
 
+type ApiBenefit = {
+  benefit_id: string;
+  name: string;
+  description: string;
+  value_unit: string;
+  value_amount: number;
+  reset_frequency: string;
+};
+
+type ApiPromotion = {
+  promotion_id: string;
+  name: string;
+  description: string;
+  promotion_category: string;
+};
+
 type CardType = {
   credit_card_type_id: string;
-  cardName: string;
+  name: string;
   issuer_id: string;
   network_id: string;
   annual_fee: number;
-  rewardsType: string;
   description?: string;
-  benefits: CardBenefit[];
-  promotions: CardPromotion[];
+  image_url?: string | null;
+  reward_currency_type: string;
+  reward_unit_name: string;
+  reward_unit_symbol: string;
+  cash_value_per_unit: number;
+  benefit?: ApiBenefit[];
+  promotion?: ApiPromotion[];
 };
 
 type BenefitUsageState = Record<string, string>;
@@ -32,13 +55,13 @@ type PromotionState = Record<
   string,
   {
     active: boolean;
-    created_at: string;
-    spent: string;
+    start_date: string;
+    initial_spend: string;
   }
 >;
 
 type CreditCard = {
-  credit_card_type_id: number;
+  credit_card_type_id: string;
   cardName: string;
   issuer_id: string;
   last4: string;
@@ -54,12 +77,13 @@ type CreditCard = {
   initialCardState: {
     currentRewardsBalance: number | null;
     benefitsUsed: Record<string, number | null>;
+    benefitCycleDates: Record<string, string>;
     activePromotions: Record<
       string,
       {
         active: boolean;
-        created_at: string;
-        spent: string;
+        start_date: string;
+        initial_spend: string;
       }
     >;
     statementClosingDate: number | null;
@@ -68,78 +92,64 @@ type CreditCard = {
 
 const STORAGE_KEY = "userCards";
 
-const CARD_TYPES: CardType[] = [
-  {
-    credit_card_type_id: "amex-gold",
-    cardName: "Amex Gold",
-    issuer_id: "American Express",
-    network_id: "Amex",
-    annual_fee: 325,
-    rewardsType: "Points",
-    description: "Premium rewards on dining and groceries.",
-    benefits: [
-      { credit_card_type_id: "dining-credit", label: "Dining Credit" },
-      { credit_card_type_id: "uber-cash", label: "Uber Cash" },
-    ],
-    promotions: [
-      { credit_card_type_id: "restaurant-bonus", label: "Restaurant Bonus Offer" },
-      { credit_card_type_id: "travel-credit-bonus", label: "Travel Credit Bonus" },
-    ],
-  },
-  {
-    credit_card_type_id: "chase-sapphire-preferred",
-    cardName: "Chase Sapphire Preferred",
-    issuer_id: "Chase",
-    network_id: "Visa",
-    annual_fee: 95,
-    rewardsType: "Points",
-    description: "Travel rewards card with flexible redemption options.",
-    benefits: [
-      { credit_card_type_id: "hotel-credit", label: "Hotel Credit" },
-      { credit_card_type_id: "dashpass", label: "DashPass Benefit" },
-    ],
-    promotions: [
-      { credit_card_type_id: "welcome-offer", label: "Welcome Offer Tracker" },
-      { credit_card_type_id: "travel-promo", label: "Limited Time Travel Promo" },
-    ],
-  },
-  {
-    credit_card_type_id: "capital-one-venture-x",
-    cardName: "Capital One Venture X",
-    issuer_id: "Capital One",
-    network_id: "Visa",
-    annual_fee: 395,
-    rewardsType: "Miles",
-    description: "Premium travel card with lounge access and miles rewards.",
-    benefits: [
-      { credit_card_type_id: "travel-credit", label: "Annual Travel Credit" },
-      { credit_card_type_id: "anniversary-miles", label: "Anniversary Miles" },
-      { credit_card_type_id: "lounge-access", label: "Lounge Benefit Usage" },
-    ],
-    promotions: [
-      { credit_card_type_id: "spend-bonus", label: "Spend Bonus Promotion" },
-      { credit_card_type_id: "transfer-bonus", label: "Transfer Bonus Promotion" },
-    ],
-  },
-];
-
-function normalizeStoredCards(rawCards: any[]): CreditCard[] {
+function normalizeStoredCards(rawCards: any[], cardTypes: CardType[] = []): CreditCard[] {
   return rawCards.map((card, index) => {
     const matchedType =
-      CARD_TYPES.find(
-        (type) => type.credit_card_type_id === card.cardTypeId || type.cardName === card.cardName
+      cardTypes.find(
+        (type: CardType) =>
+          type.credit_card_type_id === card.cardTypeId ||
+          type.name === card.cardName ||
+          type.name === card.credit_card_type?.name
       ) || null;
 
+    const normalizedId =
+      card.credit_card_id || card.credit_card_type_id || card.id || `${Date.now()}-${index}`;
+    
+    const nickname = card.nickname || card.cardNickname || matchedType?.name || "";
+    const cardNameFromType = card.credit_card_type?.name || matchedType?.name || "";
+    const cardName = card.cardName || nickname || cardNameFromType;
+
+    const issuer =
+      card.issuer_id || card.issuer || matchedType?.issuer_id || card.credit_card_type?.issuer_id || "";
+
+    // Extract benefits from user_benefit array
+    const benefitsUsedMap: Record<string, number | null> = {};
+    const benefitCycleDatesMap: Record<string, string> = {};
+    
+    if (Array.isArray(card.user_benefit)) {
+      card.user_benefit.forEach((ub: any) => {
+        if (ub.benefit_id) {
+          benefitsUsedMap[ub.benefit_id] = ub.initial_amount_used ?? null;
+          benefitCycleDatesMap[ub.benefit_id] = ub.cycle_start_date ?? "";
+        }
+      });
+    }
+
+    // Extract promotions from user_promotion array
+    const activePromotionsMap: Record<string, { active: boolean; start_date: string; initial_spend: string }> = {};
+    
+    if (Array.isArray(card.user_promotion)) {
+      card.user_promotion.forEach((up: any) => {
+        if (up.promotion_id) {
+          activePromotionsMap[up.promotion_id] = {
+            active: true,
+            start_date: up.start_date ?? "",
+            initial_spend: up.initial_spend?.toString() ?? "0",
+          };
+        }
+      });
+    }
+
     return {
-      credit_card_type_id: Number(card.id ?? Date.now() + index),
-      cardName: card.cardName ?? matchedType?.cardName ?? "",
-      issuer_id: card.issuer_id ?? card.issuer ?? matchedType?.issuer_id ?? matchedType?.issuer_id ?? "",
-      last4: card.last4 ?? "",
-      rewardsType: card.rewardsType ?? matchedType?.rewardsType ?? "Points",
-      cardNickname: card.cardNickname ?? card.cardName ?? matchedType?.cardName ?? "",
+      credit_card_type_id: String(normalizedId),
+      cardName: cardName,
+      issuer_id: issuer,
+      last4: card.last4 ?? card.last_four ?? "",
+      rewardsType: card.rewardsType ?? matchedType?.reward_unit_name ?? "Points",
+      cardNickname: card.cardNickname ?? card.nickname ?? matchedType?.name ?? "",
       network_id: card.network_id ?? card.network ?? matchedType?.network_id ?? "",
 
-      openDate: card.openDate ?? "",
+      openDate: card.openDate ?? card.open_date ?? "",
       creditLimit:
         card.creditLimit !== null &&
         card.creditLimit !== undefined &&
@@ -153,22 +163,23 @@ function normalizeStoredCards(rawCards: any[]): CreditCard[] {
           ? Number(card.annual_fee)
           : matchedType?.annual_fee ?? null,
       notes: card.notes ?? "",
-      createdAt: card.createdAt ?? new Date().toISOString(),
+      createdAt: card.createdAt ?? card.tracking_start_date ?? new Date().toISOString(),
 
       initialCardState: {
         currentRewardsBalance:
-          card.initialCardState?.currentRewardsBalance !== null &&
-          card.initialCardState?.currentRewardsBalance !== undefined &&
-          card.initialCardState?.currentRewardsBalance !== ""
-            ? Number(card.initialCardState.currentRewardsBalance)
+          (card.initialCardState?.currentRewardsBalance ?? card.initial_rewards_balance) !== null &&
+          (card.initialCardState?.currentRewardsBalance ?? card.initial_rewards_balance) !== undefined &&
+          (card.initialCardState?.currentRewardsBalance ?? card.initial_rewards_balance) !== ""
+            ? Number(card.initialCardState?.currentRewardsBalance ?? card.initial_rewards_balance)
             : null,
-        benefitsUsed: card.initialCardState?.benefitsUsed ?? {},
-        activePromotions: card.initialCardState?.activePromotions ?? {},
+        benefitsUsed: Object.keys(benefitsUsedMap).length > 0 ? benefitsUsedMap : (card.initialCardState?.benefitsUsed ?? {}),
+        benefitCycleDates: benefitCycleDatesMap,
+        activePromotions: Object.keys(activePromotionsMap).length > 0 ? activePromotionsMap : (card.initialCardState?.activePromotions ?? {}),
         statementClosingDate:
-          card.initialCardState?.statementClosingDate !== null &&
-          card.initialCardState?.statementClosingDate !== undefined &&
-          card.initialCardState?.statementClosingDate !== ""
-            ? Number(card.initialCardState.statementClosingDate)
+          (card.initialCardState?.statementClosingDate ?? card.statement_close_day) !== null &&
+          (card.initialCardState?.statementClosingDate ?? card.statement_close_day) !== undefined &&
+          (card.initialCardState?.statementClosingDate ?? card.statement_close_day) !== ""
+            ? Number(card.initialCardState?.statementClosingDate ?? card.statement_close_day)
             : null,
       },
     };
@@ -176,14 +187,17 @@ function normalizeStoredCards(rawCards: any[]): CreditCard[] {
 }
 
 export default function CardsPage() {
+  const cardsFetchGuard = useRef(false);
   const router = useRouter();
 
   const [cards, setCards] = useState<CreditCard[]>([]);
   const [hasLoadedCards, setHasLoadedCards] = useState(false);
+  const [cardTypes, setCardTypes] = useState<CardType[]>([]);
+  const [loadingCardTypes, setLoadingCardTypes] = useState(false);
 
   const [showAddModal, setShowAddModal] = useState(false);
-  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
-  const [editingCardId, setEditingCardId] = useState<number | null>(null);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [editingCardId, setEditingCardId] = useState<string | null>(null);
   const [formError, setFormError] = useState("");
 
   // Step 1
@@ -193,13 +207,12 @@ export default function CardsPage() {
   const [cardNickname, setCardNickname] = useState("");
   const [last4, setLast4] = useState("");
   const [openDate, setOpenDate] = useState("");
-  const [creditLimit, setCreditLimit] = useState("");
-  const [annual_fee, setAnnualFee] = useState("");
-  const [notes, setNotes] = useState("");
+  const [expirationDate, setExpirationDate] = useState("");
 
   // Step 3
   const [currentRewardsBalance, setCurrentRewardsBalance] = useState("");
   const [benefitsUsed, setBenefitsUsed] = useState<BenefitUsageState>({});
+  const [benefitCycleDates, setBenefitCycleDates] = useState<Record<string, string>>({});
   const [activePromotions, setActivePromotions] = useState<PromotionState>({});
   const [statementClosingDate, setStatementClosingDate] = useState("");
 
@@ -210,20 +223,56 @@ export default function CardsPage() {
   });
 
   useEffect(() => {
-    try {
-      const savedCards = localStorage.getItem(STORAGE_KEY);
-      if (savedCards) {
-        const parsed = JSON.parse(savedCards);
-        setCards(Array.isArray(parsed) ? normalizeStoredCards(parsed) : []);
-      } else {
-        setCards([]);
+    if (cardsFetchGuard.current) return;
+    cardsFetchGuard.current = true;
+
+    const loadCards = async () => {
+      let fetchedCards: any[] | null = null;
+
+      try {
+        const localToken = localStorage.getItem('accessToken');
+        const supabaseToken = localStorage.getItem('supabase.auth.token');
+        let accessToken: string | null = localToken;
+
+        if (!accessToken && supabaseToken) {
+          const session = JSON.parse(supabaseToken);
+          accessToken = session?.currentSession?.access_token || session?.access_token || null;
+        }
+
+        if (!accessToken) {
+          throw new Error('No access token')
+        }
+
+        const cardData = await getUserCards(accessToken)
+        if (Array.isArray(cardData)) {
+          fetchedCards = cardData
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(cardData))
+        }
+      } catch (apiError) {
+        console.warn('API card load failed, falling back to local cache', apiError)
       }
-    } catch (error) {
-      console.error("Failed to load cards:", error);
-      setCards([]);
-    } finally {
-      setHasLoadedCards(true);
+
+      if (fetchedCards) {
+        setCards(normalizeStoredCards(fetchedCards, cardTypes))
+      } else {
+        try {
+          const savedCards = localStorage.getItem(STORAGE_KEY)
+          if (savedCards) {
+            const parsed = JSON.parse(savedCards)
+            setCards(Array.isArray(parsed) ? normalizeStoredCards(parsed, cardTypes) : [])
+          } else {
+            setCards([])
+          }
+        } catch (error) {
+          console.error('Failed to load cards from local cache:', error)
+          setCards([])
+        }
+      }
+
+      setHasLoadedCards(true)
     }
+
+    loadCards()
   }, []);
 
   useEffect(() => {
@@ -237,8 +286,8 @@ export default function CardsPage() {
   }, [cards, hasLoadedCards]);
 
   const selectedCardType = useMemo(() => {
-    return CARD_TYPES.find((card) => card.credit_card_type_id === selectedCardTypeId) || null;
-  }, [selectedCardTypeId]);
+    return cardTypes.find((card: CardType) => card.credit_card_type_id === selectedCardTypeId) || null;
+  }, [selectedCardTypeId, cardTypes]);
 
   const step1Complete = !!selectedCardTypeId;
 
@@ -270,11 +319,10 @@ export default function CardsPage() {
     setCardNickname("");
     setLast4("");
     setOpenDate("");
-    setCreditLimit("");
-    setAnnualFee("");
-    setNotes("");
+    setExpirationDate("");
     setCurrentRewardsBalance("");
     setBenefitsUsed({});
+    setBenefitCycleDates({});
     setActivePromotions({});
     setStatementClosingDate("");
     setOpenSections({
@@ -284,8 +332,29 @@ export default function CardsPage() {
     });
   };
 
-  const handleOpenAddCard = () => {
+  const handleOpenAddCard = async () => {
     resetForm();
+    setLoadingCardTypes(true);
+    try {
+      const localToken = localStorage.getItem('accessToken');
+      const supabaseToken = localStorage.getItem('supabase.auth.token');
+      let accessToken: string | null = localToken;
+
+      if (!accessToken && supabaseToken) {
+        const session = JSON.parse(supabaseToken);
+        accessToken = session?.currentSession?.access_token || session?.access_token || null;
+      }
+
+      if (accessToken) {
+        const types = await getCardTypes(accessToken);
+        setCardTypes(Array.isArray(types) ? types : []);
+      }
+    } catch (error) {
+      console.error('Failed to load card types:', error);
+      setCardTypes([]);
+    } finally {
+      setLoadingCardTypes(false);
+    }
     setShowAddModal(true);
   };
 
@@ -309,12 +378,19 @@ export default function CardsPage() {
     }));
   };
 
+  const handleBenefitCycleDateChange = (benefitId: string, date: string) => {
+    setBenefitCycleDates((prev) => ({
+      ...prev,
+      [benefitId]: date,
+    }));
+  };
+
   const handlePromotionToggle = (promotionId: string) => {
     setActivePromotions((prev) => {
       const current = prev[promotionId] || {
         active: false,
-        created_at: "",
-        spent: "",
+        start_date: "",
+        initial_spend: "",
       };
 
       return {
@@ -329,43 +405,41 @@ export default function CardsPage() {
 
   const handlePromotionFieldChange = (
     promotionId: string,
-    field: "created_at" | "spent",
+    field: "start_date" | "initial_spend",
     value: string
   ) => {
     setActivePromotions((prev) => {
       const current = prev[promotionId] || {
         active: true,
-        created_at: "",
-        spent: "",
+        start_date: "",
+        initial_spend: "",
       };
 
       return {
         ...prev,
         [promotionId]: {
           ...current,
-          [field]: field === "spent" ? value.replace(/[^\d]/g, "") : value,
+          [field]: field === "initial_spend" ? value.replace(/[^\d]/g, "") : value,
         },
       };
     });
   };
 
-  const handleDeleteCard = (cardId: number) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this card?"
-    );
+  const handleDeleteCard = (cardId: string) => {
+    const confirmed = window.confirm("Are you sure you want to delete this card?");
     if (!confirmed) return;
 
     setCards((prev) => prev.filter((card) => card.credit_card_type_id !== cardId));
     setOpenMenuId(null);
   };
 
-  const handleCardClick = (cardId: number) => {
+  const handleCardClick = (cardId: string) => {
     router.push(`/cards/${cardId}`);
   };
 
   const handleEditCard = (card: CreditCard) => {
     const matchedType =
-      CARD_TYPES.find((type) => type.cardName === card.cardName) || null;
+      cardTypes.find((type: CardType) => type.name === card.cardName) || null;
 
     setEditingCardId(card.credit_card_type_id);
     setFormError("");
@@ -373,9 +447,6 @@ export default function CardsPage() {
     setCardNickname(card.cardNickname || "");
     setLast4(card.last4 || "");
     setOpenDate(card.openDate || "");
-    setCreditLimit(card.creditLimit?.toString() || "");
-    setAnnualFee(card.annual_fee?.toString() || "");
-    setNotes(card.notes || "");
     setCurrentRewardsBalance(
       card.initialCardState.currentRewardsBalance?.toString() || ""
     );
@@ -388,13 +459,15 @@ export default function CardsPage() {
     );
     setBenefitsUsed(loadedBenefits);
 
+    setBenefitCycleDates(card.initialCardState.benefitCycleDates || {});
+
     const loadedPromotions: PromotionState = {};
     Object.entries(card.initialCardState.activePromotions || {}).forEach(
       ([key, value]) => {
         loadedPromotions[key] = {
           active: value.active,
-          created_at: value.created_at || "",
-          spent: value.spent || "",
+          start_date: value.start_date || "",
+          initial_spend: value.initial_spend || "",
         };
       }
     );
@@ -414,7 +487,7 @@ export default function CardsPage() {
     setOpenMenuId(null);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError("");
 
@@ -423,56 +496,134 @@ export default function CardsPage() {
       return;
     }
 
-    const finalNickname = cardNickname.trim() || selectedCardType.cardName;
+    const finalNickname = cardNickname.trim() || selectedCardType.name;
 
-    const cardToSave: CreditCard = {
-      credit_card_type_id: editingCardId ?? Date.now(),
-      cardName: selectedCardType.cardName,
-      issuer_id: selectedCardType.issuer_id,
-      last4: last4,
-      rewardsType: selectedCardType.rewardsType,
-
-      cardNickname: finalNickname,
-      network_id: selectedCardType.network_id,
-      openDate: openDate,
-      creditLimit: creditLimit ? Number(creditLimit) : null,
-      annual_fee: annual_fee ? Number(annual_fee) : selectedCardType.annual_fee,
-      notes: notes.trim(),
-      createdAt: editingCardId
-        ? cards.find((card) => card.credit_card_type_id === editingCardId)?.createdAt ||
-          new Date().toISOString()
-        : new Date().toISOString(),
-
-      initialCardState: {
-        currentRewardsBalance: currentRewardsBalance
-          ? Number(currentRewardsBalance)
-          : null,
-        benefitsUsed: Object.entries(benefitsUsed).reduce(
-          (acc, [key, value]) => {
-            acc[key] = value === "" ? null : Number(value);
-            return acc;
-          },
-          {} as Record<string, number | null>
-        ),
-        activePromotions: activePromotions,
-        statementClosingDate: statementClosingDate
-          ? Number(statementClosingDate)
-          : null,
-      },
-    };
-
-    setCards((prevCards) => {
-      if (editingCardId !== null) {
-        return prevCards.map((card) =>
-          card.credit_card_type_id === editingCardId ? cardToSave : card
+    // Validate benefits - check that usage doesn't exceed benefit value_amount
+    for (const benefit of selectedCardType?.benefit || []) {
+      const usedAmount = benefitsUsed[benefit.benefit_id]
+        ? Number(benefitsUsed[benefit.benefit_id])
+        : 0;
+      
+      if (usedAmount > benefit.value_amount) {
+        alert(
+          `Invalid benefit usage for "${benefit.name}": Usage (${usedAmount}) cannot exceed the benefit value (${benefit.value_amount})`
         );
+        return;
       }
+    }
 
-      return [...prevCards, cardToSave];
+    // Prepare benefits data
+    const benefits = (selectedCardType?.benefit || [])
+      .map((benefit: ApiBenefit) => ({
+        benefit_id: benefit.benefit_id,
+        initial_amount_used: benefitsUsed[benefit.benefit_id]
+          ? Number(benefitsUsed[benefit.benefit_id])
+          : 0,
+      }));
+
+    // Prepare promotions data
+    const promotions = (selectedCardType?.promotion || [])
+      .filter((promo: ApiPromotion) => activePromotions[promo.promotion_id]?.active)
+      .map((promo: ApiPromotion) => {
+        const promoData = activePromotions[promo.promotion_id];
+        return {
+          promotion_id: promo.promotion_id,
+          start_date: promoData.start_date || new Date().toISOString().split('T')[0], // Use today if not set
+          initial_spend: promoData.initial_spend
+            ? Number(promoData.initial_spend)
+            : 0,
+        };
+      });
+
+    console.log('Sending data:', {
+      benefits: benefits.length,
+      promotions: promotions.length,
+      activePromotions,
+      selectedCardType: selectedCardType?.promotion?.length,
     });
 
-    handleCloseAddCard();
-    resetForm();
+    try {
+      const localToken = localStorage.getItem('accessToken');
+      const supabaseToken = localStorage.getItem('supabase.auth.token');
+      let accessToken: string | null = localToken;
+
+      if (!accessToken && supabaseToken) {
+        const session = JSON.parse(supabaseToken);
+        accessToken = session?.currentSession?.access_token || session?.access_token || null;
+      }
+
+      if (!accessToken) {
+        throw new Error('No access token');
+      }
+
+      const response = await upsertUserCard(accessToken, {
+        credit_card_id: editingCardId || undefined,
+        credit_card_type_id: selectedCardType.credit_card_type_id,
+        nickname: finalNickname,
+        last_four: last4,
+        open_date: openDate,
+        expiration_date: expirationDate,
+        statement_close_day: statementClosingDate ? Number(statementClosingDate) : 0,
+        initial_rewards_balance: currentRewardsBalance ? Number(currentRewardsBalance) : 0,
+        tracking_start_date: new Date().toISOString(),
+        benefits: benefits.length > 0 ? benefits : undefined,
+        promotions: promotions.length > 0 ? promotions : undefined,
+      });
+
+      const cardToSave: CreditCard = {
+        credit_card_type_id: editingCardId ?? String(Date.now()),
+        cardName: selectedCardType.name,
+        issuer_id: selectedCardType.issuer_id,
+        last4: last4,
+        rewardsType: selectedCardType.reward_unit_name,
+
+        cardNickname: finalNickname,
+        network_id: selectedCardType.network_id,
+        openDate: openDate,
+        creditLimit: null,
+        annual_fee: selectedCardType.annual_fee,
+        notes: "",
+        createdAt: editingCardId
+          ? cards.find((card) => card.credit_card_type_id === editingCardId)?.createdAt ||
+            new Date().toISOString()
+          : new Date().toISOString(),
+
+        initialCardState: {
+          currentRewardsBalance: currentRewardsBalance
+            ? Number(currentRewardsBalance)
+            : null,
+          benefitsUsed: Object.entries(benefitsUsed).reduce(
+            (acc, [key, value]) => {
+              acc[key] = value === "" ? null : Number(value);
+              return acc;
+            },
+            {} as Record<string, number | null>
+          ),
+          benefitCycleDates: benefitCycleDates,
+          activePromotions: activePromotions,
+          statementClosingDate: statementClosingDate
+            ? Number(statementClosingDate)
+            : null,
+        },
+      };
+
+      setCards((prevCards) => {
+        if (editingCardId !== null) {
+          return prevCards.map((card) =>
+            card.credit_card_type_id === editingCardId ? cardToSave : card
+          );
+        }
+
+        return [...prevCards, cardToSave];
+      });
+
+      handleCloseAddCard();
+      resetForm();
+    } catch (error) {
+      const err = error as Error;
+      setFormError(err.message || 'Failed to save card');
+      console.error('Error saving card:', error);
+    }
   };
 
   return (
@@ -649,34 +800,49 @@ export default function CardsPage() {
                 {openSections.step1 && (
                   <div className={styles.CardStepContent}>
                     <div className={styles.CardTypeGrid}>
-                      {CARD_TYPES.map((card) => {
-                        const selected = selectedCardTypeId === card.credit_card_type_id;
+                      {loadingCardTypes ? (
+                        <p>Loading card types...</p>
+                      ) : cardTypes.length > 0 ? (
+                        cardTypes.map((card: CardType) => {
+                          const selected = selectedCardTypeId === card.credit_card_type_id;
 
-                        return (
-                          <button
-                            key={card.credit_card_type_id}
-                            type="button"
-                            onClick={() => setSelectedCardTypeId(card.credit_card_type_id)}
-                            className={`${styles.CardTypeOption} ${
-                              selected ? styles.CardTypeOptionSelected : ""
-                            }`}
-                          >
-                            <div className={styles.CardTypeOptionTop}>
-                              <span className={styles.CardTypeName}>
-                                {card.cardName}
-                              </span>
-                              <span className={styles.CardTypeIssuerID}>
-                                {card.issuer_id}
-                              </span>
-                            </div>
+                          return (
+                            <button
+                              key={card.credit_card_type_id}
+                              type="button"
+                              onClick={() => setSelectedCardTypeId(card.credit_card_type_id)}
+                              className={`${styles.CardTypeOption} ${
+                                selected ? styles.CardTypeOptionSelected : ""
+                              }`}
+                            >
+                              {card.image_url && (
+                                <img
+                                  src={card.image_url}
+                                  alt={card.name}
+                                  style={{
+                                    width: '100%',
+                                    height: '120px',
+                                    objectFit: 'cover',
+                                    marginBottom: '0.5rem',
+                                    borderRadius: '4px',
+                                  }}
+                                />
+                              )}
+                              <div className={styles.CardTypeOptionTop}>
+                                <span className={styles.CardTypeName}>
+                                  {card.name}
+                                </span>
+                              </div>
 
-                            <div className={styles.CardTypeMeta}>
-                              <span>{card.network_id}</span>
-                              <span>${card.annual_fee} AF</span>
-                            </div>
-                          </button>
-                        );
-                      })}
+                              <div className={styles.CardTypeMeta}>
+                                <span>${card.annual_fee} AF</span>
+                              </div>
+                            </button>
+                          );
+                        })
+                      ) : (
+                        <p>No card types available</p>
+                      )}
                     </div>
                   </div>
                 )}
@@ -724,7 +890,7 @@ export default function CardsPage() {
                           className={styles.FormInput}
                           placeholder={
                             selectedCardType
-                              ? `Defaults to ${selectedCardType.cardName}`
+                              ? `Defaults to ${selectedCardType.name}`
                               : "Defaults to selected card name"
                           }
                         />
@@ -764,38 +930,38 @@ export default function CardsPage() {
                       </div>
 
                       <div className={styles.FormGroup}>
-                        <label className={styles.FormLabel}>Credit Limit</label>
+                        <label className={styles.FormLabel}>
+                          Expiration Date{" "}
+                          <span className={styles.RequiredStar}>*</span>
+                        </label>
                         <input
-                          type="number"
-                          min="0"
-                          value={creditLimit}
-                          onChange={(e) => setCreditLimit(e.target.value)}
+                          type="date"
+                          value={expirationDate}
+                          onChange={(e) => setExpirationDate(e.target.value)}
                           className={styles.FormInput}
-                          placeholder="5000"
                         />
                       </div>
 
                       <div className={styles.FormGroup}>
-                        <label className={styles.FormLabel}>Annual Fee</label>
-                        <input
-                          type="number"
-                          min="0"
-                          value={annual_fee}
-                          onChange={(e) => setAnnualFee(e.target.value)}
+                        <label className={styles.FormLabel}>
+                          Statement Closing Date
+                        </label>
+                        <select
+                          value={statementClosingDate}
+                          onChange={(e) =>
+                            setStatementClosingDate(e.target.value)
+                          }
                           className={styles.FormInput}
-                          placeholder="95"
-                        />
-                      </div>
-
-                      <div className={styles.FormGroupFull}>
-                        <label className={styles.FormLabel}>Notes</label>
-                        <textarea
-                          value={notes}
-                          onChange={(e) => setNotes(e.target.value)}
-                          className={styles.FormTextarea}
-                          rows={4}
-                          placeholder="Anything you want to remember about this card"
-                        />
+                        >
+                          <option value="">Select a day</option>
+                          {Array.from({ length: 31 }, (_, i) => i + 1).map(
+                            (day) => (
+                              <option key={day} value={day}>
+                                {day}
+                              </option>
+                            )
+                          )}
+                        </select>
                       </div>
                     </div>
                   </div>
@@ -829,7 +995,7 @@ export default function CardsPage() {
                 {openSections.step3 && (
                   <div className={styles.CardStepContent}>
                     <div className={styles.FormGrid}>
-                      <div className={styles.FormGroup}>
+                      <div className={`${styles.FormGroup} ${styles.CenteredFormGroup}`}>
                         <label className={styles.FormLabel}>
                           Current Rewards Balance
                         </label>
@@ -845,59 +1011,51 @@ export default function CardsPage() {
                         />
                       </div>
 
-                      <div className={styles.FormGroup}>
-                        <label className={styles.FormLabel}>
-                          Statement Closing Date
-                        </label>
-                        <select
-                          value={statementClosingDate}
-                          onChange={(e) =>
-                            setStatementClosingDate(e.target.value)
-                          }
-                          className={styles.FormInput}
-                        >
-                          <option value="">Select a day</option>
-                          {Array.from({ length: 31 }, (_, i) => i + 1).map(
-                            (day) => (
-                              <option key={day} value={day}>
-                                {day}
-                              </option>
-                            )
-                          )}
-                        </select>
-                      </div>
-
                       <div className={styles.FormGroupFull}>
                         <label className={styles.FormLabel}>
-                          Benefits Already Used This Cycle
+                          Benefits
                         </label>
-
-                        {selectedCardType?.benefits.length ? (
+                        {editingCardId ? (
+                          <div className={styles.ReadOnlyMessage}>
+                            <p>Seed state for promotions and benefits are not updatable</p>
+                          </div>
+                        ) : selectedCardType?.benefit && selectedCardType.benefit.length > 0 ? (
                           <div className={styles.DynamicFieldList}>
-                            {selectedCardType.benefits.map((benefit) => (
-                              <div key={benefit.credit_card_type_id} className={styles.FormGroup}>
-                                <label className={styles.FormLabel}>
-                                  {benefit.label}
-                                </label>
-                                <input
-                                  type="number"
-                                  min="0"
-                                  value={benefitsUsed[benefit.credit_card_type_id] || ""}
-                                  onChange={(e) =>
-                                    handleBenefitUsedChange(
-                                      benefit.credit_card_type_id,
-                                      e.target.value
-                                    )
-                                  }
-                                  className={styles.FormInput}
-                                  placeholder="0"
-                                />
+                            {selectedCardType.benefit.map((benefit: ApiBenefit) => (
+                              <div key={benefit.benefit_id} className={styles.BenefitCard}>
+                                <div className={styles.BenefitHeader}>
+                                  <h4 className={styles.BenefitName}>{benefit.name}</h4>
+                                  <p className={styles.BenefitDescription}>{benefit.description}</p>
+                                  <p className={styles.BenefitMeta}>
+                                    Resets: {benefit.reset_frequency}
+                                  </p>
+                                </div>
+                                <div className={styles.BenefitFields}>
+                                  <div className={styles.FormGroup}>
+                                    <label className={styles.FormLabel}>
+                                      Usage So Far
+                                    </label>
+                                    <input
+                                      type="number"
+                                      min="0"
+                                      value={benefitsUsed[benefit.benefit_id] || ""}
+                                      onChange={(e) =>
+                                        handleBenefitUsedChange(
+                                          benefit.benefit_id,
+                                          e.target.value
+                                        )
+                                      }
+                                      className={styles.FormInput}
+                                      placeholder="0"
+                                    />
+                                  </div>
+                                </div>
                               </div>
                             ))}
                           </div>
                         ) : (
                           <p className={styles.HelperText}>
-                            Select a card type to load benefit usage fields.
+                            No benefits available for this card.
                           </p>
                         )}
                       </div>
@@ -906,20 +1064,23 @@ export default function CardsPage() {
                         <label className={styles.FormLabel}>
                           Active Promotions
                         </label>
-
-                        {selectedCardType?.promotions.length ? (
+                        {editingCardId ? (
+                          <div className={styles.ReadOnlyMessage}>
+                            <p>Seed state for promotions and benefits are not updatable</p>
+                          </div>
+                        ) : selectedCardType?.promotion && selectedCardType.promotion.length > 0 ? (
                           <div className={styles.CheckboxList}>
-                            {selectedCardType.promotions.map((promotion) => {
+                            {selectedCardType.promotion.map((promotion: ApiPromotion) => {
                               const promotionState =
-                                activePromotions[promotion.credit_card_type_id] || {
+                                activePromotions[promotion.promotion_id] || {
                                   active: false,
-                                  created_at: "",
-                                  spent: "",
+                                  start_date: "",
+                                  initial_spend: "",
                                 };
 
                               return (
                                 <div
-                                  key={promotion.credit_card_type_id}
+                                  key={promotion.promotion_id}
                                   className={styles.PromotionItem}
                                 >
                                   <label className={styles.CheckboxRow}>
@@ -927,25 +1088,33 @@ export default function CardsPage() {
                                       type="checkbox"
                                       checked={promotionState.active}
                                       onChange={() =>
-                                        handlePromotionToggle(promotion.credit_card_type_id)
+                                        handlePromotionToggle(promotion.promotion_id)
                                       }
                                     />
-                                    <span>{promotion.label}</span>
+                                    <div>
+                                      <span className={styles.PromotionName}>{promotion.name}</span>
+                                      <p className={styles.PromotionDescription}>
+                                        {promotion.description}
+                                      </p>
+                                      <p className={styles.PromotionCategory}>
+                                        Category: {promotion.promotion_category}
+                                      </p>
+                                    </div>
                                   </label>
 
                                   {promotionState.active && (
                                     <div className={styles.PromotionSubFields}>
                                       <div className={styles.FormGroup}>
                                         <label className={styles.FormLabel}>
-                                          Promotion Start Date
+                                          Start Date
                                         </label>
                                         <input
                                           type="date"
-                                          value={promotionState.created_at}
+                                          value={promotionState.start_date}
                                           onChange={(e) =>
                                             handlePromotionFieldChange(
-                                              promotion.credit_card_type_id,
-                                              "created_at",
+                                              promotion.promotion_id,
+                                              "start_date",
                                               e.target.value
                                             )
                                           }
@@ -955,16 +1124,16 @@ export default function CardsPage() {
 
                                       <div className={styles.FormGroup}>
                                         <label className={styles.FormLabel}>
-                                          Amount Already Spent
+                                          Initial Spend
                                         </label>
                                         <input
                                           type="number"
                                           min="0"
-                                          value={promotionState.spent}
+                                          value={promotionState.initial_spend}
                                           onChange={(e) =>
                                             handlePromotionFieldChange(
-                                              promotion.credit_card_type_id,
-                                              "spent",
+                                              promotion.promotion_id,
+                                              "initial_spend",
                                               e.target.value
                                             )
                                           }
@@ -980,7 +1149,7 @@ export default function CardsPage() {
                           </div>
                         ) : (
                           <p className={styles.HelperText}>
-                            Select a card type to load promotion tracking.
+                            No active promotions for this card.
                           </p>
                         )}
                       </div>

@@ -8,6 +8,16 @@ export interface UpsertUserCardBody {
   statement_close_day: number
   initial_rewards_balance: number
   tracking_start_date: string
+  benefits?: Array<{
+    benefit_id: string
+    cycle_start_date?: string
+    initial_amount_used: number
+  }>
+  promotions?: Array<{
+    promotion_id: string
+    start_date: string
+    initial_spend: number
+  }>
 }
 
 export async function upsertUserCard(accessToken: string, body: UpsertUserCardBody) {
