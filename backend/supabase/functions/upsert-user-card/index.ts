@@ -24,6 +24,13 @@ function calculateBenefitCycleDates(
     };
   }
   
+  if (resetFrequency === 'one_time') {
+    return {
+      cycle_start_date: new Date().toISOString().split('T')[0],
+      cycle_end_date: '9999-12-31',
+    };
+  }
+  
   if (resetFrequency === 'monthly') {
     const currentYear = today.getFullYear();
     const currentMonth = today.getMonth();
