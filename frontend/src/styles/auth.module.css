@@ -499,6 +499,16 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 /* --------CARDS----------- */
 .cardsPage {
   padding: 7rem 2rem 3rem;
@@ -519,7 +529,7 @@
 .cardsTitle {
   margin: 0;
   font-size: 2rem;
-  color: #617672;
+  color: #8ea98e;
 }
 
 .cardsSubtitle {
@@ -552,7 +562,7 @@
 
 .creditCardBox {
   background: linear-gradient(135deg, #617672, #9ecfad);
-  color: white;
+  color: rgb(255, 255, 255);
   border-radius: 20px;
   padding: 1.4rem;
   min-height: 180px;
@@ -571,8 +581,16 @@
   opacity: 0.95;
 }
 
-.cardIssuer {
-  font-weight: 700;
+.CardIssuer {
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+.CardChip {
+  width: 42px;
+  height: 28px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #d4af37, #f1d77a);
 }
 
 .cardRewards {
@@ -585,7 +603,7 @@
 .cardName {
   margin: 1.2rem 0 0.8rem;
   font-size: 1.3rem;
-  color: white;
+  color: rgb(160, 202, 132);
 }
 
 .cardNumber {
@@ -698,7 +716,7 @@
 
 .cardMenuButton {
   border: none;
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.8);
   color: white;
   width: 34px;
   height: 34px;
@@ -1656,6 +1674,26 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* ------------ Cards Pages ------------ */
 .CardPage {
   min-height: 100vh;
@@ -1891,25 +1929,41 @@
 
 .CardBox {
   position: relative;
-  background: linear-gradient(135deg, #1f4d3a, #2f6a50);
-  color: white;
-  border-radius: 24px;
-  padding: 1.35rem;
-  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.08);
+  color: rgb(102, 176, 97);
+  border-radius: 18px;
+  padding: 1.4rem;
   overflow: hidden;
   cursor: pointer;
-  transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  min-height: 220px;
+  aspect-ratio: 1.6 / 1;
+  min-height: 190px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
+.CardBox::before {
+  content: "";
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    120deg,
+    transparent 40%,
+    rgba(255,255,255,0.12),
+    transparent 60%
+  );
+  transform: rotate(25deg);
+  top: -50%;
+  left: -50%;
+  pointer-events: none;
+}
+
+
 .CardBox:hover {
-  transform: translateY(-6px) scale(1.01);
-  box-shadow: 0 24px 46px rgba(0, 0, 0, 0.14);
-  filter: saturate(1.03);
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25);
 }
 
 .CardTop {
@@ -1934,18 +1988,15 @@
 
 .CardName {
   margin: 0;
-  font-size: 1.45rem;
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  line-height: 1.2;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
 }
 
 .CardNumber {
-  margin: 0;
-  font-size: 1.15rem;
-  font-weight: 700;
-  letter-spacing: 1.4px;
-  color: rgba(255, 255, 255, 0.98);
+  font-size: 1rem;
+  letter-spacing: 2px;
+  opacity: 0.95;
 }
 
 .CardMeta {
@@ -2001,7 +2052,7 @@
 .CardMenuButton {
   border: none;
   background: rgba(255, 255, 255, 0.14);
-  color: white;
+  color: rgb(28, 58, 13);
   width: 34px;
   height: 34px;
   border-radius: 10px;
@@ -2780,6 +2831,96 @@
   transform: none;
   box-shadow: none;
 }
+
+
+/*DIFFERENT CARD TYPE STLYING*/
+.chase {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #0b1f3b, #1f4b99);
+  color: white;
+  border: none;
+  font-family: "Helvetica Neue", Arial, sans-serif;
+
+}
+
+.chase .CardNumber {
+  letter-spacing: 2.5px;
+  font-variant-numeric: tabular-nums;
+  font-family: "Helvetica Neue", Arial, sans-serif;
+}
+
+
+.amex {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(
+    135deg,
+    #d4af37 0%,
+    #f5d76e 25%,
+    #caa24c 50%,
+    #f1c40f 75%,
+    #b8860b 100%
+  );
+
+  border: none;
+  color: #fff;
+}
+
+.amex .CardNumber {
+  letter-spacing: 2.5px;
+  font-variant-numeric: tabular-nums;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.capitalone {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #111111, #2a2a2a);
+  color: white;
+  border: none;
+  font-family: "Inter", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+}
+
+.capitalone .CardNumber {
+  letter-spacing: 2.5px;
+  font-variant-numeric: tabular-nums;
+  font-family: "Inter", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /* ====================== PROMOTIONS PAGE ====================== */

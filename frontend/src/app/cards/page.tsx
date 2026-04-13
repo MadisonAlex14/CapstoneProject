@@ -514,7 +514,14 @@ export default function CardsPage() {
           {cards.map((card) => (
             <div
               key={card.credit_card_type_id}
-              className={styles.CardBox}
+              className={`
+                ${styles.CardBox}
+                ${card.cardName.toLowerCase().includes("chase") ? styles.chase :
+                  card.cardName.toLowerCase().includes("amex") ? styles.amex :
+                  card.cardName.toLowerCase().includes("capital one") ? styles.capitalone :
+                  styles.defaultCard
+                }
+              `}
               onClick={() => handleCardClick(card.credit_card_type_id)}
               role="button"
               tabIndex={0}
