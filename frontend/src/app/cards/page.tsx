@@ -576,6 +576,8 @@ export default function CardsPage() {
                         Delete
                       </button>
                     </div>
+
+
                   )}
                 </div>
               </div>

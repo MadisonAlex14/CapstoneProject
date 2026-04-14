@@ -134,283 +134,352 @@
   font-size: 0.95rem;
 }
 
-/* ---Profile--- */
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* --- GLOBAL PAGE --- */
 .p-page,
 .s-page {
   min-height: 100vh;
   width: 100%;
-  background: #f4f6f8;
-  padding: 4rem 1rem 2rem 1rem; /* more space at top */
+  background: radial-gradient(circle at top, #f6fbf8, #eef3f0);
+  padding: 4rem 1rem 2rem;
   box-sizing: border-box;
+  color: #143d2f;
 }
 
+/* --- CONTAINER --- */
 .p-container {
   max-width: 1100px;
-  width: 100%;
   margin: 0 auto;
-  box-sizing: border-box;
+  width: 100%;
 }
 
+/* =========================
+   HERO SECTION
+   ========================= */
 .p-heroCard {
   display: flex;
   align-items: center;
   gap: 1.25rem;
-  background: linear-gradient(135deg, #dfeee7, #f7fbf8);
-  border: 1px solid #d8e7df;
-  border-radius: 24px;
   padding: 2rem;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.06);
-  margin-bottom: 2rem;
-  width: 100%;
-  box-sizing: border-box;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #e8f5ee, #f7fbf8);
+  border: 1px solid rgba(34, 197, 94, 0.15);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.06);
   flex-wrap: wrap;
+  margin-bottom: 2rem;
 }
 
+/* =========================
+   AVATAR
+   ========================= */
 .p-avatar {
-  width: 72px;
-  height: 72px;
+  width: 110px;
+  height: 110px;
   border-radius: 50%;
-  background: #4f7c6b;
-  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.8rem;
-  font-weight: 700;
+  background: #e5e7eb;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
 }
 
-.p-subtitle {
-  color: #5f6f68;
+.p-avatar:hover {
+  transform: scale(1.06);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
 }
 
+.p-avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+/* --- AVATAR DROPDOWN --- */
+.p-avatarDropdown {
+  position: absolute;
+  top: 120%;
+  left: 50px;
+  width: 300px;
+  padding: 18px;
+  border-radius: 16px;
+  background: rgba(20, 61, 47, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  z-index: 20;
+  box-shadow: 0px 10px 20px rgba(51, 129, 0, 0.2);
+}
+
+.p-dropdownTitle {
+  font-size: 12px;
+  color: #d8fbe5;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.p-avatarGrid {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.p-avatarWrap {
+  position: relative;
+}
+
+.p-avatarOption {
+  width: 78px;
+  height: 78px;
+  border-radius: 50%;
+  object-fit: cover;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.p-avatarOption:hover {
+  transform: translateY(-4px) scale(1.08);
+  border-color: #22c55e;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+}
+
+.p-uploadLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #d8fbe5;
+  cursor: pointer;
+}
+
+/* =========================
+   GRID LAYOUT
+   ========================= */
 .p-grid {
- width: 100%;
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
   gap: 1.5rem;
 }
-.p-grid > .card {
-  max-width: 100%;
-  width: 100%;
+
+/* =========================
+   MODERN CARDS (MAIN UPGRADE)
+   ========================= */
+.card {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+  border-radius: 20px;
+  border: 1px solid rgba(34, 197, 94, 0.12);
+  padding: 1.6rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
 }
 
-.p-cardTitle {
-  margin-bottom: 1.5rem;
-  color: #23473b;
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.12);
 }
 
-.p-infoGroup {
+/* =========================
+   CARD HEADER
+   ========================= */
+.p-cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 1.2rem;
 }
 
-.p-statBox {
-  display: flex;
-  justify-content: space-between;
-  background: #f7faf8;
-  border: 1px solid #e1ebe5;
-  border-radius: 14px;
-  padding: 1rem;
-  margin-bottom: 1rem;
+.p-cardTitle {
+  font-size: 1.05rem;
+  font-weight: 800;
+  text-align: center;
+  color: #143d2f;
+  padding-bottom: 20px;
 }
 
-.p-statLabel {
-  color: #5e6b65;
-}
-
-.p-statValue {
-  color: #2f5e4e;
-  font-weight: 700;
-}
-
-.p-helperText {
-  margin-top: 1rem;
-  color: #6d7a74;
-}
-.p-cardHeader {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  margin-bottom: 1rem;
-}
-
-.p-menuWrap {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-90%);
-
-}
-
+/* =========================
+   MENU (⋮)
+   ========================= */
 .p-menuButton {
   background: transparent;
   border: none;
   font-size: 22px;
-  font-weight: 700;
   cursor: pointer;
-  color: #1f4d3a;
-  padding: 0 6px;
-  line-height: 1;
+  color: #14532d;
+  transition: 0.2s ease;
 }
 
 .p-menuButton:hover {
-  color: #16382b;
+  color: #0f3a27;
 }
 
 .p-menuDropdown {
   position: absolute;
-  top: 30px;
+  top: 40px;
   right: 0;
-  background: #ffffff;
-  border: 1px solid #d9e5dd;
-  border-radius: 10px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-  min-width: 120px;
-  z-index: 20;
+  min-width: 150px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(34, 197, 94, 0.15);
+  border-radius: 14px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
   overflow: hidden;
+  animation: fadeIn 0.18s ease;
 }
 
-.p-menuItem {
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.p-menuDropdown button {
   width: 100%;
   text-align: left;
-  padding: 10px 14px;
-  background: #ffffff;
+  padding: 12px 14px;
+  background: transparent;
   border: none;
   cursor: pointer;
-  color: #1f4d3a;
-  font-size: 14px;
+  color: #143d2f;
+  transition: 0.15s ease;
+}
+
+.p-menuDropdown button:hover {
+  background: rgba(34, 197, 94, 0.08);
+  padding-left: 18px;
+}
+
+/* =========================
+   INPUTS (MODERN FINTECH STYLE)
+   ========================= */
+.p-infoGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 1.2rem;
+}
+
+.p-infoGroup label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #2f5e4e;
+}
+
+.p-infoGroup input {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(34, 197, 94, 0.15);
+  background: rgba(249, 253, 251, 0.7);
+  color: #143d2f;
+  transition: 0.2s ease;
+}
+
+.p-infoGroup input:focus {
+  outline: none;
+  border-color: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.12);
+  background: #fff;
+}
+
+.p-infoGroup input[readonly] {
+  background: transparent;
+  border: none;
+  padding-left: 0;
   font-weight: 500;
 }
 
-.p-menuItem:hover {
-  background: #f4f8f5;
-}
-
-.p-editActions {
-  display: flex;
-  gap: 10px;
-  margin-top: 16px;
-}
-
+/* =========================
+   BUTTONS
+   ========================= */
 .p-saveButton {
-  background-color: #1f4d3a;
-  color: #ffffff;
+  background: linear-gradient(135deg, #166534, #14532d);
+  color: #fff;
   border: none;
   border-radius: 10px;
   padding: 10px 16px;
-  cursor: pointer;
   font-weight: 600;
-  transition: background-color 0.2s ease;
+  cursor: pointer;
 }
 
 .p-saveButton:hover {
-  background-color: #16382b;
+  background: #0f3a27;
 }
 
 .p-cancelButton {
-  background-color: #e8efeb;
-  color: #1f4d3a;
+  background: #e6f4ec;
+  color: #14532d;
   border: none;
   border-radius: 10px;
   padding: 10px 16px;
-  cursor: pointer;
   font-weight: 600;
-  transition: background-color 0.2s ease;
+  cursor: pointer;
 }
 
 .p-cancelButton:hover {
-  background-color: #dbe7df;
+  background: #d2eadd;
 }
-.p-cardHeaderLeft {
+
+/* =========================
+   STAT BOXES
+   ========================= */
+.p-statBox {
   display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.p-cardSubtitle {
-  margin: 0;
-  font-size: 0.92rem;
-  color: #6b7b74;
-  line-height: 1.5;
-}
-
-.p-scoreGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
-  margin-top: 0.5rem;
-}
-
-.p-scoreBox {
-  background: linear-gradient(135deg, #f7fbf8, #eef6f1);
-  border: 1px solid #dce8e1;
-  border-radius: 18px;
+  justify-content: space-between;
   padding: 1rem;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(34, 197, 94, 0.12);
 }
 
-.p-scoreLabel {
-  display: block;
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: #61716a;
-  margin-bottom: 0.45rem;
+.p-statLabel {
+  color: #2f5e4e;
 }
 
-.p-scoreValue {
-  font-size: 1.9rem;
-  font-weight: 800;
-  color: #1f4d3a;
-  line-height: 1;
+.p-statValue {
+  font-weight: 700;
+  color: #14532d;
 }
 
-.p-scoreEmpty {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #98a7a0;
-  line-height: 1.2;
-}
-
+/* =========================
+   BADGE
+   ========================= */
 .p-goalBadge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   margin-top: 0.8rem;
   padding: 0.45rem 0.8rem;
   border-radius: 999px;
-  background: #e9f5ee;
-  color: #21543d;
-  font-size: 0.82rem;
+  background: #dcfce7;
+  color: #166534;
+  font-size: 0.8rem;
   font-weight: 700;
-  border: 1px solid #d3e6da;
 }
 
-.p-sectionNote {
-  margin-top: 1rem;
-  padding: 0.95rem 1rem;
-  border-radius: 14px;
-  background: #f8fbf9;
-  border: 1px dashed #d8e5de;
-  color: #66756f;
-  font-size: 0.93rem;
-  line-height: 1.6;
-}
-
-.p-deleteText {
-  color: #b42318;
-}
-
-.p-deleteText:hover {
-  background: #fff1f1;
-}
-
+/* =========================
+   MOBILE
+   ========================= */
 @media (max-width: 700px) {
   .p-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .p-scoreGrid {
     grid-template-columns: 1fr;
   }
 
@@ -419,19 +488,178 @@
   }
 
   .p-avatar {
-    width: 64px;
-    height: 64px;
-    font-size: 1.5rem;
+    width: 70px;
+    height: 70px;
   }
-
-  .FormGrid,
-  .CardTypeGrid,
-  .PromotionSubFields {
-    grid-template-columns: 1fr;
-  }
-
-
 }
+
+/* Progress highlight bar style */
+.p-progressBar {
+  height: 10px;
+  width: 100%;
+  background: #e6f4ec;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.p-progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #22c55e, #14532d);
+  transition: width 0.4s ease;
+}
+
+/* =========================
+   PROGRESS & INSIGHTS CARD
+   ========================= */
+
+.p-insightBox {
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(34, 197, 94, 0.15);
+  border-radius: 16px;
+  padding: 1rem;
+  margin-top: 1rem;
+  backdrop-filter: blur(10px);
+}
+
+.p-insightTitle {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #2f5e4e;
+  margin-bottom: 6px;
+}
+
+.p-insightText {
+  font-size: 0.95rem;
+  color: #143d2f;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* progress label row */
+.p-progressRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.p-progressLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #2f5e4e;
+}
+
+.p-progressValue {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #14532d;
+}
+
+/* progress bar */
+.p-progressBar {
+  height: 10px;
+  width: 100%;
+  background: #e6f4ec;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.p-progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #22c55e, #14532d);
+  transition: width 0.4s ease;
+  border-radius: 999px;
+}
+
+/* =========================
+   CREDIT HEALTH OVERVIEW
+   ========================= */
+
+.p-healthBox {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(34, 197, 94, 0.15);
+  border-radius: 16px;
+  padding: 1.2rem;
+  margin-top: 1rem;
+  backdrop-filter: blur(10px);
+}
+
+.p-healthScore {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #14532d;
+  margin-top: 6px;
+}
+
+.p-healthLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #2f5e4e;
+}
+
+.p-healthBadge {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #166534;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border: 1px solid #bbf7d0;
+}
+
+/* insight status colors */
+.p-insightGood {
+  color: #166534;
+  font-weight: 600;
+}
+
+.p-insightMid {
+  color: #92400e;
+  font-weight: 600;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* ------------Settings-------------------- */
 .s-container {
   max-width: 1100px;
