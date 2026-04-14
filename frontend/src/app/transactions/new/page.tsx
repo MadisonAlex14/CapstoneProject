@@ -1,156 +1,168 @@
 "use client";
 
-import { useMemo, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import '@/App.css';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { getUserCards } from '../../../lib/functions/getUserCards';
+import { getMccLookup } from '../../../lib/functions/getMccLookup';
+import { upsertTransaction } from '../../../lib/functions/upsertTransaction';
 
-type Transaction = {
-  id: string;
-  date: string;
-  merchant: string;
-  mcc: number;
-  amount: number;
-  card: string;
-  category: string;
-  reward: number;
-  benefit: string;
-  notes: string;
-  bookedThroughPortal?: boolean;
+type UserCard = {
+  credit_card_id: string;
+  nickname: string;
+  last_four: string;
+  credit_card_type: { name: string; issuer_id: string };
 };
 
-const mccTable = [
-  { mcc: 5411, description: 'Grocery Stores', category: 'Groceries' },
-  { mcc: 5812, description: 'Eating Places, Restaurants', category: 'Dining' },
-  { mcc: 5541, description: 'Service Stations', category: 'Fuel' },
-  { mcc: 5912, description: 'Drug Stores and Pharmacies', category: 'Pharmacy' },
-  { mcc: 5691, description: "Men's and Boys' Clothing", category: 'Clothing' },
-  { mcc: 4814, description: 'Telecommunication Services', category: 'Communication' },
-  { mcc: 5311, description: 'Department Stores', category: 'Department Store' },
-  { mcc: 5999, description: 'Miscellaneous and Specialty Retailers', category: 'Miscellaneous' },
-];
-
-const STORAGE_KEY = 'capstone_transactions_v1';
-
-function getSavedTransactions(): Transaction[] {
-  if (typeof window === 'undefined') return [];
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (!saved) return [];
-    return JSON.parse(saved) as Transaction[];
-  } catch {
-    return [];
-  }
-}
-
-function saveTransactions(transactions: Transaction[]) {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
-}
-
-const sampleCardOptions = ['Platinum 3472', 'Chase Sapphire Preferred 1234', 'Chroma Rewards 4481'];
+type MccResult = {
+  mcc_id: string;
+  code: string;
+  description: string;
+};
 
 const todayIso = () => new Date().toISOString().slice(0, 10);
 
 export default function Page() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const preselectCard = searchParams.get('cardId') || '';
 
-  const transactions = useMemo(() => getSavedTransactions(), []);
-  const availableCards = useMemo(() => {
-    const sourceCards = new Set(sampleCardOptions);
-    transactions.forEach((t) => sourceCards.add(t.card));
-    return Array.from(sourceCards);
-  }, [transactions]);
-
-  const merchants = useMemo(() => {
-    const names = Array.from(new Set(transactions.map((tx) => tx.merchant).filter(Boolean)));
-    return names.sort();
-  }, [transactions]);
+  const [userCards, setUserCards] = useState<UserCard[]>([]);
+  const [loadingCards, setLoadingCards] = useState(true);
+  const [formError, setFormError] = useState('');
+  const [saving, setSaving] = useState(false);
 
   const [form, setForm] = useState({
-    card: preselectCard || availableCards[0] || '',
+    credit_card_id: '',
     date: todayIso(),
     merchant: '',
-    mcc: 5411,
+    mcc_id: '',
+    mcc_label: '',
     amount: '',
     notes: '',
     bookedThroughPortal: false,
   });
 
   const [mccSearch, setMccSearch] = useState('');
-  const [merchantQuery, setMerchantQuery] = useState('');
+  const [mccResults, setMccResults] = useState<MccResult[]>([]);
+  const [mccSearching, setMccSearching] = useState(false);
+  const mccDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const merchantSuggestions = useMemo(() => {
-    if (!merchantQuery) return merchants.slice(0, 5);
-    return merchants.filter((name) => name.toLowerCase().includes(merchantQuery.toLowerCase())).slice(0, 5);
-  }, [merchants, merchantQuery]);
+  // -------------------- LOAD CARDS --------------------
+  useEffect(() => {
+    const loadCards = async () => {
+      try {
+        const localToken = localStorage.getItem('accessToken');
+        const supabaseToken = localStorage.getItem('supabase.auth.token');
+        let accessToken: string | null = localToken;
 
-  const mccOptions = useMemo(() => {
-    const query = mccSearch.trim().toLowerCase();
-    if (!query) return mccTable;
-    return mccTable.filter((item) =>
-      item.mcc.toString().includes(query) ||
-      item.description.toLowerCase().includes(query) ||
-      item.category.toLowerCase().includes(query),
-    );
+        if (!accessToken && supabaseToken) {
+          const session = JSON.parse(supabaseToken);
+          accessToken = session?.currentSession?.access_token || session?.access_token || null;
+        }
+
+        if (!accessToken) throw new Error('No access token');
+
+        const cards = await getUserCards(accessToken);
+        setUserCards(cards ?? []);
+        if (cards?.length > 0) {
+          setForm((f) => ({ ...f, credit_card_id: cards[0].credit_card_id }));
+        }
+      } catch (err) {
+        console.error('Failed to load cards', err);
+      } finally {
+        setLoadingCards(false);
+      }
+    };
+
+    loadCards();
+  }, []);
+
+  // -------------------- MCC SEARCH --------------------
+  useEffect(() => {
+    if (mccDebounceRef.current) clearTimeout(mccDebounceRef.current);
+    if (!mccSearch || mccSearch.length < 2) {
+      setMccResults([]);
+      return;
+    }
+    mccDebounceRef.current = setTimeout(async () => {
+      setMccSearching(true);
+      try {
+        const localToken = localStorage.getItem('accessToken');
+        const supabaseToken = localStorage.getItem('supabase.auth.token');
+        let accessToken: string | null = localToken;
+
+        if (!accessToken && supabaseToken) {
+          const session = JSON.parse(supabaseToken);
+          accessToken = session?.currentSession?.access_token || session?.access_token || null;
+        }
+
+        if (accessToken) {
+          const results = await getMccLookup(accessToken, mccSearch);
+          setMccResults(results ?? []);
+        }
+      } catch (err) {
+        console.error('MCC lookup failed', err);
+        setMccResults([]);
+      } finally {
+        setMccSearching(false);
+      }
+    }, 300);
   }, [mccSearch]);
 
-  const portalEligible = form.card.toLowerCase().includes('chase');
+  // Portal eligible if selected card is Chase
+  const portalEligible = useMemo(() => {
+    const card = userCards.find((c) => c.credit_card_id === form.credit_card_id);
+    const name = card?.credit_card_type?.name ?? '';
+    return name.toLowerCase().includes('chase');
+  }, [form.credit_card_id, userCards]);
 
-  const handleMerchantSelect = (name: string) => {
-    const existing = transactions.find((tx) => tx.merchant.toLowerCase() === name.toLowerCase());
-    setForm((prev) => ({
-      ...prev,
-      merchant: name,
-      mcc: existing?.mcc ?? prev.mcc,
-    }));
-    setMerchantQuery('');
-  };
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  // -------------------- SUBMIT --------------------
+  const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
+    setFormError('');
 
-    if (!form.card || !form.date || !form.merchant || !form.mcc || !form.amount) {
-      alert('Please fill all required fields.');
+    if (!form.credit_card_id || !form.date || !form.merchant || !form.mcc_id || !form.amount) {
+      setFormError('Please fill all required fields.');
       return;
     }
 
     const parsedAmount = Number(form.amount);
     if (Number.isNaN(parsedAmount) || parsedAmount === 0) {
-      alert('Amount must be a valid non-zero number.');
+      setFormError('Amount must be a valid non-zero number.');
       return;
     }
 
-    const targetMcc = mccTable.find((x) => x.mcc === Number(form.mcc));
-    if (!targetMcc) {
-      alert('Please select a valid MCC.');
-      return;
+    setSaving(true);
+    try {
+      const localToken = localStorage.getItem('accessToken');
+      const supabaseToken = localStorage.getItem('supabase.auth.token');
+      let accessToken: string | null = localToken;
+
+      if (!accessToken && supabaseToken) {
+        const session = JSON.parse(supabaseToken);
+        accessToken = session?.currentSession?.access_token || session?.access_token || null;
+      }
+
+      if (!accessToken) throw new Error('No access token');
+
+      await upsertTransaction(accessToken, {
+        credit_card_id: form.credit_card_id,
+        transaction_date: form.date,
+        merchant_name: form.merchant,
+        amount: parsedAmount,
+        mcc_id: form.mcc_id,
+        booked_through_issuer_portal: form.bookedThroughPortal,
+        notes: form.notes,
+      });
+
+      router.push('/transactions');
+    } catch (err: any) {
+      setFormError(err.message || 'Failed to save transaction');
+      console.error('Error saving transaction:', err);
+    } finally {
+      setSaving(false);
     }
-
-    const rewardBase = parsedAmount * 0.03;
-    const reward = portalEligible && form.bookedThroughPortal ? parsedAmount * 0.05 : rewardBase;
-    const newTx: Transaction = {
-      id: `tx-${Date.now()}`,
-      date: form.date,
-      merchant: form.merchant,
-      mcc: Number(form.mcc),
-      amount: parsedAmount,
-      card: form.card,
-      category: targetMcc.category,
-      reward,
-      benefit: form.bookedThroughPortal ? `${targetMcc.category} portal bonus applied` : '',
-      notes: form.notes,
-      bookedThroughPortal: form.bookedThroughPortal,
-    };
-
-    const current = getSavedTransactions();
-    const next = [newTx, ...current];
-    saveTransactions(next);
-
-    router.push('/transactions');
   };
 
+  // -------------------- RENDER --------------------
   return (
     <div className="main-content transactions-page CardDetailsPage">
       <h1>Add Transaction</h1>
@@ -159,17 +171,22 @@ export default function Page() {
       <form className="CardDetailsSection modular-form" onSubmit={handleSubmit}>
         <div className="form-field">
           <label>Card (Required)</label>
-          <select
-            value={form.card}
-            onChange={(e) => setForm((prev) => ({ ...prev, card: e.target.value }))}
-            required
-          >
-            {availableCards.map((card) => (
-              <option key={card} value={card}>
-                {card}
-              </option>
-            ))}
-          </select>
+          {loadingCards ? (
+            <p>Loading cards...</p>
+          ) : (
+            <select
+              value={form.credit_card_id}
+              onChange={(e) => setForm((prev) => ({ ...prev, credit_card_id: e.target.value }))}
+              required
+            >
+              <option value="">Select a card</option>
+              {userCards.map((c) => (
+                <option key={c.credit_card_id} value={c.credit_card_id}>
+                  {c.nickname ? `${c.nickname} ••••${c.last_four}` : `${c.credit_card_type?.name} ••••${c.last_four}`}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
 
         <div className="form-field">
@@ -187,47 +204,53 @@ export default function Page() {
           <input
             type="text"
             value={form.merchant}
-            onChange={(e) => {
-              setForm((prev) => ({ ...prev, merchant: e.target.value }));
-              setMerchantQuery(e.target.value);
-            }}
+            onChange={(e) => setForm((prev) => ({ ...prev, merchant: e.target.value }))}
             placeholder="e.g. Chipotle Mexican Grill"
             required
           />
-          {merchantSuggestions.length > 0 && form.merchant && (
-            <ul style={{ listStyle: 'none', margin: '0.4rem 0', padding: 0, border: '1px solid #d8e5de', borderRadius: 10, maxHeight: 150, overflowY: 'auto', background: 'white' }}>
-              {merchantSuggestions.map((name) => (
-                <li
-                  key={name}
-                  style={{ padding: '0.45rem 0.65rem', cursor: 'pointer', borderBottom: '1px solid #edf2f7' }}
-                  onClick={() => handleMerchantSelect(name)}
-                >
-                  {name}
-                </li>
-              ))}
-            </ul>
-          )}
         </div>
 
         <div className="form-field">
           <label>Merchant Category Code (MCC) (Required)</label>
-          <input
-            type="text"
-            value={mccSearch}
-            onChange={(e) => setMccSearch(e.target.value)}
-            placeholder="Search by MCC/description/category"
-          />
-          <select
-            value={form.mcc}
-            onChange={(e) => setForm((prev) => ({ ...prev, mcc: Number(e.target.value) }))}
-            required
-          >
-            {mccOptions.map((item) => (
-              <option key={item.mcc} value={item.mcc}>
-                {item.mcc} - {item.description}
-              </option>
-            ))}
-          </select>
+          {form.mcc_id ? (
+            <div>
+              <span>{form.mcc_label}</span>
+              <button
+                type="button"
+                onClick={() => { setForm((f) => ({ ...f, mcc_id: '', mcc_label: '' })); setMccSearch(''); setMccResults([]); }}
+                style={{ marginLeft: '0.75rem', fontSize: '0.8rem', cursor: 'pointer' }}
+              >
+                Clear
+              </button>
+            </div>
+          ) : (
+            <>
+              <input
+                type="text"
+                value={mccSearch}
+                onChange={(e) => setMccSearch(e.target.value)}
+                placeholder="Search by MCC code or description (e.g. Grocery, 5411)"
+              />
+              {mccSearching && <p style={{ fontSize: '0.8rem', color: '#6b7280', margin: '0.25rem 0' }}>Searching...</p>}
+              {mccResults.length > 0 && (
+                <ul style={{ listStyle: 'none', margin: '0.4rem 0', padding: 0, border: '1px solid #d8e5de', borderRadius: 10, maxHeight: 180, overflowY: 'auto', background: 'white' }}>
+                  {mccResults.map((m) => (
+                    <li
+                      key={m.mcc_id}
+                      style={{ padding: '0.45rem 0.65rem', cursor: 'pointer', borderBottom: '1px solid #edf2f7' }}
+                      onClick={() => {
+                        setForm((f) => ({ ...f, mcc_id: m.mcc_id, mcc_label: `${m.code} - ${m.description}` }));
+                        setMccSearch('');
+                        setMccResults([]);
+                      }}
+                    >
+                      <strong>{m.code}</strong> — {m.description}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
+          )}
         </div>
 
         <div className="form-field">
@@ -258,17 +281,21 @@ export default function Page() {
                 checked={form.bookedThroughPortal}
                 onChange={(e) => setForm((prev) => ({ ...prev, bookedThroughPortal: e.target.checked }))}
               />
-              Booked through issuer portal for portal bonus (e.g., Chase 5x travel)
+              {' '}Booked through issuer portal for portal bonus (e.g., Chase 5x travel)
             </label>
           </div>
+        )}
+
+        {formError && (
+          <p style={{ color: '#b42318', fontSize: '0.875rem' }}>{formError}</p>
         )}
 
         <div className="CardDetailsActionRow">
           <button type="button" className="CardDetailsButtonSecondary" onClick={() => router.push('/transactions')}>
             Cancel
           </button>
-          <button type="submit" className="CardDetailsButtonPrimary">
-            Add Transaction
+          <button type="submit" className="CardDetailsButtonPrimary" disabled={saving || !form.mcc_id}>
+            {saving ? 'Saving...' : 'Add Transaction'}
           </button>
         </div>
       </form>
