@@ -145,6 +145,7 @@ async function updatePromotionProgress(creditCardId: string, transactionDate: st
 
   if (!activePromos || activePromos.length === 0) return
 
+  // Assume all promotions are spend-based for now
   for (const promo of activePromos) {
     const p = promo as any
     await supabase
