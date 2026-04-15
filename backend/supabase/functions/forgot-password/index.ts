@@ -3,20 +3,36 @@ import { supabase } from "../_shared/createClient.ts"
 import { withCors } from "../_shared/cors.ts"
 
 Deno.serve(async (req) => {
+  console.log('[FORGOT-PASSWORD] Received request:', { method: req.method, url: req.url })
+  
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: withCors() })
   }
 
   if (req.method !== 'POST') {
+    console.log('[FORGOT-PASSWORD] Invalid method:', req.method)
     return new Response(JSON.stringify({ error: 'Method not allowed' }), {
       status: 405,
       headers: withCors({ 'Content-Type': 'application/json' }),
     })
   }
 
-  const { email } = await req.json()
+  let requestBody
+  try {
+    requestBody = await req.json()
+    console.log('[FORGOT-PASSWORD] Request body received:', { email: requestBody.email })
+  } catch (parseError) {
+    console.error('[FORGOT-PASSWORD] Failed to parse request body:', parseError)
+    return new Response(JSON.stringify({ error: 'Invalid request body' }), {
+      status: 400,
+      headers: withCors({ 'Content-Type': 'application/json' }),
+    })
+  }
+
+  const { email } = requestBody
 
   if (!email) {
+    console.warn('[FORGOT-PASSWORD] Email is required')
     return new Response(JSON.stringify({ error: 'Email is required' }), {
       status: 400,
       headers: withCors({ 'Content-Type': 'application/json' }),
@@ -24,21 +40,23 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Generate password reset link using admin API
+    // For password recovery, we need to use the public (non-admin) API
+    // which triggers Supabase's email system via the configured provider (SendGrid)
     const redirectTo = `${req.headers.get('origin')}/reset-password`
+    console.log('[FORGOT-PASSWORD] Calling supabase.auth.resetPasswordForEmail for:', { email, redirectTo })
     
-    const { data, error } = await supabase.auth.admin.generateLink({
-      type: 'recovery',
-      email: email,
-      options: {
-        redirectTo: redirectTo,
-      },
+    // Use the public API method that sends email via Supabase's configured provider
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: redirectTo,
     })
 
     if (error) {
-      // Return success even if email doesn't exist (security best practice)
-      // This prevents user enumeration
-      console.error('Password reset error:', error)
+      console.error('[FORGOT-PASSWORD] resetPasswordForEmail failed:', { 
+        error: error.message, 
+        status: (error as any).status,
+        code: (error as any).code
+      })
+      // Return success for security (prevents email enumeration)
       return new Response(JSON.stringify({ 
         success: true,
         message: 'If an account exists with this email, a password reset link has been sent.'
@@ -48,13 +66,7 @@ Deno.serve(async (req) => {
       })
     }
 
-    // If using a custom email provider, send the email here with data.properties.action_link
-    // For now, we're relying on Supabase's built-in email system
-    // In production, you might want to send this via your own email service:
-    /*
-    const resetLink = data.properties.action_link
-    // Send custom email with resetLink
-    */
+    console.log('[FORGOT-PASSWORD] resetPasswordForEmail successful - email sent via SendGrid')
 
     return new Response(JSON.stringify({ 
       success: true,
@@ -64,7 +76,7 @@ Deno.serve(async (req) => {
       headers: withCors({ 'Content-Type': 'application/json' }),
     })
   } catch (error) {
-    console.error('Unexpected error:', error)
+    console.error('[FORGOT-PASSWORD] Unexpected error:', error)
     return new Response(JSON.stringify({ 
       success: true,
       message: 'If an account exists with this email, a password reset link has been sent.'

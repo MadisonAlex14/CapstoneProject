@@ -43,15 +43,37 @@ export default function ResetPassword() {
   const [success, setSuccess] = useState(false)
   const [isValidLink, setIsValidLink] = useState(true)
   const [passwordStrength, setPasswordStrength] = useState(0)
+  const [accessToken, setAccessToken] = useState<string | null>(null)
 
   // Check if reset link is valid on mount
   useEffect(() => {
-    const token = searchParams.get('token')
-    const type = searchParams.get('type')
+    // First check searchParams (query string)
+    let token = searchParams.get('token')
+    let type = searchParams.get('type')
+    
+    // If not in searchParams, check hash/fragment (Supabase sends recovery links via hash)
+    if (!token && typeof window !== 'undefined') {
+      const hash = window.location.hash.substring(1) // Remove the '#'
+      const params = new URLSearchParams(hash)
+      token = params.get('token')
+      type = params.get('type')
+      
+      // Also check for Supabase recovery token format
+      const supabaseToken = params.get('access_token')
+      const linkType = params.get('type')
+      
+      if (supabaseToken && linkType === 'recovery') {
+        setAccessToken(supabaseToken)
+        setIsValidLink(true)
+        return
+      }
+    }
     
     if (!token || type !== 'recovery') {
       setIsValidLink(false)
       setError('Invalid or expired reset link. Please request a new password reset')
+    } else {
+      setIsValidLink(true)
     }
   }, [searchParams])
 
@@ -92,31 +114,33 @@ export default function ResetPassword() {
     setLoading(true)
 
     try {
-      const token = searchParams.get('token')
-      const type = searchParams.get('type')
+      // If we have a Supabase recovery token, use the Supabase REST API to update password
+      if (accessToken) {
+        // Import Supabase client to use updateUser
+        const { createClient } = await import('@supabase/supabase-js')
+        const supabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          {
+            global: {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+              },
+            },
+          }
+        )
 
-      if (!token || type !== 'recovery') {
-        setError('Invalid or expired reset link. Please request a new password reset')
-        setLoading(false)
-        return
-      }
+        const { error: updateError } = await supabase.auth.updateUser({
+          password: newPassword,
+        })
 
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/reset-password`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            token,
-            newPassword,
-          }),
+        if (updateError) {
+          const userFriendlyError = getResetErrorMessage(updateError.message)
+          setError(userFriendlyError)
+          setLoading(false)
+          return
         }
-      )
 
-      const data = await res.json()
-      setLoading(false)
-
-      if (res.ok) {
         setSuccess(true)
         setNewPassword('')
         setConfirmPassword('')
@@ -124,8 +148,42 @@ export default function ResetPassword() {
           router.push('/login')
         }, 3000)
       } else {
-        const userFriendlyError = getResetErrorMessage(data.error)
-        setError(userFriendlyError)
+        // Fallback to backend reset-password function
+        const token = searchParams.get('token')
+        const type = searchParams.get('type')
+
+        if (!token || type !== 'recovery') {
+          setError('Invalid or expired reset link. Please request a new password reset')
+          setLoading(false)
+          return
+        }
+
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/reset-password`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              token,
+              newPassword,
+            }),
+          }
+        )
+
+        const data = await res.json()
+        setLoading(false)
+
+        if (res.ok) {
+          setSuccess(true)
+          setNewPassword('')
+          setConfirmPassword('')
+          setTimeout(() => {
+            router.push('/login')
+          }, 3000)
+        } else {
+          const userFriendlyError = getResetErrorMessage(data.error)
+          setError(userFriendlyError)
+        }
       }
     } catch (err) {
       console.error(err)
