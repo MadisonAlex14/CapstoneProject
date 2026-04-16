@@ -1,14 +1,15 @@
 "use client";
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { getMccLookup } from '@/lib/functions/getMccLookup';
 import '@/App.css';
 
 type Transaction = {
   id: string;
   date: string;
   merchant: string;
-  mcc: number;
+  mcc: string;
   amount: number;
   card: string;
   category: string;
@@ -18,16 +19,11 @@ type Transaction = {
   bookedThroughPortal?: boolean;
 };
 
-const mccTable = [
-  { mcc: 5411, description: 'Grocery Stores', category: 'Groceries' },
-  { mcc: 5812, description: 'Eating Places, Restaurants', category: 'Dining' },
-  { mcc: 5541, description: 'Service Stations', category: 'Fuel' },
-  { mcc: 5912, description: 'Drug Stores and Pharmacies', category: 'Pharmacy' },
-  { mcc: 5691, description: "Men's and Boys' Clothing", category: 'Clothing' },
-  { mcc: 4814, description: 'Telecommunication Services', category: 'Communication' },
-  { mcc: 5311, description: 'Department Stores', category: 'Department Store' },
-  { mcc: 5999, description: 'Miscellaneous and Specialty Retailers', category: 'Miscellaneous' },
-];
+type MccOption = {
+  mcc_id: string;
+  code: string;
+  description: string;
+};
 
 const STORAGE_KEY = 'capstone_transactions_v1';
 
@@ -72,7 +68,7 @@ export default function Page() {
     card: preselectCard || availableCards[0] || '',
     date: todayIso(),
     merchant: '',
-    mcc: 5411,
+    mcc: '',
     amount: '',
     notes: '',
     bookedThroughPortal: false,
@@ -80,21 +76,45 @@ export default function Page() {
 
   const [mccSearch, setMccSearch] = useState('');
   const [merchantQuery, setMerchantQuery] = useState('');
+  const [mccOptions, setMccOptions] = useState<MccOption[]>([]);
+  const [isLoadingMcc, setIsLoadingMcc] = useState(false);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+
+  // Get access token on mount
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+    setAccessToken(token);
+  }, []);
+
+  // Fetch MCC options when search changes
+  useEffect(() => {
+    if (!accessToken || !mccSearch.trim()) {
+      setMccOptions([]);
+      return;
+    }
+
+    const fetchMccOptions = async () => {
+      setIsLoadingMcc(true);
+      try {
+        const results = await getMccLookup(accessToken, mccSearch);
+        setMccOptions(results);
+      } catch (error) {
+        console.error('Failed to fetch MCC options:', error);
+        setMccOptions([]);
+      } finally {
+        setIsLoadingMcc(false);
+      }
+    };
+
+    // Debounce the search
+    const timer = setTimeout(fetchMccOptions, 300);
+    return () => clearTimeout(timer);
+  }, [mccSearch, accessToken]);
 
   const merchantSuggestions = useMemo(() => {
     if (!merchantQuery) return merchants.slice(0, 5);
     return merchants.filter((name) => name.toLowerCase().includes(merchantQuery.toLowerCase())).slice(0, 5);
   }, [merchants, merchantQuery]);
-
-  const mccOptions = useMemo(() => {
-    const query = mccSearch.trim().toLowerCase();
-    if (!query) return mccTable;
-    return mccTable.filter((item) =>
-      item.mcc.toString().includes(query) ||
-      item.description.toLowerCase().includes(query) ||
-      item.category.toLowerCase().includes(query),
-    );
-  }, [mccSearch]);
 
   const portalEligible = form.card.toLowerCase().includes('chase');
 
@@ -106,6 +126,15 @@ export default function Page() {
       mcc: existing?.mcc ?? prev.mcc,
     }));
     setMerchantQuery('');
+  };
+
+  const handleMccSelect = (option: MccOption) => {
+    setForm((prev) => ({
+      ...prev,
+      mcc: option.code,
+    }));
+    setMccSearch('');
+    setMccOptions([]);
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -122,11 +151,8 @@ export default function Page() {
       return;
     }
 
-    const targetMcc = mccTable.find((x) => x.mcc === Number(form.mcc));
-    if (!targetMcc) {
-      alert('Please select a valid MCC.');
-      return;
-    }
+    const selectedMcc = mccOptions.find((x) => x.code === form.mcc);
+    const category = selectedMcc?.description || 'Other';
 
     const rewardBase = parsedAmount * 0.03;
     const reward = portalEligible && form.bookedThroughPortal ? parsedAmount * 0.05 : rewardBase;
@@ -134,12 +160,12 @@ export default function Page() {
       id: `tx-${Date.now()}`,
       date: form.date,
       merchant: form.merchant,
-      mcc: Number(form.mcc),
+      mcc: form.mcc,
       amount: parsedAmount,
       card: form.card,
-      category: targetMcc.category,
+      category: category,
       reward,
-      benefit: form.bookedThroughPortal ? `${targetMcc.category} portal bonus applied` : '',
+      benefit: form.bookedThroughPortal ? `${category} portal bonus applied` : '',
       notes: form.notes,
       bookedThroughPortal: form.bookedThroughPortal,
     };
@@ -215,19 +241,27 @@ export default function Page() {
             type="text"
             value={mccSearch}
             onChange={(e) => setMccSearch(e.target.value)}
-            placeholder="Search by MCC/description/category"
+            placeholder="Search by MCC code or description"
           />
-          <select
-            value={form.mcc}
-            onChange={(e) => setForm((prev) => ({ ...prev, mcc: Number(e.target.value) }))}
-            required
-          >
-            {mccOptions.map((item) => (
-              <option key={item.mcc} value={item.mcc}>
-                {item.mcc} - {item.description}
-              </option>
-            ))}
-          </select>
+          {isLoadingMcc && <p style={{ fontSize: '0.9rem', color: '#888', marginTop: '0.3rem' }}>Loading MCC options...</p>}
+          {mccOptions.length > 0 && mccSearch && (
+            <ul style={{ listStyle: 'none', margin: '0.4rem 0', padding: 0, border: '1px solid #d8e5de', borderRadius: 10, maxHeight: 200, overflowY: 'auto', background: 'white' }}>
+              {mccOptions.map((option) => (
+                <li
+                  key={option.mcc_id}
+                  style={{ padding: '0.6rem 0.65rem', cursor: 'pointer', borderBottom: '1px solid #edf2f7' }}
+                  onClick={() => handleMccSelect(option)}
+                >
+                  <strong>{option.code}</strong> - {option.description}
+                </li>
+              ))}
+            </ul>
+          )}
+          {form.mcc && (
+            <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: '#f0f8f5', borderRadius: 5, fontSize: '0.9rem' }}>
+              Selected MCC: <strong>{form.mcc}</strong>
+            </div>
+          )}
         </div>
 
         <div className="form-field">
