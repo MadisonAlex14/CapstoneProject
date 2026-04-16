@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { getUserCards } from "../../lib/functions/getUserCards";
 import { getCardTypes } from "../../lib/functions/getCardTypes";
 import { upsertUserCard } from "../../lib/functions/upsertUserCard";
+import { deleteUserCard } from "../../lib/functions/deleteUserCard";
 import styles from "../../styles/auth.module.css";
 
 type CardBenefit = {
@@ -425,12 +426,39 @@ export default function CardsPage() {
     });
   };
 
-  const handleDeleteCard = (cardId: string) => {
-    const confirmed = window.confirm("Are you sure you want to delete this card?");
+  const handleDeleteCard = async (cardId: string) => {
+    const confirmed = window.confirm("Are you sure you want to delete this card? This action cannot be undone.");
     if (!confirmed) return;
 
-    setCards((prev) => prev.filter((card) => card.credit_card_type_id !== cardId));
-    setOpenMenuId(null);
+    try {
+      // Get the access token
+      let token: string | null = localStorage.getItem("accessToken");
+      if (!token) {
+        // Try to get from Supabase auth session
+        const { createClient } = await import("@supabase/supabase-js");
+        const supabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
+        );
+        const { data } = await supabase.auth.getSession();
+        token = data.session?.access_token || null;
+      }
+
+      if (!token) {
+        alert("Please log in to delete a card");
+        return;
+      }
+
+      // Call the delete API
+      await deleteUserCard(token, cardId);
+      
+      // Remove from local state
+      setCards((prev) => prev.filter((card) => card.credit_card_type_id !== cardId));
+      setOpenMenuId(null);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to delete card";
+      alert(`Error deleting card: ${errorMessage}`);
+    }
   };
 
   const handleCardClick = (cardId: string) => {
