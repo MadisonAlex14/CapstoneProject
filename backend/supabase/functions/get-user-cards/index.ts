@@ -2,6 +2,9 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import { supabase } from "../_shared/createClient.ts"
 import { extractAuthToken, getProfileIdFromToken } from "../_shared/auth.ts"
 import { withCors } from "../_shared/cors.ts"
+import { getSignedImageUrlOrFallback } from "../_shared/image-utils.ts"
+
+const BUCKET_NAME = 'CreditCardImage'
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -79,7 +82,27 @@ Deno.serve(async (req) => {
       })
     }
 
-    return new Response(JSON.stringify(data), {
+    // Generate signed URLs for card images
+    const cardsWithSignedUrls = await Promise.all(
+      data.map(async (card: any) => {
+        if (card.credit_card_type?.image_url) {
+          const signedUrl = await getSignedImageUrlOrFallback(
+            card.credit_card_type.image_url,
+            BUCKET_NAME
+          )
+          return {
+            ...card,
+            credit_card_type: {
+              ...card.credit_card_type,
+              image_url: signedUrl,
+            },
+          }
+        }
+        return card
+      })
+    )
+
+    return new Response(JSON.stringify(cardsWithSignedUrls), {
       headers: withCors({ 'Content-Type': 'application/json' }),
     })
   } catch (error) {
