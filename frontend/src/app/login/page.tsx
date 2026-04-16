@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import styles from '../../styles/auth.module.css'
+import ForgotPassword from '../../components/ForgotPassword'
 
 export default function Login() {
   const router = useRouter()
@@ -10,6 +11,7 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -92,12 +94,38 @@ export default function Login() {
             required
             placeholder="Enter your password"
           />
+          <button
+            type="button"
+            onClick={() => setShowForgotPassword(true)}
+            style={forgotPasswordLinkStyles}
+          >
+            Forgot Password?
+          </button>
         </div>
 
         <button className={styles.button} type="submit" disabled={loading}>
           {loading ? 'Logging in...' : 'Sign In'}
         </button>
       </form>
+
+      <ForgotPassword 
+        isOpen={showForgotPassword}
+        onClose={() => setShowForgotPassword(false)}
+      />
     </main>
   )
+}
+
+const forgotPasswordLinkStyles: React.CSSProperties = {
+  background: 'none',
+  border: 'none',
+  color: '#4f7c6b',
+  cursor: 'pointer',
+  fontSize: '0.9rem',
+  fontWeight: '500',
+  textDecoration: 'underline',
+  padding: '0',
+  marginTop: '-1rem',
+  marginBottom: '1rem',
+  transition: 'color 0.2s ease',
 }
