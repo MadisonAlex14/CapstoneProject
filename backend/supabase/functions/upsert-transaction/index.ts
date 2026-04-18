@@ -155,6 +155,94 @@ async function updatePromotionProgress(creditCardId: string, transactionDate: st
   }
 }
 
+async function detectTriggeredBenefits(
+  creditCardId: string,
+  mccId: string,
+  merchantName: string,
+): Promise<Array<{ benefit_id: string; name: string; value_amount: number; value_unit: string; remaining: number }>> {
+  // 1. Get the card's credit_card_type_id
+  const { data: cardData, error: cardError } = await supabase
+    .from('credit_card')
+    .select('credit_card_type(credit_card_type_id)')
+    .eq('credit_card_id', creditCardId)
+    .single()
+
+  if (cardError || !cardData?.credit_card_type) return []
+
+  const creditCardTypeId = (cardData.credit_card_type as any).credit_card_type_id
+
+  // 2. Get spending categories for this MCC
+  const { data: mccCats } = await supabase
+    .from('mcc_spending_category')
+    .select('spending_category_id')
+    .eq('mcc_id', mccId)
+
+  const spendingCategoryIds: string[] = mccCats?.map((r: any) => r.spending_category_id) ?? []
+
+  // 3. Fetch all benefits for this card type with targeting data
+  const { data: benefits, error: benefitsError } = await supabase
+    .from('benefit')
+    .select(`
+      benefit_id,
+      name,
+      value_amount,
+      value_unit,
+      targeting_type,
+      benefit_merchant(merchant_name),
+      benefit_spending_category(spending_category_id)
+    `)
+    .eq('credit_card_type_id', creditCardTypeId)
+
+  if (benefitsError || !benefits) return []
+
+  const triggered: Array<{ benefit_id: string; name: string; value_amount: number; value_unit: string; remaining: number }> = []
+
+  for (const benefit of benefits) {
+    const b = benefit as any
+    let matches = false
+
+    // 4. Check targeting type and test for a match
+    if (b.targeting_type === 'merchant') {
+      matches = b.benefit_merchant?.some((bm: any) =>
+        merchantName.toLowerCase().includes(bm.merchant_name.toLowerCase())
+      )
+    } else if (b.targeting_type === 'category') {
+      matches = b.benefit_spending_category?.some((bsc: any) =>
+        spendingCategoryIds.includes(bsc.spending_category_id)
+      )
+    }
+
+    if (!matches) continue
+
+    // 5. Get the most recent user_benefit cycle row to calculate remaining
+    const { data: userBenefit } = await supabase
+      .from('user_benefit')
+      .select('amount_used, initial_amount_used')
+      .eq('credit_card_id', creditCardId)
+      .eq('benefit_id', b.benefit_id)
+      .order('cycle_start_date', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    const amountUsed = (userBenefit as any)?.amount_used ?? 0
+    const initialAmountUsed = (userBenefit as any)?.initial_amount_used ?? 0
+    const remaining = b.value_amount - amountUsed - initialAmountUsed
+
+    // Only include benefits that still have remaining balance
+    if (remaining <= 0) continue
+
+    triggered.push({
+      benefit_id: b.benefit_id,
+      name: b.name,
+      value_amount: b.value_amount,
+      value_unit: b.value_unit,
+      remaining,
+    })
+  }
+
+  return triggered
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: withCors() })
@@ -268,7 +356,10 @@ Deno.serve(async (req) => {
     // Update promotion progress for active promotions on this card
     await updatePromotionProgress(credit_card_id, transaction_date, amount)
 
-    return new Response(JSON.stringify({ action: 'inserted', data }), {
+    // Detect any benefits triggered by this transaction
+    const triggeredBenefits = await detectTriggeredBenefits(credit_card_id, mcc_id, merchant_name)
+
+    return new Response(JSON.stringify({ action: 'inserted', data, triggered_benefits: triggeredBenefits }), {
       headers: withCors({ 'Content-Type': 'application/json' }),
     })
   } catch (error) {
