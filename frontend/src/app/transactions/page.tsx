@@ -7,7 +7,6 @@ import { getUserTransactions } from '../../lib/functions/getUserTransactions';
 import { getUserCards } from '../../lib/functions/getUserCards';
 import { upsertTransaction } from '../../lib/functions/upsertTransaction';
 import { deleteTransaction } from '../../lib/functions/deleteTransaction';
-import { getMccLookup } from '../../lib/functions/getMccLookup';
 
 type Transaction = {
   transaction_id: string;
@@ -31,11 +30,6 @@ type UserCard = {
   credit_card_type: { name: string };
 };
 
-type MccResult = {
-  mcc_id: string;
-  code: string;
-  description: string;
-};
 
 const currency = (value: number) => `$${value.toFixed(2)}`;
 
@@ -71,10 +65,6 @@ export default function Page() {
     notes: '',
   });
 
-  const [mccQuery, setMccQuery] = useState('');
-  const [mccResults, setMccResults] = useState<MccResult[]>([]);
-  const [mccSearching, setMccSearching] = useState(false);
-  const mccDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // -------------------- DATA LOADING --------------------
   useEffect(() => {
@@ -139,38 +129,6 @@ export default function Page() {
     loadData();
   }, []);
 
-  // -------------------- MCC SEARCH --------------------
-  useEffect(() => {
-    if (mccDebounceRef.current) clearTimeout(mccDebounceRef.current);
-    if (!mccQuery || mccQuery.length < 2) {
-      setMccResults([]);
-      return;
-    }
-    mccDebounceRef.current = setTimeout(async () => {
-      setMccSearching(true);
-      try {
-        const localToken = localStorage.getItem('accessToken');
-        const supabaseToken = localStorage.getItem('supabase.auth.token');
-        let accessToken: string | null = localToken;
-
-        if (!accessToken && supabaseToken) {
-          const session = JSON.parse(supabaseToken);
-          accessToken = session?.currentSession?.access_token || session?.access_token || null;
-        }
-
-        if (accessToken) {
-          const results = await getMccLookup(accessToken, mccQuery);
-          setMccResults(results ?? []);
-        }
-      } catch (err) {
-        console.error('MCC lookup failed', err);
-        setMccResults([]);
-      } finally {
-        setMccSearching(false);
-      }
-    }, 300);
-  }, [mccQuery]);
-
   // -------------------- FILTERS + SORT --------------------
   const filtered = useMemo(() => {
     return transactions
@@ -220,8 +178,8 @@ export default function Page() {
     e.preventDefault();
     setFormError('');
 
-    if (!form.credit_card_id || !form.mcc_id) {
-      setFormError('Please select a card and an MCC category.');
+    if (!editItem) {
+      setFormError('No transaction selected.');
       return;
     }
 
@@ -241,12 +199,11 @@ export default function Page() {
       }
 
       await upsertTransaction(accessToken, {
-        transaction_id: editItem?.transaction_id,
-        credit_card_id: form.credit_card_id,
+        transaction_id: editItem.transaction_id,
+        credit_card_id: editItem.credit_card_id,
         transaction_date: form.transaction_date,
-        merchant_name: form.merchant_name,
-        amount: Number(form.amount),
-        mcc_id: form.mcc_id,
+        merchant_name: editItem.merchant_name,
+        amount: editItem.amount,
         notes: form.notes,
       });
 
@@ -323,8 +280,6 @@ export default function Page() {
       credit_card_id: tx.credit_card_id,
       notes: tx.notes,
     });
-    setMccQuery('');
-    setMccResults([]);
     setShowModal(true);
   };
 
@@ -332,8 +287,6 @@ export default function Page() {
     setShowModal(false);
     setEditItem(null);
     setFormError('');
-    setMccQuery('');
-    setMccResults([]);
   };
 
   // -------------------- CSV EXPORT --------------------
@@ -523,10 +476,9 @@ export default function Page() {
                   Merchant
                   <input
                     type="text"
-                    required
-                    style={{ width: '100%', padding: '0.6rem', backgroundColor: '#e1f5e7', border: '2px solid #314634', borderRadius: '6px', fontSize: '0.95rem', boxSizing: 'border-box', marginTop: '0.3rem' }}
+                    readOnly
+                    style={{ width: '100%', padding: '0.6rem', backgroundColor: '#f3f4f6', border: '2px solid #d1d5db', borderRadius: '6px', fontSize: '0.95rem', boxSizing: 'border-box', marginTop: '0.3rem', cursor: 'not-allowed', color: '#6b7280' }}
                     value={form.merchant_name}
-                    onChange={(e) => setForm((f) => ({ ...f, merchant_name: e.target.value }))}
                   />
                 </label>
               </div>
@@ -539,63 +491,21 @@ export default function Page() {
               <label>
                 Amount ($)
                 <input
-                  type="number"
-                  step="0.01"
-                  required
-                  style={{ width: '100%', padding: '0.6rem', backgroundColor: '#e1f5e7', border: '2px solid #314634', borderRadius: '6px', fontSize: '0.95rem', boxSizing: 'border-box', marginTop: '0.3rem' }}
+                  type="text"
+                  readOnly
+                  style={{ width: '100%', padding: '0.6rem', backgroundColor: '#f3f4f6', border: '2px solid #d1d5db', borderRadius: '6px', fontSize: '0.95rem', boxSizing: 'border-box', marginTop: '0.3rem', cursor: 'not-allowed', color: '#6b7280' }}
                   value={form.amount}
-                  onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
                 />
               </label>
 
               <label>
                 MCC Category
-                {form.mcc_id && (
-                  <span style={{ marginLeft: '0.5rem', fontSize: '0.85rem', color: '#374151' }}>
-                    Selected: {form.mcc_label}
-                    <button
-                      type="button"
-                      onClick={() => setForm((f) => ({ ...f, mcc_id: '', mcc_label: '' }))}
-                      style={{ marginLeft: '0.5rem', fontSize: '0.75rem', color: '#6b7280', background: 'none', border: 'none', cursor: 'pointer' }}
-                    >
-                      ✕ clear
-                    </button>
-                  </span>
-                )}
-                {!form.mcc_id && (
-                  <div style={{ position: 'relative' }}>
-                    <input
-                      type="text"
-                      placeholder="Search by description or code (e.g. Grocery, 5411)"
-                      style={{ width: '100%', padding: '0.6rem', backgroundColor: '#e1f5e7', border: '2px solid #314634', borderRadius: '6px', fontSize: '0.95rem', boxSizing: 'border-box', marginTop: '0.3rem' }}
-                      value={mccQuery}
-                      onChange={(e) => setMccQuery(e.target.value)}
-                    />
-                    {mccSearching && <p style={{ fontSize: '0.8rem', color: '#6b7280' }}>Searching...</p>}
-                    {mccResults.length > 0 && (
-                      <ul style={{
-                        position: 'absolute', top: '100%', left: 0, right: 0,
-                        background: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px',
-                        maxHeight: '160px', overflowY: 'auto', margin: 0, padding: 0,
-                        listStyle: 'none', zIndex: 100, boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                      }}>
-                        {mccResults.map((m) => (
-                          <li
-                            key={m.mcc_id}
-                            onClick={() => {
-                              setForm((f) => ({ ...f, mcc_id: m.mcc_id, mcc_label: `${m.code} – ${m.description}` }));
-                              setMccQuery('');
-                              setMccResults([]);
-                            }}
-                            style={{ padding: '0.5rem 0.75rem', cursor: 'pointer', borderBottom: '1px solid #f3f4f6' }}
-                          >
-                            <strong>{m.code}</strong> — {m.description}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                )}
+                <input
+                  type="text"
+                  readOnly
+                  style={{ width: '100%', padding: '0.6rem', backgroundColor: '#f3f4f6', border: '2px solid #d1d5db', borderRadius: '6px', fontSize: '0.95rem', boxSizing: 'border-box', marginTop: '0.3rem', cursor: 'not-allowed', color: '#6b7280' }}
+                  value={form.mcc_label}
+                />
               </label>
 
               <label>
@@ -616,7 +526,7 @@ export default function Page() {
                 <button type="button" className="CardDetailsButtonSecondary" onClick={closeModal}>
                   Cancel
                 </button>
-                <button type="submit" className="CardDetailsButtonPrimary" disabled={saving || !form.mcc_id}>
+                <button type="submit" className="CardDetailsButtonPrimary" disabled={saving}>
                   {saving ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>

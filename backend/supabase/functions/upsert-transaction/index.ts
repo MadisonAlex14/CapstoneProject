@@ -271,8 +271,17 @@ Deno.serve(async (req) => {
       notes,
     } = body
 
-    if (!credit_card_id || !transaction_date || !merchant_name || amount == null || !mcc_id) {
-      return new Response(JSON.stringify({ error: 'Missing required fields: credit_card_id, transaction_date, merchant_name, amount, mcc_id' }), {
+    // Shared required fields for both INSERT and UPDATE
+    if (!credit_card_id || !transaction_date || !merchant_name || amount == null) {
+      return new Response(JSON.stringify({ error: 'Missing required fields: credit_card_id, transaction_date, merchant_name, amount' }), {
+        status: 400,
+        headers: withCors({ 'Content-Type': 'application/json' }),
+      })
+    }
+
+    // mcc_id is required for INSERT only — on UPDATE, MCC is immutable and not re-sent
+    if (!transaction_id && !mcc_id) {
+      return new Response(JSON.stringify({ error: 'Missing required field: mcc_id' }), {
         status: 400,
         headers: withCors({ 'Content-Type': 'application/json' }),
       })
@@ -293,16 +302,13 @@ Deno.serve(async (req) => {
       })
     }
 
-    // UPDATE path — do not recalculate rewards on edit
+    // UPDATE path — only transaction_date and notes are editable
+    // merchant_name, amount, mcc_id, and rewards_earned are immutable after insert
     if (transaction_id) {
       const { data, error } = await supabase
         .from('transaction')
         .update({
           transaction_date,
-          merchant_name,
-          amount,
-          mcc_id,
-          booked_through_issuer_portal,
           notes,
         })
         .eq('transaction_id', transaction_id)

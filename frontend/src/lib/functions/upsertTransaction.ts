@@ -5,7 +5,7 @@ export interface UpsertTransactionBody {
   merchant_name: string
   amount: number
   booked_through_issuer_portal?: boolean
-  mcc_id: string
+  mcc_id?: string
   notes?: string
 }
 
