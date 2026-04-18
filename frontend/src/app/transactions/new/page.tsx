@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import styles from '../../../styles/auth.module.css';
 import { getUserCards } from '../../../lib/functions/getUserCards';
 import { getMccLookup } from '../../../lib/functions/getMccLookup';
 import { upsertTransaction } from '../../../lib/functions/upsertTransaction';
@@ -165,8 +166,10 @@ export default function Page() {
   // -------------------- RENDER --------------------
   return (
     <div className="main-content transactions-page CardDetailsPage">
-      <h1>Add Transaction</h1>
-      <p>Enter transaction details to add it into your portfolio.</p>
+      <div className={styles.PageHero}>
+        <h1 className={styles.PageTitle}>Add Transaction</h1>
+        <p className={styles.PageSubtitle}>Enter transaction details to add it into your portfolio.</p>
+      </div>
 
       <form className="CardDetailsSection modular-form" onSubmit={handleSubmit}>
         <div className="form-field">

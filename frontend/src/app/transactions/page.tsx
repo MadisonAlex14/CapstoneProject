@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import styles from '../../styles/auth.module.css';
 import { getUserTransactions } from '../../lib/functions/getUserTransactions';
 import { getUserCards } from '../../lib/functions/getUserCards';
 import { upsertTransaction } from '../../lib/functions/upsertTransaction';
@@ -368,8 +369,10 @@ export default function Page() {
 
   return (
     <div className="main-content transactions-page CardDetailsPage">
-      <h1>Transactions</h1>
-      <p>View and manage all of your recent credit card transactions here.</p>
+      <div className={styles.PageHero}>
+        <h1 className={styles.PageTitle}>Transactions</h1>
+        <p className={styles.PageSubtitle}>View and manage all of your recent credit card transactions here.</p>
+      </div>
 
       <section className="CardDetailsSection">
         <div className="CardDetailsActionRow">
@@ -502,7 +505,7 @@ export default function Page() {
             alignItems: 'center', justifyContent: 'center', zIndex: 2000,
           }}
         >
-          <div style={{ background: '#fff', borderRadius: '16px', width: '560px', maxWidth: '95%', padding: '1.5rem', boxShadow: '0 16px 34px rgba(0,0,0,0.25)' }}>
+          <div style={{ background: '#fff', borderRadius: '16px', width: '560px', maxWidth: '95%', padding: '1rem', boxShadow: '0 16px 34px rgba(0,0,0,0.25)' }}>
             <h2>Edit Transaction</h2>
             <form onSubmit={handleSave} style={{ display: 'grid', gap: '0.75rem' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
@@ -511,6 +514,7 @@ export default function Page() {
                   <input
                     type="date"
                     required
+                    style={{ width: '100%', padding: '0.6rem', backgroundColor: '#e1f5e7', border: '2px solid #314634', borderRadius: '6px', fontSize: '0.95rem', boxSizing: 'border-box', marginTop: '0.3rem' }}
                     value={form.transaction_date}
                     onChange={(e) => setForm((f) => ({ ...f, transaction_date: e.target.value }))}
                   />
@@ -520,6 +524,7 @@ export default function Page() {
                   <input
                     type="text"
                     required
+                    style={{ width: '100%', padding: '0.6rem', backgroundColor: '#e1f5e7', border: '2px solid #314634', borderRadius: '6px', fontSize: '0.95rem', boxSizing: 'border-box', marginTop: '0.3rem' }}
                     value={form.merchant_name}
                     onChange={(e) => setForm((f) => ({ ...f, merchant_name: e.target.value }))}
                   />
@@ -528,18 +533,7 @@ export default function Page() {
 
               <label>
                 Card
-                <select
-                  required
-                  value={form.credit_card_id}
-                  onChange={(e) => setForm((f) => ({ ...f, credit_card_id: e.target.value }))}
-                >
-                  <option value="">Select a card</option>
-                  {userCards.map((c) => (
-                    <option key={c.credit_card_id} value={c.credit_card_id}>
-                      {c.nickname ? `${c.nickname} ••••${c.last_four}` : `${c.credit_card_type?.name} ••••${c.last_four}`}
-                    </option>
-                  ))}
-                </select>
+                <p style={{ margin: '0.3rem 0 0', fontSize: '0.95rem', color: '#374151' }}>{editItem?.card_label}</p>
               </label>
 
               <label>
@@ -548,6 +542,7 @@ export default function Page() {
                   type="number"
                   step="0.01"
                   required
+                  style={{ width: '100%', padding: '0.6rem', backgroundColor: '#e1f5e7', border: '2px solid #314634', borderRadius: '6px', fontSize: '0.95rem', boxSizing: 'border-box', marginTop: '0.3rem' }}
                   value={form.amount}
                   onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
                 />
@@ -572,6 +567,7 @@ export default function Page() {
                     <input
                       type="text"
                       placeholder="Search by description or code (e.g. Grocery, 5411)"
+                      style={{ width: '100%', padding: '0.6rem', backgroundColor: '#e1f5e7', border: '2px solid #314634', borderRadius: '6px', fontSize: '0.95rem', boxSizing: 'border-box', marginTop: '0.3rem' }}
                       value={mccQuery}
                       onChange={(e) => setMccQuery(e.target.value)}
                     />
@@ -605,6 +601,7 @@ export default function Page() {
               <label>
                 Notes
                 <textarea
+                  style={{ width: '100%', padding: '0.6rem', backgroundColor: '#e1f5e7', border: '2px solid #314634', borderRadius: '6px', fontSize: '0.95rem', boxSizing: 'border-box', marginTop: '0.3rem', fontFamily: 'inherit' }}
                   value={form.notes}
                   onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
                   rows={2}
