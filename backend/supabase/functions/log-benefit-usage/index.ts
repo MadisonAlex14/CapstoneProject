@@ -179,6 +179,7 @@ Deno.serve(async (req) => {
       .from('user_benefit_entry')
       .insert({
         user_benefit_id: ub.user_benefit_id,
+        transaction_id: transaction_id ?? null,
         usage_date,
         merchant_name: merchant_name ?? null,
         amount,

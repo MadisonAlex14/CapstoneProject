@@ -6,6 +6,7 @@ import styles from '../../../styles/auth.module.css';
 import { getUserCards } from '../../../lib/functions/getUserCards';
 import { getMccLookup } from '../../../lib/functions/getMccLookup';
 import { upsertTransaction } from '../../../lib/functions/upsertTransaction';
+import { logBenefitUsage } from '../../../lib/functions/logBenefitUsage';
 
 type UserCard = {
   credit_card_id: string;
@@ -18,6 +19,14 @@ type MccResult = {
   mcc_id: string;
   code: string;
   description: string;
+};
+
+type TriggeredBenefit = {
+  benefit_id: string;
+  name: string;
+  value_amount: number;
+  value_unit: string;
+  remaining: number;
 };
 
 const todayIso = () => new Date().toISOString().slice(0, 10);
@@ -45,6 +54,19 @@ export default function Page() {
   const [mccResults, setMccResults] = useState<MccResult[]>([]);
   const [mccSearching, setMccSearching] = useState(false);
   const mccDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // -------------------- BENEFIT PROMPT STATE --------------------
+  const [showBenefitModal, setShowBenefitModal] = useState(false);
+  const [triggeredBenefits, setTriggeredBenefits] = useState<TriggeredBenefit[]>([]);
+  const [pendingTransactionId, setPendingTransactionId] = useState('');
+  const [pendingCardId, setPendingCardId] = useState('');
+  const [pendingDate, setPendingDate] = useState('');
+  const [pendingMerchant, setPendingMerchant] = useState('');
+  const [pendingAmount, setPendingAmount] = useState(0);
+  const [benefitAmounts, setBenefitAmounts] = useState<Record<string, string>>({});
+  const [benefitChecked, setBenefitChecked] = useState<Record<string, boolean>>({});
+  const [benefitErrors, setBenefitErrors] = useState<Record<string, string>>({});
+  const [loggingBenefits, setLoggingBenefits] = useState(false);
 
   // -------------------- LOAD CARDS --------------------
   useEffect(() => {
@@ -144,7 +166,7 @@ export default function Page() {
 
       if (!accessToken) throw new Error('No access token');
 
-      await upsertTransaction(accessToken, {
+      const result = await upsertTransaction(accessToken, {
         credit_card_id: form.credit_card_id,
         transaction_date: form.date,
         merchant_name: form.merchant,
@@ -154,12 +176,89 @@ export default function Page() {
         notes: form.notes,
       });
 
-      router.push('/transactions');
+      const benefits: TriggeredBenefit[] = result.triggered_benefits ?? [];
+      if (benefits.length > 0) {
+        // Pre-fill amounts to min(transaction amount, benefit remaining)
+        const amounts: Record<string, string> = {};
+        const checked: Record<string, boolean> = {};
+        for (const b of benefits) {
+          amounts[b.benefit_id] = String(Math.min(parsedAmount, b.remaining));
+          checked[b.benefit_id] = true;
+        }
+        setTriggeredBenefits(benefits);
+        setPendingTransactionId(result.data.transaction_id);
+        setPendingCardId(form.credit_card_id);
+        setPendingDate(form.date);
+        setPendingMerchant(form.merchant);
+        setPendingAmount(parsedAmount);
+        setBenefitAmounts(amounts);
+        setBenefitChecked(checked);
+        setShowBenefitModal(true);
+      } else {
+        router.push('/transactions');
+      }
     } catch (err: any) {
       setFormError(err.message || 'Failed to save transaction');
       console.error('Error saving transaction:', err);
     } finally {
       setSaving(false);
+    }
+  };
+
+  // -------------------- BENEFIT LOGGING --------------------
+  const formatBenefitAmount = (amount: number, unit: string) => {
+    if (unit === 'dollars' || unit === 'usd' || unit === 'cash') return `$${amount.toFixed(2)}`;
+    return `${amount.toLocaleString()} ${unit}`;
+  };
+
+  const handleLogBenefits = async () => {
+    // Validate all checked benefits before making any calls
+    const errors: Record<string, string> = {};
+    for (const b of triggeredBenefits) {
+      if (!benefitChecked[b.benefit_id]) continue;
+      const amount = Number(benefitAmounts[b.benefit_id]);
+      if (!amount || amount <= 0) {
+        errors[b.benefit_id] = 'Amount must be greater than 0.';
+      } else if (amount > pendingAmount) {
+        errors[b.benefit_id] = `Cannot exceed transaction amount (${formatBenefitAmount(pendingAmount, b.value_unit)}).`;
+      } else if (amount > b.remaining) {
+        errors[b.benefit_id] = `Cannot exceed remaining balance (${formatBenefitAmount(b.remaining, b.value_unit)}).`;
+      }
+    }
+    if (Object.keys(errors).length > 0) {
+      setBenefitErrors(errors);
+      return;
+    }
+
+    setLoggingBenefits(true);
+    try {
+      const localToken = localStorage.getItem('accessToken');
+      const supabaseToken = localStorage.getItem('supabase.auth.token');
+      let accessToken: string | null = localToken;
+      if (!accessToken && supabaseToken) {
+        const session = JSON.parse(supabaseToken);
+        accessToken = session?.currentSession?.access_token || session?.access_token || null;
+      }
+      if (!accessToken) throw new Error('No access token');
+
+      // Sequential — if one fails we catch it and stop rather than leaving partial state
+      for (const b of triggeredBenefits) {
+        if (!benefitChecked[b.benefit_id]) continue;
+        await logBenefitUsage(accessToken, {
+          benefit_id: b.benefit_id,
+          credit_card_id: pendingCardId,
+          transaction_id: pendingTransactionId,
+          amount: Number(benefitAmounts[b.benefit_id]),
+          usage_date: pendingDate,
+          merchant_name: pendingMerchant,
+        });
+      }
+
+      router.push('/transactions');
+    } catch (err: any) {
+      setBenefitErrors({ _general: err.message || 'Failed to log benefit usage.' });
+    } finally {
+      setLoggingBenefits(false);
     }
   };
 
@@ -302,6 +401,86 @@ export default function Page() {
           </button>
         </div>
       </form>
+
+      {/* Triggered Benefits Modal */}
+      {showBenefitModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 }}>
+          <div style={{ background: '#fff', borderRadius: '16px', width: '520px', maxWidth: '95%', padding: '1.5rem', boxShadow: '0 16px 34px rgba(0,0,0,0.25)', maxHeight: '90vh', overflowY: 'auto' }}>
+            <h2 style={{ margin: '0 0 0.25rem' }}>Benefits Detected</h2>
+            <p style={{ margin: '0 0 1.25rem', fontSize: '0.9rem', color: '#6b7280' }}>
+              This transaction may qualify for the following benefits. Uncheck any you don't want to apply.
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {triggeredBenefits.map((b) => (
+                <div key={b.benefit_id} style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '0.75rem', background: benefitChecked[b.benefit_id] ? '#f9fffe' : '#f9fafb' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+                    <input
+                      type="checkbox"
+                      checked={benefitChecked[b.benefit_id] ?? true}
+                      onChange={(e) => {
+                        setBenefitChecked((prev) => ({ ...prev, [b.benefit_id]: e.target.checked }));
+                        setBenefitErrors((prev) => { const next = { ...prev }; delete next[b.benefit_id]; return next; });
+                      }}
+                      style={{ marginTop: '0.2rem', width: '18px', height: '18px', cursor: 'pointer', accentColor: '#314634', flexShrink: 0 }}
+                    />
+                    <div style={{ flex: 1 }}>
+                      <p style={{ fontWeight: 600, margin: '0 0 0.15rem', fontSize: '0.95rem' }}>{b.name}</p>
+                      <p style={{ fontSize: '0.82rem', color: '#6b7280', margin: '0 0 0.6rem' }}>
+                        {formatBenefitAmount(b.remaining, b.value_unit)} remaining of {formatBenefitAmount(b.value_amount, b.value_unit)} total
+                      </p>
+                      {benefitChecked[b.benefit_id] && (
+                        <label style={{ fontSize: '0.875rem', display: 'block' }}>
+                          Amount to apply ({b.value_unit})
+                          <input
+                            type="number"
+                            min="0.01"
+                            max={Math.min(pendingAmount, b.remaining)}
+                            step="0.01"
+                            value={benefitAmounts[b.benefit_id] ?? ''}
+                            onChange={(e) => {
+                              setBenefitAmounts((prev) => ({ ...prev, [b.benefit_id]: e.target.value }));
+                              setBenefitErrors((prev) => { const next = { ...prev }; delete next[b.benefit_id]; return next; });
+                            }}
+                            style={{ display: 'block', width: '100%', padding: '0.5rem', marginTop: '0.3rem', backgroundColor: '#e1f5e7', border: '2px solid #314634', borderRadius: '6px', fontSize: '0.95rem', boxSizing: 'border-box' }}
+                          />
+                          {benefitErrors[b.benefit_id] && (
+                            <p style={{ color: '#b42318', fontSize: '0.8rem', margin: '0.25rem 0 0' }}>{benefitErrors[b.benefit_id]}</p>
+                          )}
+                        </label>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {benefitErrors._general && (
+              <p style={{ color: '#b42318', fontSize: '0.875rem', margin: '1rem 0 0' }}>{benefitErrors._general}</p>
+            )}
+
+            <div style={{ display: 'flex', gap: '0.6rem', justifyContent: 'flex-end', marginTop: '1.25rem' }}>
+              <button
+                type="button"
+                className="CardDetailsButtonSecondary"
+                onClick={() => router.push('/transactions')}
+                disabled={loggingBenefits}
+              >
+                Skip
+              </button>
+              <button
+                type="button"
+                className="CardDetailsButtonPrimary"
+                onClick={handleLogBenefits}
+                disabled={loggingBenefits || triggeredBenefits.every((b) => !benefitChecked[b.benefit_id])}
+                style={triggeredBenefits.every((b) => !benefitChecked[b.benefit_id]) ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
+              >
+                {loggingBenefits ? 'Logging...' : 'Log Benefits'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

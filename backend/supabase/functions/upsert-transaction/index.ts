@@ -188,7 +188,7 @@ async function detectTriggeredBenefits(
       value_amount,
       value_unit,
       targeting_type,
-      benefit_merchant(merchant_name),
+      benefit_merchant(merchant_keyword),
       benefit_spending_category(spending_category_id)
     `)
     .eq('credit_card_type_id', creditCardTypeId)
@@ -204,7 +204,7 @@ async function detectTriggeredBenefits(
     // 4. Check targeting type and test for a match
     if (b.targeting_type === 'merchant') {
       matches = b.benefit_merchant?.some((bm: any) =>
-        merchantName.toLowerCase().includes(bm.merchant_name.toLowerCase())
+        merchantName.toLowerCase().includes(bm.merchant_keyword.toLowerCase())
       )
     } else if (b.targeting_type === 'category') {
       matches = b.benefit_spending_category?.some((bsc: any) =>
