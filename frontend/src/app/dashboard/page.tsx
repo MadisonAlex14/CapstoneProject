@@ -277,8 +277,6 @@ export default function Dashboard() {
             <span className={styles.dQuickActionText}>View Goals</span>
           </button>
         </div>
-
-         
       </section>
     </main>
   );

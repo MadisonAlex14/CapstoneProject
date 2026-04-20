@@ -224,7 +224,7 @@ export default function BenefitsPage() {
       <div className={styles.BenefitPerksSummary}>
         <h2>Benefits Overview</h2>
 
-        <div className={styles.BenefitSummaryGrid}>
+        <div className={styles.BenefitSummaryTopRow}>
           <div className={styles.BenefitSummaryCard}>
             <h3>Total Amount Spent</h3>
             <p>${summary.totalSpent}</p>
