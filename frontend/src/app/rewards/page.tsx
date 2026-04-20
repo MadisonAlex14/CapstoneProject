@@ -26,101 +26,224 @@ type Redemption = {
 };
 
 export default function RewardsPage() {
-  // LOCAL STORAGE - CARDS
-  const [cards, setCards] = useState<Card[]>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("cards");
-      return saved
-        ? JSON.parse(saved)
-        : [
-            {
-              id: "1",
-              name: "Travel Platinum",
-              last4: "1234",
-              type: "points",
-              balance: 47320,
-              cashValuePerUnit: 0.0125,
-              active: true,
-            },
-            {
-              id: "2",
-              name: "Cash Rewards",
-              last4: "5678",
-              type: "cash",
-              balance: 34.2,
-              cashValuePerUnit: 0.01,
-              active: true,
-            },
-          ];
-    }
-    return [];
-  });
+  // ---------------- HYDRATION ----------------
+  const [hydrated, setHydrated] = useState(false);
 
-  // LOCAL STORAGE - REDEMPTIONS
-  const [redemptions, setRedemptions] = useState<Redemption[]>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("redemptions");
-      return saved ? JSON.parse(saved) : [];
-    }
-    return [];
-  });
+  // ---------------- STATE ----------------
+  const [cards, setCards] = useState<Card[]>([]);
+  const [redemptions, setRedemptions] = useState<Redemption[]>([]);
 
-  const [showModal, setShowModal] = useState(false);
+  // ---------------- MODALS ----------------
+  const [showRedemptionModal, setShowRedemptionModal] = useState(false);
+  const [showUsageModal, setShowUsageModal] = useState(false);
+
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [usedAmount, setUsedAmount] = useState("");
 
-  // EDIT MODE (ROW INLINE EDIT)
+  // ---------------- INLINE EDIT ----------------
   const [editingCardId, setEditingCardId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState<string>("");
 
+  // ---------------- FORM ----------------
+  const [form, setForm] = useState({
+    cardId: "",
+    date: new Date().toISOString().split("T")[0],
+    amount: "",
+    type: "",
+    notes: "",
+  });
+
+  // ---------------- LOAD ----------------
+  useEffect(() => {
+    const savedCards = localStorage.getItem("cards");
+    const savedRedemptions = localStorage.getItem("redemptions");
+
+    if (savedCards) {
+      setCards(JSON.parse(savedCards));
+    } else {
+      setCards([
+        {
+          id: "1",
+          name: "Travel Platinum",
+          last4: "1234",
+          type: "points",
+          balance: 47320,
+          cashValuePerUnit: 0.0125,
+          active: true,
+        },
+        {
+          id: "2",
+          name: "Cash Rewards",
+          last4: "5678",
+          type: "cash",
+          balance: 34.2,
+          cashValuePerUnit: 0.01,
+          active: true,
+        },
+      ]);
+    }
+
+    if (savedRedemptions) {
+      setRedemptions(JSON.parse(savedRedemptions));
+    }
+
+    setHydrated(true);
+  }, []);
+
+  // ---------------- STORAGE ----------------
+  useEffect(() => {
+    if (hydrated) {
+      localStorage.setItem("cards", JSON.stringify(cards));
+    }
+  }, [cards, hydrated]);
+
+  useEffect(() => {
+    if (hydrated) {
+      localStorage.setItem("redemptions", JSON.stringify(redemptions));
+    }
+  }, [redemptions, hydrated]);
+
+  // ---------------- SUMMARY ----------------
   const totalRewardsValue = cards.reduce(
     (sum, c) => sum + c.balance * c.cashValuePerUnit,
     0
   );
 
   const earnedThisMonth = 120;
-  const redeemedThisYear = 300;
 
-  // SAVE TO LOCAL STORAGE
-  useEffect(() => {
-    localStorage.setItem("cards", JSON.stringify(cards));
-  }, [cards]);
+  const redeemedThisYear = redemptions.reduce(
+    (sum, r) => sum + r.amount,
+    0
+  );
 
-  useEffect(() => {
-    localStorage.setItem("redemptions", JSON.stringify(redemptions));
-  }, [redemptions]);
+  const eligibleCards = cards.filter(
+    (c) => c.type === "points" || c.type === "miles"
+  );
 
-  function openModal(card?: Card) {
-    setSelectedCard(card || null);
-    setUsedAmount("");
-    setShowModal(true);
+  const selected = cards.find((c) => c.id === form.cardId);
+
+  const unitLabel =
+    selected?.type === "points"
+      ? "pts"
+      : selected?.type === "miles"
+      ? "mi"
+      : "";
+
+  const estimatedValue =
+    selected && form.amount
+      ? Number(form.amount) * selected.cashValuePerUnit
+      : 0;
+
+  const exceedsBalance =
+    selected && form.amount
+      ? Number(form.amount) > selected.balance
+      : false;
+
+  // ---------------- REDDEMPTION ----------------
+  function openRedemptionModal() {
+    setForm({
+      cardId: "",
+      date: new Date().toISOString().split("T")[0],
+      amount: "",
+      type: "",
+      notes: "",
+    });
+    setShowRedemptionModal(true);
   }
 
   function addRedemption() {
+    if (!selected || !form.amount || !form.type) return;
+
+    const amountNum = Number(form.amount);
+    if (amountNum <= 0 || amountNum > selected.balance) return;
+
+    const newEntry: Redemption = {
+      id: crypto.randomUUID(),
+      date: form.date,
+      cardName: selected.name,
+      last4: selected.last4,
+      amount: amountNum,
+      type: form.type,
+      notes: form.notes,
+    };
+
+    setCards(
+      cards.map((c) =>
+        c.id === selected.id
+          ? { ...c, balance: c.balance - amountNum }
+          : c
+      )
+    );
+
+    setRedemptions([newEntry, ...redemptions]);
+    setShowRedemptionModal(false);
+  }
+
+  // ---------------- USAGE ----------------
+  function openUsageModal(card: Card) {
+    setSelectedCard(card);
+    setUsedAmount("");
+    setShowUsageModal(true);
+  }
+
+  function addUsage() {
     if (!selectedCard || !usedAmount) return;
 
-    const newRedemption: Redemption = {
+    const amountNum = Number(usedAmount);
+
+    const newEntry: Redemption = {
       id: crypto.randomUUID(),
       date: new Date().toISOString().split("T")[0],
       cardName: selectedCard.name,
       last4: selectedCard.last4,
-      amount: Number(usedAmount),
+      amount: amountNum,
       type: "Usage Tracking",
     };
 
-    setRedemptions([newRedemption, ...redemptions]);
-    setShowModal(false);
+    setCards(
+      cards.map((c) =>
+        c.id === selectedCard.id
+          ? { ...c, balance: c.balance - amountNum }
+          : c
+      )
+    );
+
+    setRedemptions([newEntry, ...redemptions]);
+    setShowUsageModal(false);
+  }
+
+  // ---------------- INLINE EDIT ----------------
+  function updateBalance(cardId: string, value: string) {
+    const num = Number(value);
+    if (isNaN(num)) return;
+
+    setCards(
+      cards.map((c) =>
+        c.id === cardId ? { ...c, balance: num } : c
+      )
+    );
   }
 
   function saveEdits() {
     setEditingCardId(null);
   }
 
+  // ---------------- HYDRATION GUARD ----------------
+  if (!hydrated) {
+    return <div className={styles.R_page}>Loading...</div>;
+  }
+
+  // ---------------- UI ----------------
   return (
     <div className={styles.R_page}>
       {/* HEADER */}
       <div className={styles.R_header}>
         <h1 className={styles.R_title}>Rewards</h1>
-        <button className={styles.R_primaryBtn} onClick={() => openModal()}>
+
+        <button
+          className={styles.R_primaryBtn}
+          onClick={openRedemptionModal}
+        >
           + Log Redemption
         </button>
       </div>
@@ -143,7 +266,7 @@ export default function RewardsPage() {
         </div>
       </div>
 
-      {/* CARDS TABLE */}
+      {/* ================= TABLE ================= */}
       <div className={styles.R_section}>
         <h2 className={styles.R_sectionTitle}>Rewards Balance</h2>
 
@@ -160,38 +283,38 @@ export default function RewardsPage() {
 
           <tbody>
             {cards.map((card) => (
-              <tr
-                key={card.id}
-                className={`${!card.active ? styles.R_inactiveRow : ""} ${
-                  editingCardId === card.id ? styles.R_selectedRow : ""
-                }`}
-                onClick={() => setEditingCardId(card.id)}
-              >
-                {/* CARD */}
+              <tr key={card.id}>
                 <td>
                   {card.name} •••• {card.last4}
-                  {!card.active && (
-                    <span className={styles.R_badge}>Inactive</span>
-                  )}
                 </td>
 
-                {/* TYPE */}
                 <td>{card.type}</td>
 
-                {/* RAW BALANCE (EDITABLE) */}
-                <td>
+                <td
+                  onClick={() => {
+                    setEditingCardId(card.id);
+                    setEditValue(String(card.balance));
+                  }}
+                  style={{ cursor: "pointer" }}
+                >
                   {editingCardId === card.id ? (
                     <input
-                      className={styles.R_input}
                       type="number"
-                      value={card.balance}
-                      onChange={(e) => {
-                        const updated = cards.map((c) =>
-                          c.id === card.id
-                            ? { ...c, balance: Number(e.target.value) }
-                            : c
-                        );
-                        setCards(updated);
+                      value={editValue}
+                      autoFocus
+                      className={styles.R_input}
+                      onChange={(e) =>
+                        setEditValue(e.target.value)
+                      }
+                      onBlur={() => {
+                        updateBalance(card.id, editValue);
+                        setEditingCardId(null);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          updateBalance(card.id, editValue);
+                          setEditingCardId(null);
+                        }
                       }}
                     />
                   ) : card.type === "cash" ? (
@@ -203,22 +326,17 @@ export default function RewardsPage() {
                   )}
                 </td>
 
-                {/* EST VALUE */}
                 <td>
                   ${(card.balance * card.cashValuePerUnit).toFixed(2)}
                 </td>
 
-                {/* ACTIONS */}
                 <td>
                   {card.type !== "cash" && (
                     <button
                       className={styles.R_smallBtn}
-                      onClick={(e) => {
-                        e.stopPropagation(); // 🔥 fixes conflict
-                        openModal(card);     // 🔥 opens modal correctly
-                      }}
+                      onClick={() => openUsageModal(card)}
                     >
-                      Log Redemption
+                      Track Usage
                     </button>
                   )}
                 </td>
@@ -228,35 +346,12 @@ export default function RewardsPage() {
         </table>
       </div>
 
-      {/* SAVE BAR */}
-      {editingCardId && (
-        <div className={styles.R_saveBar}>
-          <p>Editing card...</p>
-
-          <button
-            className={styles.R_secondaryBtn}
-            onClick={() => setEditingCardId(null)}
-          >
-            Cancel
-          </button>
-
-          <button
-            className={styles.R_primaryBtn}
-            onClick={saveEdits}
-          >
-            Save Changes
-          </button>
-        </div>
-      )}
-
-      {/* REDEMPTION LOG */}
+      {/* ================= REDEMPTION LOG ================= */}
       <div className={styles.R_section}>
         <h2 className={styles.R_sectionTitle}>Redemption Log</h2>
 
         {redemptions.length === 0 ? (
-          <p className={styles.R_empty}>
-            No redemptions logged yet. Use the Log Redemption button.
-          </p>
+          <p className={styles.R_empty}>No usage logged yet.</p>
         ) : (
           <table className={styles.R_table}>
             <thead>
@@ -276,7 +371,7 @@ export default function RewardsPage() {
                   <td>
                     {r.cardName} •••• {r.last4}
                   </td>
-                  <td>{r.amount}</td>
+                  <td>${r.amount}</td>
                   <td>{r.type}</td>
                   <td>{r.notes || "-"}</td>
                 </tr>
@@ -286,62 +381,114 @@ export default function RewardsPage() {
         )}
       </div>
 
-      {/* MODAL */}
-      {showModal && (
+      {/* ================= USAGE MODAL (FIXED) ================= */}
+      {showUsageModal && selectedCard && (
         <div className={styles.R_modalOverlay}>
           <div className={styles.R_modal}>
-            <div>
-              <h3 style={{ marginBottom: "10px" }}>
-                Log Redemption
-              </h3>
+            <h3>Track Usage</h3>
 
-              <label className={styles.R_label}>Used Amount</label>
+            <input
+              className={styles.R_input}
+              value={usedAmount}
+              onChange={(e) => setUsedAmount(e.target.value)}
+              type="number"
+              placeholder="Enter amount"
+            />
 
-              <input
-                className={styles.R_input}
-                value={usedAmount}
-                onChange={(e) => setUsedAmount(e.target.value)}
-                type="number"
-                placeholder="Enter amount used"
-              />
-            </div>
-
-            <div className={styles.R_modalSummary}>
-              <div>
-                <div className={styles.R_modalSummaryTitle}>
-                  Usage Tracking
-                </div>
-
-                <div className={styles.R_modalBigValue}>
-                  {selectedCard && usedAmount
-                    ? `$${Number(usedAmount).toFixed(2)} / $${(
-                        selectedCard.balance *
-                        selectedCard.cashValuePerUnit
-                      ).toFixed(2)}`
-                    : "—"}
-                </div>
-
-                <div className={styles.R_modalCardMeta}>
-                  used / total available
-                </div>
-              </div>
+            {/* 🔥 RESTORED $100 / $500 STYLE DISPLAY */}
+            <div style={{ marginTop: "10px", fontWeight: 500 }}>
+              {usedAmount ? (
+                <>
+                  ${Number(usedAmount).toFixed(2)} / $
+                  {(
+                    selectedCard.balance *
+                    selectedCard.cashValuePerUnit
+                  ).toFixed(2)}
+                </>
+              ) : (
+                "—"
+              )}
             </div>
 
             <div className={styles.R_modalActions}>
-              <button
-                className={styles.R_secondaryBtn}
-                onClick={() => setShowModal(false)}
-              >
+              <button onClick={() => setShowUsageModal(false)}>
                 Cancel
               </button>
+              <button onClick={addUsage}>Save</button>
+            </div>
+          </div>
+        </div>
+      )}
 
-              <button
-                className={styles.R_primaryBtn}
-                onClick={addRedemption}
-                disabled={!usedAmount || !selectedCard}
-              >
-                Save
+      {/* ================= REDEMPTION MODAL ================= */}
+      {showRedemptionModal && (
+        <div className={styles.R_modalOverlay}>
+          <div className={styles.R_modal}>
+            <h3>Log Redemption</h3>
+
+            <select
+              className={styles.R_input}
+              value={form.cardId}
+              onChange={(e) =>
+                setForm({ ...form, cardId: e.target.value })
+              }
+            >
+              <option value="">Select card</option>
+              {eligibleCards.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name} •••• {c.last4}
+                </option>
+              ))}
+            </select>
+
+            <input
+              type="date"
+              className={styles.R_input}
+              value={form.date}
+              onChange={(e) =>
+                setForm({ ...form, date: e.target.value })
+              }
+            />
+
+            <input
+              type="number"
+              className={styles.R_input}
+              value={form.amount}
+              onChange={(e) =>
+                setForm({ ...form, amount: e.target.value })
+              }
+              placeholder={`Amount (${unitLabel})`}
+            />
+
+            <select
+              className={styles.R_input}
+              value={form.type}
+              onChange={(e) =>
+                setForm({ ...form, type: e.target.value })
+              }
+            >
+              <option value="">Type</option>
+              <option>Travel Portal</option>
+              <option>Cash Back Conversion</option>
+              <option>Transfer Partner</option>
+              <option>Gift Card</option>
+              <option>Other</option>
+            </select>
+
+            <textarea
+              className={styles.R_input}
+              value={form.notes}
+              onChange={(e) =>
+                setForm({ ...form, notes: e.target.value })
+              }
+              placeholder="Notes"
+            />
+
+            <div className={styles.R_modalActions}>
+              <button onClick={() => setShowRedemptionModal(false)}>
+                Cancel
               </button>
+              <button onClick={addRedemption}>Save</button>
             </div>
           </div>
         </div>
