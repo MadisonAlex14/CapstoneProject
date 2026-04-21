@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { getUserCards } from "../../lib/functions/getUserCards";
 import { getCardTypes } from "../../lib/functions/getCardTypes";
 import { upsertUserCard } from "../../lib/functions/upsertUserCard";
+import { deleteUserCard } from "../../lib/functions/deleteUserCard";
 import styles from "../../styles/auth.module.css";
 
 type CardBenefit = {
@@ -73,6 +74,7 @@ type CreditCard = {
   annual_fee: number | null;
   notes: string;
   createdAt: string;
+  image_url?: string | null;
 
   initialCardState: {
     currentRewardsBalance: number | null;
@@ -148,6 +150,7 @@ function normalizeStoredCards(rawCards: any[], cardTypes: CardType[] = []): Cred
       rewardsType: card.rewardsType ?? matchedType?.reward_unit_name ?? "Points",
       cardNickname: card.cardNickname ?? card.nickname ?? matchedType?.name ?? "",
       network_id: card.network_id ?? card.network ?? matchedType?.network_id ?? "",
+      image_url: card.image_url ?? card.credit_card_type?.image_url ?? matchedType?.image_url ?? null,
 
       openDate: card.openDate ?? card.open_date ?? "",
       creditLimit:
@@ -425,12 +428,39 @@ export default function CardsPage() {
     });
   };
 
-  const handleDeleteCard = (cardId: string) => {
-    const confirmed = window.confirm("Are you sure you want to delete this card?");
+  const handleDeleteCard = async (cardId: string) => {
+    const confirmed = window.confirm("Are you sure you want to delete this card? This action cannot be undone.");
     if (!confirmed) return;
 
-    setCards((prev) => prev.filter((card) => card.credit_card_type_id !== cardId));
-    setOpenMenuId(null);
+    try {
+      // Get the access token
+      let token: string | null = localStorage.getItem("accessToken");
+      if (!token) {
+        // Try to get from Supabase auth session
+        const { createClient } = await import("@supabase/supabase-js");
+        const supabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
+        );
+        const { data } = await supabase.auth.getSession();
+        token = data.session?.access_token || null;
+      }
+
+      if (!token) {
+        alert("Please log in to delete a card");
+        return;
+      }
+
+      // Call the delete API
+      await deleteUserCard(token, cardId);
+      
+      // Remove from local state
+      setCards((prev) => prev.filter((card) => card.credit_card_type_id !== cardId));
+      setOpenMenuId(null);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to delete card";
+      alert(`Error deleting card: ${errorMessage}`);
+    }
   };
 
   const handleCardClick = (cardId: string) => {
@@ -683,64 +713,92 @@ export default function CardsPage() {
                 }
               }}
             >
-              <div className={styles.CardTop}>
-                <span className={styles.CardIssuerID}>{card.issuer_id}</span>
-
+              <div
+                style={{
+                  position: 'relative',
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  backgroundImage: card.image_url ? `url('${card.image_url}')` : 'none',
+                }}
+              >
+                {/* Background overlay for better text readability */}
                 <div
-                  className={styles.CardMenuWrapper}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <button
-                    type="button"
-                    className={styles.CardMenuButton}
-                    aria-label={`Open menu for ${
-                      card.cardNickname || card.cardName
-                    }`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setOpenMenuId((prev) => (prev === card.credit_card_type_id ? null : card.credit_card_type_id));
-                    }}
-                  >
-                    ⋯
-                  </button>
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.4) 100%)',
+                    borderRadius: 'inherit',
+                    zIndex: 1,
+                  }}
+                />
 
-                  {openMenuId === card.credit_card_type_id && (
-                    <div className={styles.CardMenuDropdown}>
-                      <button
-                        type="button"
-                        className={styles.CardMenuItem}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEditCard(card);
-                        }}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        type="button"
-                        className={styles.CardMenuDelete}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteCard(card.credit_card_type_id);
-                        }}
-                      >
-                        Delete
-                      </button>
-                    </div>
+                <div className={styles.CardTop} style={{ position: 'relative', zIndex: 2 }}>
+                  <span className={styles.CardIssuerID}>{card.issuer_id}</span>
+
+                  <div
+                    className={styles.CardMenuWrapper}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <button
+                      type="button"
+                      className={styles.CardMenuButton}
+                      aria-label={`Open menu for ${
+                        card.cardNickname || card.cardName
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenMenuId((prev) => (prev === card.credit_card_type_id ? null : card.credit_card_type_id));
+                      }}
+                    >
+                      ⋯
+                    </button>
+
+                    {openMenuId === card.credit_card_type_id && (
+                      <div className={styles.CardMenuDropdown}>
+                        <button
+                          type="button"
+                          className={styles.CardMenuItem}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditCard(card);
+                          }}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          className={styles.CardMenuDelete}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteCard(card.credit_card_type_id);
+                          }}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className={styles.CardCardBody} style={{ position: 'relative', zIndex: 2 }}>
+                  <h2 className={styles.CardName}>{card.cardName}</h2>
+
+                  {card.cardNickname && card.cardNickname !== card.cardName && (
+                    <p className={styles.CardMeta}>{card.cardNickname}</p>
                   )}
                 </div>
-              </div>
 
-              <div className={styles.CardCardBody}>
-                <h2 className={styles.CardName}>{card.cardName}</h2>
-
-                {card.cardNickname && card.cardNickname !== card.cardName && (
-                  <p className={styles.CardMeta}>{card.cardNickname}</p>
-                )}
-              </div>
-
-              <div className={styles.CardBottomRow}>
-                <p className={styles.CardNumber}>•••• {card.last4}</p>
+                <div className={styles.CardBottomRow} style={{ position: 'relative', zIndex: 2 }}>
+                  <p className={styles.CardNumber}>•••• {card.last4}</p>
+                </div>
               </div>
             </div>
           ))}
