@@ -2,171 +2,152 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import '@/App.css';
+import styles from '../../styles/auth.module.css';
+import { getUserTransactions } from '../../lib/functions/getUserTransactions';
+import { getUserCards } from '../../lib/functions/getUserCards';
+import { upsertTransaction } from '../../lib/functions/upsertTransaction';
+import { deleteTransaction } from '../../lib/functions/deleteTransaction';
 
 type Transaction = {
-  id: string;
-  date: string;
-  merchant: string;
-  mcc: number;
+  transaction_id: string;
+  transaction_date: string;
+  merchant_name: string;
+  mcc_code: string;
+  mcc_description: string;
+  mcc_id: string;
   amount: number;
-  card: string;
-  category: string;
-  reward: number;
-  benefit: string;
+  rewards_earned: number;
+  rewards_currency: string;
   notes: string;
+  credit_card_id: string;
+  card_label: string;
 };
 
-const mccToCategory: Record<number, string> = {
-  5411: 'Groceries',
-  5812: 'Dining',
-  5541: 'Fuel',
-  5912: 'Pharmacy',
-  5691: 'Clothing',
-  4814: 'Communication',
-  5311: 'Department Store',
-  5999: 'Miscellaneous',
+type UserCard = {
+  credit_card_id: string;
+  nickname: string;
+  last_four: string;
+  credit_card_type: { name: string };
 };
 
-const sampleTransactions: Transaction[] = [
-  {
-    id: 'tx1',
-    date: '2026-03-18',
-    merchant: 'Amazon',
-    mcc: 5311,
-    amount: 42.17,
-    card: 'Platinum 3472',
-    category: 'Department Store',
-    reward: 0.84,
-    benefit: '5% cashback on groceries applied',
-    notes: 'New headphones',
-  },
-  {
-    id: 'tx2',
-    date: '2026-03-17',
-    merchant: 'Starbucks',
-    mcc: 5812,
-    amount: 6.89,
-    card: 'Chroma Rewards 4481',
-    category: 'Dining',
-    reward: 0.69,
-    benefit: '2x points promotion',
-    notes: 'Morning coffee',
-  },
-  {
-    id: 'tx3',
-    date: '2026-03-16',
-    merchant: 'Shell',
-    mcc: 5541,
-    amount: 55.0,
-    card: 'Chroma Rewards 4481',
-    category: 'Fuel',
-    reward: 1.65,
-    benefit: '3% gas bonus',
-    notes: '',
-  },
-  {
-    id: 'tx4',
-    date: '2026-03-14',
-    merchant: 'Whole Foods',
-    mcc: 5411,
-    amount: 87.34,
-    card: 'Platinum 3472',
-    category: 'Groceries',
-    reward: 2.62,
-    benefit: 'Grocery category credit',
-    notes: 'Weekly shopping',
-  },
-  {
-    id: 'tx5',
-    date: '2026-03-13',
-    merchant: 'CVS',
-    mcc: 5912,
-    amount: 23.76,
-    card: 'Platinum 3472',
-    category: 'Pharmacy',
-    reward: 0.71,
-    benefit: '',
-    notes: 'Medicine refill',
-  },
-];
 
 const currency = (value: number) => `$${value.toFixed(2)}`;
 
-const TRANSACTIONS_STORAGE_KEY = 'capstone_transactions_v1';
-
 export default function Page() {
   const router = useRouter();
+  const fetchGuard = useRef(false);
 
-  const [transactions, setTransactions] = useState<Transaction[]>(() => {
-    if (typeof window === 'undefined') return sampleTransactions;
-    try {
-      const saved = localStorage.getItem(TRANSACTIONS_STORAGE_KEY);
-      if (saved) return JSON.parse(saved) as Transaction[];
-    } catch {
-      // ignore
-    }
-    return sampleTransactions;
-  });
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [userCards, setUserCards] = useState<UserCard[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [formError, setFormError] = useState('');
 
   const [selectedCard, setSelectedCard] = useState('all');
-  const [selectedCategory, setSelectedCategory] = useState('all');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [search, setSearch] = useState('');
-  const [sortBy, setSortBy] = useState<keyof Transaction>('date');
+  const [sortBy, setSortBy] = useState<keyof Transaction>('transaction_date');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [page, setPage] = useState(1);
-  const [rowsPerPage] = useState(8);
+  const rowsPerPage = 8;
 
   const [showModal, setShowModal] = useState(false);
   const [editItem, setEditItem] = useState<Transaction | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const [form, setForm] = useState({
-    date: '',
-    merchant: '',
-    mcc: 5411,
+    transaction_date: '',
+    merchant_name: '',
+    mcc_id: '',
+    mcc_label: '',
     amount: '',
-    card: '',
+    credit_card_id: '',
     notes: '',
   });
 
+
+  // -------------------- DATA LOADING --------------------
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    localStorage.setItem(TRANSACTIONS_STORAGE_KEY, JSON.stringify(transactions));
-  }, [transactions]);
+    if (fetchGuard.current) return;
+    fetchGuard.current = true;
 
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const loadData = async () => {
+      try {
+        const localToken = localStorage.getItem('accessToken');
+        const supabaseToken = localStorage.getItem('supabase.auth.token');
+        let accessToken: string | null = localToken;
 
-  const cardOptions = useMemo(() => {
-    const cards = Array.from(new Set(transactions.map((tx) => tx.card)));
-    return ['All Cards', ...cards];
-  }, [transactions]);
+        if (!accessToken && supabaseToken) {
+          const session = JSON.parse(supabaseToken);
+          accessToken = session?.currentSession?.access_token || session?.access_token || null;
+        }
 
-  const categoryOptions = useMemo(() => {
-    const categories = Array.from(new Set(Object.values(mccToCategory)));
-    return ['All Categories', ...categories];
+        if (!accessToken) {
+          throw new Error('No access token');
+        }
+
+        const [cardsData, txData] = await Promise.all([
+          getUserCards(accessToken),
+          getUserTransactions(accessToken),
+        ]);
+
+        setUserCards(cardsData ?? []);
+
+        // txData is an array of cards with nested transactions — flatten it
+        const flat: Transaction[] = [];
+        for (const cardGroup of (txData ?? [])) {
+          const cardLabel = cardGroup.nickname
+            ? `${cardGroup.nickname} ••••${cardGroup.last_four}`
+            : `${cardGroup.credit_card_type?.name ?? 'Card'} ••••${cardGroup.last_four}`;
+
+          for (const tx of (cardGroup.transaction ?? [])) {
+            flat.push({
+              transaction_id: tx.transaction_id,
+              transaction_date: tx.transaction_date,
+              merchant_name: tx.merchant_name,
+              mcc_code: tx.mcc?.code ?? '',
+              mcc_description: tx.mcc?.description ?? '',
+              mcc_id: tx.mcc_id ?? '',
+              amount: tx.amount,
+              rewards_earned: tx.rewards_earned ?? 0,
+              rewards_currency: tx.rewards_currency ?? '',
+              notes: tx.notes ?? '',
+              credit_card_id: cardGroup.credit_card_id,
+              card_label: cardLabel,
+            });
+          }
+        }
+
+        setTransactions(flat);
+      } catch (err: any) {
+        console.warn('Failed to load transactions', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
   }, []);
 
+  // -------------------- FILTERS + SORT --------------------
   const filtered = useMemo(() => {
     return transactions
-      .filter((tx) => (selectedCard === 'all' ? true : tx.card === selectedCard))
-      .filter((tx) => (selectedCategory === 'all' ? true : tx.category === selectedCategory))
+      .filter((tx) => selectedCard === 'all' || tx.credit_card_id === selectedCard)
       .filter((tx) => {
-        if (fromDate && tx.date < fromDate) return false;
-        if (toDate && tx.date > toDate) return false;
+        if (fromDate && tx.transaction_date < fromDate) return false;
+        if (toDate && tx.transaction_date > toDate) return false;
         return true;
       })
-      .filter((tx) => tx.merchant.toLowerCase().includes(search.toLowerCase()));
-  }, [transactions, selectedCard, selectedCategory, fromDate, toDate, search]);
+      .filter((tx) => tx.merchant_name.toLowerCase().includes(search.toLowerCase()));
+  }, [transactions, selectedCard, fromDate, toDate, search]);
 
   const sorted = useMemo(() => {
-    const sortedCopy = [...filtered];
-    sortedCopy.sort((a, b) => {
-      let aVal: string | number = a[sortBy];
-      let bVal: string | number = b[sortBy];
+    const copy = [...filtered];
+    copy.sort((a, b) => {
+      let aVal: string | number = a[sortBy] ?? '';
+      let bVal: string | number = b[sortBy] ?? '';
 
-      if (sortBy === 'date') {
+      if (sortBy === 'transaction_date') {
         aVal = new Date(aVal as string).getTime();
         bVal = new Date(bVal as string).getTime();
       }
@@ -180,11 +161,11 @@ export default function Page() {
       if (aVal < bVal) return sortDir === 'asc' ? -1 : 1;
       return 0;
     });
-    return sortedCopy;
+    return copy;
   }, [filtered, sortBy, sortDir]);
 
   const pageCount = Math.max(1, Math.ceil(sorted.length / rowsPerPage));
-  const visibleTransactions = sorted.slice((page - 1) * rowsPerPage, page * rowsPerPage);
+  const visible = sorted.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
   const changeSort = (column: keyof Transaction) => {
     const nextDir = sortBy === column && sortDir === 'asc' ? 'desc' : 'asc';
@@ -192,63 +173,144 @@ export default function Page() {
     setSortDir(nextDir);
   };
 
-  const applyAddOrUpdate = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  // -------------------- SAVE (ADD / EDIT) --------------------
+  const handleSave = async (e: { preventDefault: () => void }) => {
+    e.preventDefault();
+    setFormError('');
 
-    const cleaned: Transaction = {
-      id: editItem ? editItem.id : `tx-${Date.now()}`,
-      date: form.date,
-      merchant: form.merchant,
-      mcc: Number(form.mcc),
-      amount: Number(form.amount),
-      card: form.card,
-      category: mccToCategory[Number(form.mcc)] || 'Uncategorized',
-      reward: Number(form.amount) * 0.03,
-      benefit: form.notes.includes('cashback') ? form.notes : '',
-      notes: form.notes,
-    };
+    if (!editItem) {
+      setFormError('No transaction selected.');
+      return;
+    }
 
-    setTransactions((curr) => {
-      if (editItem) {
-        return curr.map((tx) => (tx.id === editItem.id ? cleaned : tx));
+    setSaving(true);
+    try {
+      const localToken = localStorage.getItem('accessToken');
+      const supabaseToken = localStorage.getItem('supabase.auth.token');
+      let accessToken: string | null = localToken;
+
+      if (!accessToken && supabaseToken) {
+        const session = JSON.parse(supabaseToken);
+        accessToken = session?.currentSession?.access_token || session?.access_token || null;
       }
-      return [cleaned, ...curr];
-    });
 
-    setEditItem(null);
-    setShowModal(false);
-    setForm({ date: '', merchant: '', mcc: 5411, amount: '', card: '', notes: '' });
+      if (!accessToken) {
+        throw new Error('No access token');
+      }
+
+      await upsertTransaction(accessToken, {
+        transaction_id: editItem.transaction_id,
+        credit_card_id: editItem.credit_card_id,
+        transaction_date: form.transaction_date,
+        merchant_name: editItem.merchant_name,
+        amount: editItem.amount,
+        notes: form.notes,
+      });
+
+      // Re-fetch after save so rewards_earned reflects server calculation
+      const txData = await getUserTransactions(accessToken);
+      const flat: Transaction[] = [];
+      for (const cardGroup of (txData ?? [])) {
+        const cardLabel = cardGroup.nickname
+          ? `${cardGroup.nickname} ••••${cardGroup.last_four}`
+          : `${cardGroup.credit_card_type?.name ?? 'Card'} ••••${cardGroup.last_four}`;
+        for (const tx of (cardGroup.transaction ?? [])) {
+          flat.push({
+            transaction_id: tx.transaction_id,
+            transaction_date: tx.transaction_date,
+            merchant_name: tx.merchant_name,
+            mcc_code: tx.mcc?.code ?? '',
+            mcc_description: tx.mcc?.description ?? '',
+            mcc_id: tx.mcc_id ?? '',
+            amount: tx.amount,
+            rewards_earned: tx.rewards_earned ?? 0,
+            rewards_currency: tx.rewards_currency ?? '',
+            notes: tx.notes ?? '',
+            credit_card_id: cardGroup.credit_card_id,
+            card_label: cardLabel,
+          });
+        }
+      }
+      setTransactions(flat);
+
+      closeModal();
+    } catch (err: any) {
+      setFormError(err.message || 'Failed to save transaction');
+      console.error('Error saving transaction:', err);
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const startEdit = (tx: Transaction) => {
+  // -------------------- DELETE --------------------
+  const handleDelete = async (transactionId: string) => {
+    if (!window.confirm('Delete this transaction?')) return;
+
+    try {
+      const localToken = localStorage.getItem('accessToken');
+      const supabaseToken = localStorage.getItem('supabase.auth.token');
+      let accessToken: string | null = localToken;
+
+      if (!accessToken && supabaseToken) {
+        const session = JSON.parse(supabaseToken);
+        accessToken = session?.currentSession?.access_token || session?.access_token || null;
+      }
+
+      if (!accessToken) {
+        throw new Error('No access token');
+      }
+
+      await deleteTransaction(accessToken, transactionId);
+      setTransactions((curr) => {
+        const next = curr.filter((tx) => tx.transaction_id !== transactionId);
+        const newPageCount = Math.max(1, Math.ceil(next.length / rowsPerPage));
+        setPage((currentPage) => Math.min(currentPage, newPageCount));
+        return next;
+      });
+    } catch (err: any) {
+      console.error('Error deleting transaction:', err);
+    }
+  };
+
+  // -------------------- MODAL --------------------
+  const openEdit = (tx: Transaction) => {
     setEditItem(tx);
-    setForm({ date: tx.date, merchant: tx.merchant, mcc: tx.mcc, amount: tx.amount.toString(), card: tx.card, notes: tx.notes });
+    setFormError('');
+    setForm({
+      transaction_date: tx.transaction_date,
+      merchant_name: tx.merchant_name,
+      mcc_id: tx.mcc_id,
+      mcc_label: tx.mcc_code ? `${tx.mcc_code} – ${tx.mcc_description}` : '',
+      amount: tx.amount.toString(),
+      credit_card_id: tx.credit_card_id,
+      notes: tx.notes,
+    });
     setShowModal(true);
   };
 
-  const deleteTransaction = (id: string) => {
-    setTransactions((curr) => curr.filter((tx) => tx.id !== id));
+  const closeModal = () => {
+    setShowModal(false);
+    setEditItem(null);
+    setFormError('');
   };
 
+  // -------------------- CSV EXPORT --------------------
   const exportCsv = () => {
-    const header = ['Date', 'Merchant', 'MCC', 'Amount', 'Card', 'Category', 'Rewards Earned', 'Benefit Applied', 'Notes'];
-
+    const header = ['Date', 'Merchant', 'MCC Code', 'MCC Description', 'Amount', 'Card', 'Rewards Earned', 'Rewards Currency', 'Notes'];
     const body = sorted.map((tx) => [
-      tx.date,
-      tx.merchant,
-      tx.mcc,
+      tx.transaction_date,
+      tx.merchant_name,
+      tx.mcc_code,
+      tx.mcc_description,
       tx.amount.toFixed(2),
-      tx.card,
-      tx.category,
-      tx.reward.toFixed(2),
-      tx.benefit,
+      tx.card_label,
+      tx.rewards_earned.toFixed(2),
+      tx.rewards_currency,
       tx.notes,
     ]);
-
     const csvContent = [header, ...body]
       .map((row) => row.map((field) => `"${String(field).replace(/"/g, '""')}"`).join(','))
       .join('\n');
-
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -258,60 +320,17 @@ export default function Page() {
     URL.revokeObjectURL(url);
   };
 
-  const parseCsv = (text: string) => {
-    const rows = text
-      .trim()
-      .split('\n')
-      .map((row) => row.split(',').map((cell) => cell.replace(/(^"|"$)/g, '').trim()));
-
-    const [headings, ...data] = rows;
-
-    const neededColumns = {
-      date: headings.indexOf('Date'),
-      merchant: headings.indexOf('Merchant'),
-      mcc: headings.indexOf('MCC'),
-      amount: headings.indexOf('Amount'),
-      card: headings.indexOf('Card'),
-      notes: headings.indexOf('Notes'),
-    };
-
-    const imported = data
-      .filter((row) => row.length >= 5)
-      .map((row, idx) => {
-        const mcc = Number(row[neededColumns.mcc] || 0) || 0;
-        const amount = Number(row[neededColumns.amount] || 0) || 0;
-        return {
-          id: `imp-${Date.now()}-${idx}`,
-          date: row[neededColumns.date] || '',
-          merchant: row[neededColumns.merchant] || 'Imported',
-          mcc,
-          amount,
-          card: row[neededColumns.card] || 'Imported Card',
-          category: mccToCategory[mcc] || 'Uncategorized',
-          reward: amount * 0.03,
-          benefit: '',
-          notes: row[neededColumns.notes] || '',
-        };
-      });
-
-    setTransactions((curr) => [...imported, ...curr]);
-  };
-
-  const onFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const text = ev.target?.result;
-      if (typeof text === 'string') parseCsv(text);
-    };
-    reader.readAsText(file);
-  };
+  // -------------------- RENDER --------------------
+  if (loading) {
+    return <div className="main-content transactions-page CardDetailsPage"><p>Loading transactions...</p></div>;
+  }
 
   return (
     <div className="main-content transactions-page CardDetailsPage">
-      <h1>Transactions</h1>
-      <p>View and manage all of your recent credit card transactions here.</p>
+      <div className={styles.PageHero}>
+        <h1 className={styles.PageTitle}>Transactions</h1>
+        <p className={styles.PageSubtitle}>View and manage all of your recent credit card transactions here.</p>
+      </div>
 
       <section className="CardDetailsSection">
         <div className="CardDetailsActionRow">
@@ -319,31 +338,12 @@ export default function Page() {
             Card
             <select
               value={selectedCard}
-              onChange={(e) => {
-                setSelectedCard(e.target.value);
-                setPage(1);
-              }}
+              onChange={(e) => { setSelectedCard(e.target.value); setPage(1); }}
             >
-              {cardOptions.map((card) => (
-                <option key={card} value={card === 'All Cards' ? 'all' : card}>
-                  {card}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label>
-            Category
-            <select
-              value={selectedCategory}
-              onChange={(e) => {
-                setSelectedCategory(e.target.value);
-                setPage(1);
-              }}
-            >
-              {categoryOptions.map((category) => (
-                <option key={category} value={category === 'All Categories' ? 'all' : category}>
-                  {category}
+              <option value="all">All Cards</option>
+              {userCards.map((c) => (
+                <option key={c.credit_card_id} value={c.credit_card_id}>
+                  {c.nickname ? `${c.nickname} ••••${c.last_four}` : `${c.credit_card_type?.name} ••••${c.last_four}`}
                 </option>
               ))}
             </select>
@@ -351,26 +351,12 @@ export default function Page() {
 
           <label>
             From
-            <input
-              type="date"
-              value={fromDate}
-              onChange={(e) => {
-                setFromDate(e.target.value);
-                setPage(1);
-              }}
-            />
+            <input type="date" value={fromDate} onChange={(e) => { setFromDate(e.target.value); setPage(1); }} />
           </label>
 
           <label>
             To
-            <input
-              type="date"
-              value={toDate}
-              onChange={(e) => {
-                setToDate(e.target.value);
-                setPage(1);
-              }}
-            />
+            <input type="date" value={toDate} onChange={(e) => { setToDate(e.target.value); setPage(1); }} />
           </label>
 
           <label>
@@ -378,10 +364,7 @@ export default function Page() {
             <input
               type="text"
               value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
               placeholder="Search merchant name"
             />
           </label>
@@ -402,14 +385,12 @@ export default function Page() {
             <thead>
               <tr>
                 {[
-                  { label: 'Date', key: 'date' },
-                  { label: 'Merchant', key: 'merchant' },
-                  { label: 'MCC', key: 'mcc' },
+                  { label: 'Date', key: 'transaction_date' },
+                  { label: 'Merchant', key: 'merchant_name' },
+                  { label: 'MCC', key: 'mcc_code' },
                   { label: 'Amount', key: 'amount' },
-                  { label: 'Card', key: 'card' },
-                  { label: 'Category', key: 'category' },
-                  { label: 'Rewards Earned', key: 'reward' },
-                  { label: 'Benefit Applied', key: 'benefit' },
+                  { label: 'Card', key: 'card_label' },
+                  { label: 'Rewards Earned', key: 'rewards_earned' },
                   { label: 'Notes', key: 'notes' },
                   { label: 'Actions', key: 'actions' },
                 ].map((col) => (
@@ -425,31 +406,31 @@ export default function Page() {
               </tr>
             </thead>
             <tbody>
-              {visibleTransactions.length === 0 ? (
+              {visible.length === 0 ? (
                 <tr>
-                  <td colSpan={10} style={{ textAlign: 'center', padding: '1rem' }}>
+                  <td colSpan={8} style={{ textAlign: 'center', padding: '1rem' }}>
                     No transactions match the current filters.
                   </td>
                 </tr>
               ) : (
-                visibleTransactions.map((tx) => (
-                  <tr key={tx.id}>
-                    <td>{tx.date}</td>
-                    <td>{tx.merchant}</td>
-                    <td>{tx.mcc}</td>
-                    <td style={{ textAlign: 'right', color: tx.amount >= 0 ? '#1f4d3a' : '#b42318' }}>
-                      {tx.amount >= 0 ? '+' : '-'}{currency(Math.abs(tx.amount))}
+                visible.map((tx) => (
+                  <tr key={tx.transaction_id}>
+                    <td>{tx.transaction_date}</td>
+                    <td>{tx.merchant_name}</td>
+                    <td title={tx.mcc_description}>{tx.mcc_code}</td>
+                    <td style={{ textAlign: 'right' }}>
+                      {currency(tx.amount)}
                     </td>
-                    <td>{tx.card}</td>
-                    <td>{tx.category}</td>
-                    <td style={{ textAlign: 'right' }}>{currency(tx.reward)}</td>
-                    <td>{tx.benefit || '--'}</td>
+                    <td>{tx.card_label}</td>
+                    <td style={{ textAlign: 'right' }}>
+                      {tx.rewards_currency === 'cash' ? tx.rewards_earned.toFixed(2) : tx.rewards_earned} {tx.rewards_currency}
+                    </td>
                     <td>{tx.notes || '--'}</td>
                     <td>
-                      <button onClick={() => startEdit(tx)} title="Edit" style={{ marginRight: '0.35rem' }}>
+                      <button onClick={() => openEdit(tx)} title="Edit" style={{ marginRight: '0.35rem' }}>
                         ✏️
                       </button>
-                      <button onClick={() => deleteTransaction(tx.id)} title="Delete">
+                      <button onClick={() => handleDelete(tx.transaction_id)} title="Delete">
                         🗑️
                       </button>
                     </td>
@@ -461,9 +442,7 @@ export default function Page() {
         </div>
 
         <div className="transactions-pagination">
-          <div>
-            Page {page} of {pageCount}
-          </div>
+          <div>Page {page} of {pageCount}</div>
           <div style={{ display: 'flex', gap: '0.5rem' }}>
             <button className="CardDetailsButtonSecondary" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
               Previous
@@ -475,58 +454,85 @@ export default function Page() {
         </div>
       </section>
 
+      {/* Add / Edit Modal */}
       {showModal && (
         <div
           style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0,0,0,0.4)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 2000,
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(0,0,0,0.4)', display: 'flex',
+            alignItems: 'center', justifyContent: 'center', zIndex: 2000,
           }}
         >
           <div style={{ background: '#fff', borderRadius: '16px', width: '560px', maxWidth: '95%', padding: '1rem', boxShadow: '0 16px 34px rgba(0,0,0,0.25)' }}>
-            <h2>{editItem ? 'Edit Transaction' : 'Log Transaction'}</h2>
-            <form onSubmit={applyAddOrUpdate} style={{ display: 'grid', gap: '0.75rem' }}>
+            <h2>Edit Transaction</h2>
+            <form onSubmit={handleSave} style={{ display: 'grid', gap: '0.75rem' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                 <label>
                   Date
-                  <input type="date" required value={form.date} onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))} />
+                  <input
+                    type="date"
+                    required
+                    style={{ width: '100%', padding: '0.6rem', backgroundColor: '#e1f5e7', border: '2px solid #314634', borderRadius: '6px', fontSize: '0.95rem', boxSizing: 'border-box', marginTop: '0.3rem' }}
+                    value={form.transaction_date}
+                    onChange={(e) => setForm((f) => ({ ...f, transaction_date: e.target.value }))}
+                  />
                 </label>
                 <label>
                   Merchant
-                  <input type="text" required value={form.merchant} onChange={(e) => setForm((f) => ({ ...f, merchant: e.target.value }))} />
+                  <input
+                    type="text"
+                    readOnly
+                    style={{ width: '100%', padding: '0.6rem', backgroundColor: '#f3f4f6', border: '2px solid #d1d5db', borderRadius: '6px', fontSize: '0.95rem', boxSizing: 'border-box', marginTop: '0.3rem', cursor: 'not-allowed', color: '#6b7280' }}
+                    value={form.merchant_name}
+                  />
                 </label>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                <label>
-                  MCC
-                  <input type="number" required value={form.mcc} onChange={(e) => setForm((f) => ({ ...f, mcc: Number(e.target.value) }))} />
-                </label>
-                <label>
-                  Amount
-                  <input type="number" step="0.01" required value={form.amount} onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))} />
-                </label>
-              </div>
+
               <label>
-                Card Nickname + Last4
-                <input type="text" required value={form.card} onChange={(e) => setForm((f) => ({ ...f, card: e.target.value }))} />
+                Card
+                <p style={{ margin: '0.3rem 0 0', fontSize: '0.95rem', color: '#374151' }}>{editItem?.card_label}</p>
               </label>
+
+              <label>
+                Amount ($)
+                <input
+                  type="text"
+                  readOnly
+                  style={{ width: '100%', padding: '0.6rem', backgroundColor: '#f3f4f6', border: '2px solid #d1d5db', borderRadius: '6px', fontSize: '0.95rem', boxSizing: 'border-box', marginTop: '0.3rem', cursor: 'not-allowed', color: '#6b7280' }}
+                  value={form.amount}
+                />
+              </label>
+
+              <label>
+                MCC Category
+                <input
+                  type="text"
+                  readOnly
+                  style={{ width: '100%', padding: '0.6rem', backgroundColor: '#f3f4f6', border: '2px solid #d1d5db', borderRadius: '6px', fontSize: '0.95rem', boxSizing: 'border-box', marginTop: '0.3rem', cursor: 'not-allowed', color: '#6b7280' }}
+                  value={form.mcc_label}
+                />
+              </label>
+
               <label>
                 Notes
-                <textarea value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} rows={2} />
+                <textarea
+                  style={{ width: '100%', padding: '0.6rem', backgroundColor: '#e1f5e7', border: '2px solid #314634', borderRadius: '6px', fontSize: '0.95rem', boxSizing: 'border-box', marginTop: '0.3rem', fontFamily: 'inherit' }}
+                  value={form.notes}
+                  onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+                  rows={2}
+                />
               </label>
+
+              {formError && (
+                <p style={{ color: '#b42318', fontSize: '0.875rem', margin: 0 }}>{formError}</p>
+              )}
+
               <div style={{ display: 'flex', gap: '0.6rem', justifyContent: 'flex-end' }}>
-                <button type="button" className="CardDetailsButtonSecondary" onClick={() => { setShowModal(false); setEditItem(null); }}>
+                <button type="button" className="CardDetailsButtonSecondary" onClick={closeModal}>
                   Cancel
                 </button>
-                <button type="submit" className="CardDetailsButtonPrimary">
-                  {editItem ? 'Save Changes' : 'Add Transaction'}
+                <button type="submit" className="CardDetailsButtonPrimary" disabled={saving}>
+                  {saving ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
             </form>
@@ -534,7 +540,6 @@ export default function Page() {
         </div>
       )}
 
-      <input ref={fileInputRef} type="file" accept=".csv" hidden onChange={onFileSelected} />
     </div>
   );
 }

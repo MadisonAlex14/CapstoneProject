@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import '@/App.css';
+import styles from '../../../styles/auth.module.css';
 
 type Transaction = {
   id: string;
@@ -197,8 +198,10 @@ export default function Page() {
 
   return (
     <div className="main-content transactions-page CardDetailsPage">
-      <h1>Import Transactions</h1>
-      <p>Import multiple transactions from CSV (or XLSX when supported).</p>
+      <div className={styles.PageHero}>
+        <h1 className={styles.PageTitle}>Import Transactions</h1>
+        <p className={styles.PageSubtitle}>Import multiple transactions from CSV (or XLSX when supported).</p>
+      </div>
 
       <div className="CardDetailsSection">
         <h2>Step {step}: {step === 1 ? 'Select Card' : step === 2 ? 'Upload File' : 'Preview & Confirm'}</h2>

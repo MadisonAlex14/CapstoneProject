@@ -1,22 +1,21 @@
-export interface UpsertTransactionBody {
-  transaction_id?: string
+export interface LogBenefitUsageBody {
+  benefit_id: string
   credit_card_id: string
-  transaction_date: string
-  merchant_name: string
+  transaction_id?: string
   amount: number
-  booked_through_issuer_portal?: boolean
-  mcc_id?: string
+  usage_date: string
+  merchant_name?: string
   notes?: string
 }
 
-export async function upsertTransaction(accessToken: string, body: UpsertTransactionBody) {
+export async function logBenefitUsage(accessToken: string, body: LogBenefitUsageBody) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 
   if (!supabaseUrl) {
     throw new Error('NEXT_PUBLIC_SUPABASE_URL is not set')
   }
 
-  const res = await fetch(`${supabaseUrl}/functions/v1/upsert-transaction`, {
+  const res = await fetch(`${supabaseUrl}/functions/v1/log-benefit-usage`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -28,7 +27,7 @@ export async function upsertTransaction(accessToken: string, body: UpsertTransac
   const data = await res.json()
 
   if (!res.ok) {
-    throw new Error(data.error || 'Failed to upsert transaction')
+    throw new Error(data.error || 'Failed to log benefit usage')
   }
 
   return data
