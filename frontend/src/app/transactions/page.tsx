@@ -261,7 +261,12 @@ export default function Page() {
       }
 
       await deleteTransaction(accessToken, transactionId);
-      setTransactions((curr) => curr.filter((tx) => tx.transaction_id !== transactionId));
+      setTransactions((curr) => {
+        const next = curr.filter((tx) => tx.transaction_id !== transactionId);
+        const newPageCount = Math.max(1, Math.ceil(next.length / rowsPerPage));
+        setPage((currentPage) => Math.min(currentPage, newPageCount));
+        return next;
+      });
     } catch (err: any) {
       console.error('Error deleting transaction:', err);
     }
@@ -413,8 +418,8 @@ export default function Page() {
                     <td>{tx.transaction_date}</td>
                     <td>{tx.merchant_name}</td>
                     <td title={tx.mcc_description}>{tx.mcc_code}</td>
-                    <td style={{ textAlign: 'right', color: '#1f4d3a' }}>
-                      +{currency(tx.amount)}
+                    <td style={{ textAlign: 'right' }}>
+                      {currency(tx.amount)}
                     </td>
                     <td>{tx.card_label}</td>
                     <td style={{ textAlign: 'right' }}>

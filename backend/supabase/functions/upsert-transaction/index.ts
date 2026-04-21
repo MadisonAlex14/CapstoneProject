@@ -148,10 +148,15 @@ async function updatePromotionProgress(creditCardId: string, transactionDate: st
   // Assume all promotions are spend-based for now
   for (const promo of activePromos) {
     const p = promo as any
-    await supabase
+    const { error } = await supabase
       .from('user_promotion')
       .update({ spend_to_date: p.spend_to_date + amount })
       .eq('user_promotion_id', p.user_promotion_id)
+
+    if (error) {
+      console.error('Failed to update promotion progress:', error)
+      // Non-fatal — transaction is already inserted
+    }
   }
 }
 
@@ -271,20 +276,24 @@ Deno.serve(async (req) => {
       notes,
     } = body
 
-    // Shared required fields for both INSERT and UPDATE
-    if (!credit_card_id || !transaction_date || !merchant_name || amount == null) {
-      return new Response(JSON.stringify({ error: 'Missing required fields: credit_card_id, transaction_date, merchant_name, amount' }), {
-        status: 400,
-        headers: withCors({ 'Content-Type': 'application/json' }),
-      })
-    }
+    const isUpdate = !!transaction_id
 
-    // mcc_id is required for INSERT only — on UPDATE, MCC is immutable and not re-sent
-    if (!transaction_id && !mcc_id) {
-      return new Response(JSON.stringify({ error: 'Missing required field: mcc_id' }), {
-        status: 400,
-        headers: withCors({ 'Content-Type': 'application/json' }),
-      })
+    if (isUpdate) {
+      // UPDATE only requires credit_card_id and transaction_date — merchant_name, amount, mcc_id are immutable
+      if (!credit_card_id || !transaction_date) {
+        return new Response(JSON.stringify({ error: 'Missing required fields: credit_card_id, transaction_date' }), {
+          status: 400,
+          headers: withCors({ 'Content-Type': 'application/json' }),
+        })
+      }
+    } else {
+      // INSERT requires all fields including mcc_id for reward calculation
+      if (!credit_card_id || !transaction_date || !merchant_name || amount == null || !mcc_id) {
+        return new Response(JSON.stringify({ error: 'Missing required fields: credit_card_id, transaction_date, merchant_name, amount, mcc_id' }), {
+          status: 400,
+          headers: withCors({ 'Content-Type': 'application/json' }),
+        })
+      }
     }
 
     // Ensure the card belongs to the profile

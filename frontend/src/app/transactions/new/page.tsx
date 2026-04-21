@@ -148,7 +148,7 @@ export default function Page() {
     }
 
     const parsedAmount = Number(form.amount);
-    if (Number.isNaN(parsedAmount) || parsedAmount === 0) {
+    if (Number.isNaN(parsedAmount) || parsedAmount <= 0) {
       setFormError('Amount must be a valid non-zero number.');
       return;
     }
@@ -241,7 +241,7 @@ export default function Page() {
       }
       if (!accessToken) throw new Error('No access token');
 
-      // Sequential — if one fails we catch it and stop rather than leaving partial state
+      // Sequential — if one fails, catch it and show an error rather than silently continuing
       for (const b of triggeredBenefits) {
         if (!benefitChecked[b.benefit_id]) continue;
         await logBenefitUsage(accessToken, {

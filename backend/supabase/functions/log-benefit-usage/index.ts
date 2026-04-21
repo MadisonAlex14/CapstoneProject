@@ -3,28 +3,28 @@ import { supabase } from "../_shared/createClient.ts"
 import { extractAuthToken, getProfileIdFromToken } from "../_shared/auth.ts"
 import { withCors } from "../_shared/cors.ts"
 
-// Calculate the start date of the current benefit cycle based on reset frequency
-function calculateCurrentCycleStartDate(resetFrequency: string, openDate: string, statementCloseDay: number): string {
-  const today = new Date()
+// Calculate the start date of the benefit cycle that contains referenceDate
+function calculateCurrentCycleStartDate(resetFrequency: string, openDate: string, statementCloseDay: number, referenceDate: Date): string {
+  const ref = referenceDate
 
   if (resetFrequency === 'annual') {
     const openDateObj = new Date(openDate)
     const cycleStart = new Date(openDateObj)
-    // Advance year by year until we find the cycle that contains today
-    while (new Date(cycleStart.getFullYear() + 1, cycleStart.getMonth(), cycleStart.getDate()) <= today) {
+    // Advance year by year until we find the cycle that contains referenceDate
+    while (new Date(cycleStart.getFullYear() + 1, cycleStart.getMonth(), cycleStart.getDate()) <= ref) {
       cycleStart.setFullYear(cycleStart.getFullYear() + 1)
     }
     return cycleStart.toISOString().split('T')[0]
   }
 
   if (resetFrequency === 'one_time') {
-    return new Date().toISOString().split('T')[0]
+    return ref.toISOString().split('T')[0]
   }
 
   if (resetFrequency === 'monthly') {
-    const currentYear = today.getFullYear()
-    const currentMonth = today.getMonth()
-    const currentDay = today.getDate()
+    const currentYear = ref.getFullYear()
+    const currentMonth = ref.getMonth()
+    const currentDay = ref.getDate()
 
     let cycleStartDate: Date
 
@@ -41,12 +41,12 @@ function calculateCurrentCycleStartDate(resetFrequency: string, openDate: string
   }
 
   if (resetFrequency === 'semi_annual') {
-    const jan1 = new Date(today.getFullYear(), 0, 1)
-    const jul1 = new Date(today.getFullYear(), 6, 1)
-    return (today >= jul1 ? jul1 : jan1).toISOString().split('T')[0]
+    const jan1 = new Date(ref.getFullYear(), 0, 1)
+    const jul1 = new Date(ref.getFullYear(), 6, 1)
+    return (ref >= jul1 ? jul1 : jan1).toISOString().split('T')[0]
   }
 
-  return new Date().toISOString().split('T')[0]
+  return ref.toISOString().split('T')[0]
 }
 
 Deno.serve(async (req) => {
@@ -113,25 +113,26 @@ Deno.serve(async (req) => {
     }
 
     const b = benefit as any
+    const c = card as any
 
-    // 3. Find the most recent active user_benefit cycle row for this card + benefit
-    let { data: userBenefit, error: userBenefitError } = await supabase
+    // 3. Find the user_benefit row for the cycle that contains usage_date
+    const cycleStartDate = calculateCurrentCycleStartDate(
+      b.reset_frequency,
+      c.open_date,
+      c.statement_close_day,
+      new Date(usage_date),
+    )
+
+    let { data: userBenefit } = await supabase
       .from('user_benefit')
       .select('user_benefit_id, amount_used, initial_amount_used')
       .eq('credit_card_id', credit_card_id)
       .eq('benefit_id', benefit_id)
-      .order('cycle_start_date', { ascending: false })
-      .limit(1)
+      .eq('cycle_start_date', cycleStartDate)
       .maybeSingle()
 
-    // 4. If no cycle row exists, create one for the current cycle
+    // 4. If no cycle row exists yet, create one for this cycle
     if (!userBenefit) {
-      const c = card as any
-      const cycleStartDate = calculateCurrentCycleStartDate(
-        b.reset_frequency,
-        c.open_date,
-        c.statement_close_day,
-      )
 
       const { data: newUserBenefit, error: insertError } = await supabase
         .from('user_benefit')
