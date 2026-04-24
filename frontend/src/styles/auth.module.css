@@ -3906,20 +3906,17 @@
 
 .BenefitSummaryCard p {
   color: #059669;
+  font-size: 1.5rem;
+  font-weight: 700;
 }
 
 .BenefitSummaryCardExpiring p {
-  color: #dc2626;
+  color: #059669;
+  font-size: 1.5rem;
+  font-weight: 700;
 }
 
 .BenefitSummaryTopRow {
-  display: flex;
-  gap: 1.5rem;
-  margin-top: 1.5rem;
-  flex-wrap: wrap;
-}
-
-.BenefitSummaryCard, .BenefitSummaryCardExpiring {
   display: flex;
   gap: 1.5rem;
   margin-top: 1.5rem;
@@ -3935,6 +3932,16 @@
   text-align: center;
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
 }
+
+.BenefitSummaryCard,
+.BenefitSummaryCardExpiring {
+  background: #ecfdf5;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+}
+
 
 /* -------------------- BENEFIT CARDS -------------------- */
 .BenefitCardsContainer {
