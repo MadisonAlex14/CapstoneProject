@@ -268,22 +268,16 @@ export default function PromotionsPage() {
 
   // -------------------- RENDER --------------------
   return (
-    <>
-    {/* ---------- Page Header ---------- */}
-    <div className={styles.PageHero}>
-      <h1 className={styles.PageTitle}>Promotions</h1>
-      <p className={styles.PageSubtitle}>
-        Discover limited-time offers, bonus rewards, and special credit card deals.
-      </p>
-    </div>
-
-
-
-
-
 
     <div className={styles.promotionsPageContainer}>
-      {/* Promotion Summary */}
+      <div className={styles.PageHero}>
+        <h1 className={styles.PageTitle}>Promotions</h1>
+          <p className={styles.PageSubtitle}>
+            Discover limited-time offers, bonus rewards, and special credit card deals.
+          </p>
+       </div>
+
+
       <section className={styles.promotionsSummary}>
         <div className={styles.promotionsSummaryCards}>
           {[
@@ -451,6 +445,5 @@ export default function PromotionsPage() {
         </div>
       )}
     </div>
-    </>
   );
 }

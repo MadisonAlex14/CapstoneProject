@@ -4253,6 +4253,7 @@
   font-weight: 600;
   box-shadow: 0 6px 18px rgba(16, 185, 129, 0.25);
   transition: all 0.2s ease;
+  margin-top: 25px;
 }
 
 .R_primaryBtn:hover {

@@ -236,17 +236,13 @@ export default function RewardsPage() {
   // ---------------- UI ----------------
   return (
     <div className={styles.R_page}>
-      {/* HEADER */}
-      <div className={styles.R_header}>
-        <h1 className={styles.R_title}>Rewards</h1>
+      <div className={styles.PageHero}>
+        <h1 className={styles.PageTitle}>Rewards</h1>
+          <p className={styles.PageSubtitle}>
+           Track your points, miles, and cashback rewards across all your credit cards.
+          </p>
+       </div>  
 
-        <button
-          className={styles.R_primaryBtn}
-          onClick={openRedemptionModal}
-        >
-          + Log Redemption
-        </button>
-      </div>
 
       {/* SUMMARY */}
       <div className={styles.R_summaryGrid}>
@@ -381,6 +377,14 @@ export default function RewardsPage() {
         )}
       </div>
 
+
+      <button
+          className={styles.R_primaryBtn}
+          onClick={openRedemptionModal}
+        >
+          + Log Redemption
+        </button>
+
       {/* ================= USAGE MODAL (FIXED) ================= */}
       {showUsageModal && selectedCard && (
         <div className={styles.R_modalOverlay}>
@@ -395,7 +399,6 @@ export default function RewardsPage() {
               placeholder="Enter amount"
             />
 
-            {/* 🔥 RESTORED $100 / $500 STYLE DISPLAY */}
             <div style={{ marginTop: "10px", fontWeight: 500 }}>
               {usedAmount ? (
                 <>
