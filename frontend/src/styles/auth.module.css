@@ -3523,9 +3523,6 @@
   transition: transform 0.2s;
 }
 
-.promotionsSummary:hover {
-  transform: translateY(-3px);
-}
 
 .promotionsSummaryTitle {
   font-size: 1.75rem;
@@ -3571,11 +3568,6 @@
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.promotionsSummaryCard:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-}
-
 .promotionsSummaryLabel {
   color: #6b7280;
   font-size: 0.875rem;
@@ -3614,11 +3606,6 @@
   flex-direction: column;
   gap: 0.75rem;
   transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.promotionsCard:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
 }
 
 .promotionsCardHeader {
@@ -3704,6 +3691,7 @@
   font-weight: 600;
   margin-left: 220px;
   transition: background 0.2s;
+  cursor: pointer;
 }
 
 .promotionsEnrollButton:hover { background: #059669; }

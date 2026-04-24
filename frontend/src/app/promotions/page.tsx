@@ -268,10 +268,23 @@ export default function PromotionsPage() {
 
   // -------------------- RENDER --------------------
   return (
+    <>
+    {/* ---------- Page Header ---------- */}
+    <div className={styles.PageHero}>
+      <h1 className={styles.PageTitle}>Promotions</h1>
+      <p className={styles.PageSubtitle}>
+        Discover limited-time offers, bonus rewards, and special credit card deals.
+      </p>
+    </div>
+
+
+
+
+
+
     <div className={styles.promotionsPageContainer}>
       {/* Promotion Summary */}
       <section className={styles.promotionsSummary}>
-        <h2 className={styles.promotionsSummaryTitle}>Promotion Summary</h2>
         <div className={styles.promotionsSummaryCards}>
           {[
             { label: "Active Promotions", value: summary.active },
@@ -438,5 +451,6 @@ export default function PromotionsPage() {
         </div>
       )}
     </div>
+    </>
   );
 }
