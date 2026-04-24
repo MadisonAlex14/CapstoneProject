@@ -219,12 +219,22 @@ export default function BenefitsPage() {
 
   // ---------------------- RENDER ----------------------
   return (
+  <>
+    {/* ---------- Page Header ---------- */}
+     <div className={styles.PageHero}>
+      <h1 className={styles.PageTitle}>Benefits</h1>
+      <p className={styles.PageSubtitle}>
+        Maximize the value of your credit cards with curated perks, cash back, and exclusive offers.
+      </p>
+     </div>
+
+
+
     <div className={styles.BenefitContainer}>
       {/* ---------- Perks Summary ---------- */}
       <div className={styles.BenefitPerksSummary}>
-        <h2>Benefits Overview</h2>
 
-        <div className={styles.BenefitSummaryGrid}>
+        <div className={styles.BenefitSummaryTopRow}>
           <div className={styles.BenefitSummaryCard}>
             <h3>Total Amount Spent</h3>
             <p>${summary.totalSpent}</p>
@@ -298,7 +308,7 @@ export default function BenefitsPage() {
         className={styles.BenefitPrimaryBtn}
         onClick={() => { resetForm(); setShowModal(true); }}
       >
-        Log Benefit Usage
+        + Log Benefit Usage
       </button>
 
       {/* ---------- Modal (Wizard Steps) ---------- */}
@@ -406,5 +416,6 @@ export default function BenefitsPage() {
         </div>
       )}
     </div>
+    </>
   );
 }
