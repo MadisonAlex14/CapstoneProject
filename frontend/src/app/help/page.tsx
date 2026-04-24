@@ -111,7 +111,15 @@ ${formData.message}`
   }
 
   return (
+
     <div className={styles.helpPage}>
+       <div className={styles.PageHero}>
+        <h1 className={styles.PageTitle}>Help Center</h1>
+        <p className={styles.PageSubtitle}>
+          Find answers, learn how to use CreditMaxxing, and get support for managing your cards and rewards.
+         </p>
+       </div>
+
       <div className={styles.helpContainer}>
         <section className={styles.helpHero}>
           <div className={styles.helpHeroBadge}>Support Center</div>
