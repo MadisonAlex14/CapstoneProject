@@ -245,6 +245,7 @@ export default function RewardsPage() {
 
 
       {/* SUMMARY */}
+    <div className={styles.R_summaryContainer}>
       <div className={styles.R_summaryGrid}>
         <div className={styles.R_statCard}>
           <p>Total Rewards Value</p>
@@ -261,7 +262,7 @@ export default function RewardsPage() {
           <h2>${redeemedThisYear.toFixed(2)}</h2>
         </div>
       </div>
-
+    </div>
       {/* ================= TABLE ================= */}
       <div className={styles.R_section}>
         <h2 className={styles.R_sectionTitle}>Rewards Balance</h2>
