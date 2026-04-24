@@ -658,21 +658,21 @@ export default function CardsPage() {
 
   return (
     <div className={styles.CardPage}>
-      <div className={styles.CardHeader}>
-        <div>
-          <h1 className={styles.CardTitle}>My Cards</h1>
-          <p className={styles.CardSubtitle}>
-            Track your cards, benefits, promos, and starting balances all in one
-            place.
+      <div className={styles.PageHero}>
+        <h1 className={styles.PageTitle}>Your Cards</h1>
+          <p className={styles.PageSubtitle}>
+            Manage your credit cards, track usage, and explore available rewards and benefits.
           </p>
-        </div>
+       </div>
+      <div className={styles.CardHeader}>
+        
 
         <button
           type="button"
           className={styles.CardAddButton}
           onClick={handleOpenAddCard}
         >
-          Add Card
+          + Add Card
         </button>
       </div>
 
