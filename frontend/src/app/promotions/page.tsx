@@ -167,7 +167,7 @@ export default function PromotionsPage() {
   };
 
   // -------------------- PROMOTION SUMMARY --------------------
-  const summary = useMemo(() => {
+  const  summary = useMemo(() => {
     const active = promotions.filter((p) => p.status === "Active").length;
     const completedYTD = promotions.filter((p) => p.status === "Completed").length;
     const expiringThisMonth = promotions.filter((p) => {
@@ -176,7 +176,7 @@ export default function PromotionsPage() {
       return daysLeft <= 30 && daysLeft >= 0;
     }).length;
     const totalPotentialAward = promotions.reduce(
-      (acc, p) => acc + parseFloat(p.award.replace("$", "")),
+      (acc, p) => Number(p.award.replace(/[^0-9.]/g, "")),
       0
     );
     return { active, completedYTD, expiringThisMonth, totalPotentialAward };
@@ -269,7 +269,7 @@ export default function PromotionsPage() {
   // -------------------- RENDER --------------------
   return (
 
-    <div className={styles.promotionsPageContainer}>
+    <div className={styles.PageContainer}>
       <div className={styles.PageHero}>
         <h1 className={styles.PageTitle}>Promotions</h1>
           <p className={styles.PageSubtitle}>
@@ -277,26 +277,25 @@ export default function PromotionsPage() {
           </p>
        </div>
 
-
-      <section className={styles.promotionsSummary}>
-        <div className={styles.promotionsSummaryCards}>
+      <section className={styles.Summary}>
+        <div className={styles.SummaryCards}>
           {[
             { label: "Active Promotions", value: summary.active },
             { label: "Total Potential Award", value: `$${summary.totalPotentialAward}` },
             { label: "Completed (YTD)", value: summary.completedYTD },
             { label: "Expiring This Month", value: summary.expiringThisMonth },
           ].map((stat, idx) => (
-            <div key={idx} className={styles.promotionsSummaryCard}>
-              <p className={styles.promotionsSummaryLabel}>{stat.label}</p>
-              <p className={styles.promotionsSummaryValue}>{stat.value}</p>
+            <div key={idx} className={styles.SummaryCard}>
+              <p className={styles.SummaryLabel}>{stat.label}</p>
+              <p className={styles.SummaryValue}>{stat.value}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* Your Promotions */}
-      <section>
-        <h2 className={styles.promotionsListTitle}>Your Promotions</h2>
+      <section className={styles.Section}>
+        <h2 className={styles.SectionTitle}>Your Promotions</h2>
         <div className={styles.promotionsList}>
           {promotions.map((promo, idx) => {
             const daysLeft = promo.end_date ? differenceInDays(parseISO(promo.end_date), new Date()) : 0;
@@ -355,18 +354,26 @@ export default function PromotionsPage() {
 
       {/* Enroll Button */}
       <section className={styles.promotionsActions}>
-        <button className={styles.promotionsEnrollButton} onClick={() => setShowEnrollPopup(true)}>
+        <button className={styles.ModalButton} onClick={() => setShowEnrollPopup(true)}>
           + Enroll in Promotion
         </button>
       </section>
 
-      {/* Enroll Popup */}
+      {/* Enroll Modal */}
       {showEnrollPopup && (
-        <div className={styles.promotionsPopupOverlay}>
-          <div className={styles.promotionsPopup}>
-            <h3 className={styles.promotionsPopupTitle}>Enroll in Promotion</h3>
+        <div className={styles.ModalOverlay}>
+          <div className={styles.Modal}>
 
-            <select className={styles.promotionsPopupSelect} value={selectedCard} onChange={handleCardChange}>
+            <button
+              className={styles.ModalXBtn}
+              onClick={() => setShowEnrollPopup(false)}
+               >
+                x
+              </button>
+
+            <h3 className={styles.ModalTitle}>Enroll in Promotion</h3>
+
+            <select className={styles.ModalSelect} value={selectedCard} onChange={handleCardChange}>
               <option value="">Select Card</option>
               {CARD_TYPES.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -400,47 +407,53 @@ export default function PromotionsPage() {
                 <input
                   type="number"
                   placeholder="Current Amount Spent"
-                  className={styles.promotionsPopupInput}
+                  className={styles.ModalInput}
                   value={currentAmount}
                   onChange={(e) => setCurrentAmount(e.target.value)}
                 />
                 <input
                   type="text"
                   placeholder="Threshold"
-                  className={styles.promotionsPopupInput}
+                  className={styles.ModalInput}
                   value={selectedPromotion.threshold}
                   readOnly
                 />
                 <input
                   type="text"
                   placeholder="Award"
-                  className={styles.promotionsPopupInput}
+                  className={styles.ModalInput}
                   value={selectedPromotion.award}
                   readOnly
                 />
                 <input
                   type="date"
-                  className={styles.promotionsPopupInput}
+                  className={styles.ModalInput}
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
                 />
                 <input
                   type="date"
-                  className={styles.promotionsPopupInput}
+                  className={styles.ModalInput}
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
                 />
               </>
             )}
-
-            <div className={styles.promotionsPopupActions}>
-              <button className={styles.promotionsPopupCancel} onClick={() => setShowEnrollPopup(false)}>
-                Cancel
+          <div className={styles.buttonRow}>
+             <button className={styles.cancelBtn}
+              onClick={() => setShowEnrollPopup(false)}
+              >
+              Cancel
               </button>
-              <button className={styles.promotionsPopupAdd} onClick={handleAddPromotion}>
-                Add Promotion
+
+              <button className={styles.saveBtn}
+                onClick={handleAddPromotion}
+              >
+               Add Promotion
               </button>
             </div>
+
+
           </div>
         </div>
       )}

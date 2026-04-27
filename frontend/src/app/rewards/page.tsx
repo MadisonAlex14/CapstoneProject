@@ -1,7 +1,7 @@
-"use client";
+"use client"; 
 
-import { useEffect, useState } from "react";
-import styles from "@/styles/auth.module.css";
+import { useEffect, useState } from "react"; 
+import styles from "@/styles/auth.module.css"; 
 
 type CardType = "points" | "miles" | "cash";
 
@@ -245,29 +245,27 @@ export default function RewardsPage() {
 
 
       {/* SUMMARY */}
-    <div className={styles.R_summaryContainer}>
-      <div className={styles.R_summaryGrid}>
-        <div className={styles.R_statCard}>
-          <p>Total Rewards Value</p>
-          <h2>${totalRewardsValue.toFixed(2)}</h2>
+      <section className={styles.Summary}>
+        <div className={styles.SummaryCards}>
+         {[
+          { label: "Total Rewards Value", value: `$${totalRewardsValue.toFixed(2)}` },
+          { label: "Earned This Month", value: `$${earnedThisMonth.toFixed(2)}` },
+          { label: "Redeemed This Year", value: `$${redeemedThisYear.toFixed(2)}` },
+          ].map((stat, idx) => (
+           <div key={idx} className={styles.SummaryCard}>
+             <p className={styles.SummaryLabel}>{stat.label}</p>
+            <p className={styles.SummaryValue}>{stat.value}</p>
+          </div>
+         ))}
         </div>
+      </section>
 
-        <div className={styles.R_statCard}>
-          <p>Earned This Month</p>
-          <h2>${earnedThisMonth.toFixed(2)}</h2>
-        </div>
 
-        <div className={styles.R_statCard}>
-          <p>Redeemed This Year</p>
-          <h2>${redeemedThisYear.toFixed(2)}</h2>
-        </div>
-      </div>
-    </div>
       {/* ================= TABLE ================= */}
-      <div className={styles.R_section}>
-        <h2 className={styles.R_sectionTitle}>Rewards Balance</h2>
+      <div className={styles.Section}>
+        <h2 className={styles.SectionTitle}>Rewards Balance</h2>
 
-        <table className={styles.R_table}>
+        <table className={styles.table}>
           <thead>
             <tr>
               <th>Card</th>
@@ -299,7 +297,7 @@ export default function RewardsPage() {
                       type="number"
                       value={editValue}
                       autoFocus
-                      className={styles.R_input}
+                      className={styles.ModalInput}
                       onChange={(e) =>
                         setEditValue(e.target.value)
                       }
@@ -330,7 +328,7 @@ export default function RewardsPage() {
                 <td>
                   {card.type !== "cash" && (
                     <button
-                      className={styles.R_smallBtn}
+                      className={styles.SecondaryButton}
                       onClick={() => openUsageModal(card)}
                     >
                       Track Usage
@@ -344,13 +342,13 @@ export default function RewardsPage() {
       </div>
 
       {/* ================= REDEMPTION LOG ================= */}
-      <div className={styles.R_section}>
-        <h2 className={styles.R_sectionTitle}>Redemption Log</h2>
+      <div className={styles.Section}>
+        <h2 className={styles.SectionTitle}>Redemption Log</h2>
 
         {redemptions.length === 0 ? (
           <p className={styles.R_empty}>No usage logged yet.</p>
         ) : (
-          <table className={styles.R_table}>
+          <table className={styles.table}>
             <thead>
               <tr>
                 <th>Date</th>
@@ -380,7 +378,7 @@ export default function RewardsPage() {
 
 
       <button
-          className={styles.R_primaryBtn}
+          className={styles.ModalButton}
           onClick={openRedemptionModal}
         >
           + Log Redemption
@@ -388,12 +386,12 @@ export default function RewardsPage() {
 
       {/* ================= USAGE MODAL (FIXED) ================= */}
       {showUsageModal && selectedCard && (
-        <div className={styles.R_modalOverlay}>
-          <div className={styles.R_modal}>
+        <div className={styles.ModalOverlay}>
+          <div className={styles.Modal}>
             <h3>Track Usage</h3>
 
             <input
-              className={styles.R_input}
+              className={styles.ModalInput}
               value={usedAmount}
               onChange={(e) => setUsedAmount(e.target.value)}
               type="number"
@@ -414,24 +412,23 @@ export default function RewardsPage() {
               )}
             </div>
 
-            <div className={styles.R_modalActions}>
-              <button onClick={() => setShowUsageModal(false)}>
-                Cancel
-              </button>
-              <button onClick={addUsage}>Save</button>
+           <div className={styles.buttonRow}>
+              <button className={styles.cancelBtn}>Cancel</button>
+             <button className={styles.saveBtn}>Save</button>
             </div>
+
           </div>
         </div>
       )}
 
       {/* ================= REDEMPTION MODAL ================= */}
       {showRedemptionModal && (
-        <div className={styles.R_modalOverlay}>
-          <div className={styles.R_modal}>
+        <div className={styles.ModalOverlay}>
+          <div className={styles.Modal}>
             <h3>Log Redemption</h3>
 
             <select
-              className={styles.R_input}
+              className={styles.ModalInput}
               value={form.cardId}
               onChange={(e) =>
                 setForm({ ...form, cardId: e.target.value })
@@ -447,7 +444,7 @@ export default function RewardsPage() {
 
             <input
               type="date"
-              className={styles.R_input}
+              className={styles.ModalInput}
               value={form.date}
               onChange={(e) =>
                 setForm({ ...form, date: e.target.value })
@@ -456,7 +453,7 @@ export default function RewardsPage() {
 
             <input
               type="number"
-              className={styles.R_input}
+              className={styles.ModalInput}
               value={form.amount}
               onChange={(e) =>
                 setForm({ ...form, amount: e.target.value })
@@ -465,7 +462,7 @@ export default function RewardsPage() {
             />
 
             <select
-              className={styles.R_input}
+              className={styles.ModalInput}
               value={form.type}
               onChange={(e) =>
                 setForm({ ...form, type: e.target.value })
@@ -480,7 +477,7 @@ export default function RewardsPage() {
             </select>
 
             <textarea
-              className={styles.R_input}
+              className={styles.ModalInput}
               value={form.notes}
               onChange={(e) =>
                 setForm({ ...form, notes: e.target.value })
@@ -488,12 +485,20 @@ export default function RewardsPage() {
               placeholder="Notes"
             />
 
-            <div className={styles.R_modalActions}>
-              <button onClick={() => setShowRedemptionModal(false)}>
-                Cancel
+            <div className={styles.buttonRow}>
+              <div className={styles.cancelBtn}>
+                <button onClick={() => setShowRedemptionModal(false)}>
+                 Cancel
+               </button>
+              </div>
+
+              <div className={styles.saveBtn}>
+               <button onClick={addRedemption}>
+                Save
               </button>
-              <button onClick={addRedemption}>Save</button>
+              </div>
             </div>
+
           </div>
         </div>
       )}
