@@ -375,7 +375,7 @@ export default function PromotionsPage() {
 
   if (loading) {
     return (
-      <div className={styles.promotionsPageContainer}>
+      <div className={styles.PageContainer}>
         <div className={styles.PageHero}>
           <h1 className={styles.PageTitle}>Promotions</h1>
         </div>
@@ -386,7 +386,7 @@ export default function PromotionsPage() {
 
   if (error) {
     return (
-      <div className={styles.promotionsPageContainer}>
+      <div className={styles.PageContainer}>
         <div className={styles.PageHero}>
           <h1 className={styles.PageTitle}>Promotions</h1>
         </div>
@@ -395,33 +395,22 @@ export default function PromotionsPage() {
     );
   }
 
-  return (
-    <div className={styles.promotionsPageContainer} onClick={() => setMenuOpenId(null)}>
-      {/* Hero */}
-      <div className={styles.PageHero}>
-        <h1 className={styles.PageTitle}>Promotions</h1>
-        <p className={styles.PageSubtitle}>
-          Discover limited-time offers, bonus rewards, and special credit card deals.
-        </p>
-      </div>
-
-      {/* Summary */}
-      <section className={styles.promotionsSummary}>
-        <div className={styles.promotionsSummaryCards}>
+      <section className={styles.Summary}>
+        <div className={styles.SummaryCards}>
           {[
             { label: "Active Promotions", value: summary.active },
             { label: "Completed (YTD)", value: summary.completedYTD },
             { label: "Expiring This Month", value: summary.expiringThisMonth },
           ].map((stat, idx) => (
-            <div key={idx} className={styles.promotionsSummaryCard}>
-              <p className={styles.promotionsSummaryLabel}>{stat.label}</p>
-              <p className={styles.promotionsSummaryValue}>{stat.value}</p>
+            <div key={idx} className={styles.SummaryCard}>
+              <p className={styles.SummaryLabel}>{stat.label}</p>
+              <p className={styles.SummaryValue}>{stat.value}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Filters */}
+      
       {/* Enroll Button */}
       <section className={styles.promotionsActions}>
         <button
@@ -435,6 +424,7 @@ export default function PromotionsPage() {
         </button>
       </section>
 
+    {/* Filters */}
       <section className={styles.promotionsFilters}>
         <select
           className={styles.promotionsSelect}

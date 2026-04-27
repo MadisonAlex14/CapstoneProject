@@ -105,9 +105,9 @@ export default function ProfilePage() {
             </div>
 
             {showMenu && (
-              <div className={styles['p-avatarDropdown']}>
+              <div className={styles['dropdown']}>
 
-                <div className={styles['p-dropdownTitle']}>
+                <div className={styles['dropdownTitle']}>
                   Choose Avatar
                 </div>
 

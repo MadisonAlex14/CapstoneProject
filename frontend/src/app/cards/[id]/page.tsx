@@ -862,9 +862,9 @@ export default function CardDashboard({
       </div>
 
       {showBenefitModal && selectedBenefit && (
-        <div className={styles.CardOverlay}>
-          <div className={styles.CardModal}>
-            <h2 className={styles.CardModalTitle}>Log benefit use</h2>
+        <div className={styles.ModalOverlay}>
+          <div className={styles.Modal}>
+            <h2 className={styles.ModalTitle}>Log benefit use</h2>
             <p style={{ color: "#476154", marginTop: 0 }}>
               {selectedBenefit.name} ({selectedBenefit.merchant ?? "Any merchant"})
             </p>
@@ -911,9 +911,9 @@ export default function CardDashboard({
       )}
 
       {showEnrollPromoModal && (
-        <div className={styles.CardOverlay}>
-          <div className={styles.CardModal}>
-            <h2 className={styles.CardModalTitle}>Enroll in a promotion</h2>
+        <div className={styles.ModalOverlay}>
+          <div className={styles.Modal}>
+            <h2 className={styles.ModalTitle}>Enroll in a promotion</h2>
 
             <form onSubmit={handleEnrollPromotion} className={styles.CardForm}>
               <div className={styles.CardFieldGroup}>
@@ -943,7 +943,7 @@ export default function CardDashboard({
                     type="date"
                     value={newPromoEnd}
                     onChange={(e) => setNewPromoEnd(e.target.value)}
-                    className={styles.CardInput}
+                    className={styles.ModalInput}
                   />
                 </div>
               </div>
@@ -956,7 +956,7 @@ export default function CardDashboard({
                     placeholder="Spend threshold"
                     value={newPromoThreshold}
                     onChange={(e) => setNewPromoThreshold(e.target.value)}
-                    className={styles.CardInput}
+                    className={styles.ModalInput}
                   />
                 </div>
 
@@ -967,7 +967,7 @@ export default function CardDashboard({
                     placeholder="Reward amount"
                     value={newPromoReward}
                     onChange={(e) => setNewPromoReward(e.target.value)}
-                    className={styles.CardInput}
+                    className={styles.ModalInput}
                   />
                 </div>
               </div>
@@ -979,22 +979,23 @@ export default function CardDashboard({
                   placeholder="Spend to date"
                   value={newPromoSpent}
                   onChange={(e) => setNewPromoSpent(e.target.value)}
-                  className={styles.CardInput}
+                  className={styles.ModalInput}
                 />
               </div>
 
-              <div className={styles.CardActions}>
+              <div className={styles.ButtonRow}>
                 <button
                   type="button"
-                  className={styles.CardCancelButton}
+                  className={styles.cancelBtn}
                   onClick={() => setShowEnrollPromoModal(false)}
                 >
                   Cancel
                 </button>
-                <button type="submit" className={styles.CardSaveButton}>
+                <button type="submit" className={styles.saveBtn}>
                   Add promotion
                 </button>
               </div>
+              
             </form>
           </div>
         </div>

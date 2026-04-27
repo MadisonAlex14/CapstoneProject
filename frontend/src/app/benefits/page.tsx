@@ -220,7 +220,7 @@ export default function BenefitsPage() {
   // ---------------------- RENDER ----------------------
   return (
 
-    <div className={styles.BenefitContainer}>
+    <div className={styles.PageContainer}>
       <div className={styles.PageHero}>
        <h1 className={styles.PageTitle}>Benefits</h1>
          <p className={styles.PageSubtitle}>
@@ -230,31 +230,25 @@ export default function BenefitsPage() {
 
 
 
-
-      <div className={styles.BenefitPerksSummary}>
-        <div className={styles.BenefitSummaryTopRow}>
-          <div className={styles.BenefitSummaryCard}>
-            <h3>Total Amount Spent</h3>
-            <p>${summary.totalSpent}</p>
+      <section className={styles.Summary}>
+       <div className={styles.SummaryCards}>
+         {[
+         { label: "Total Amount Spent", value: `$${summary.totalSpent}` },
+         { label: "Eligible Cash Back", value: `$${summary.cashBack}` },
+         { label: "Remaining Benefits Active", value: summary.remaining },
+         { label: "Expiring Benefits", value: summary.expiring },
+         ].map((stat, idx) => (
+          <div key={idx} className={styles.SummaryCard}>
+           <p className={styles.SummaryLabel}>{stat.label}</p>
+           <p className={styles.SummaryValue}>{stat.value}</p>
           </div>
-          <div className={styles.BenefitSummaryCard}>
-            <h3>Eligible Cash Back</h3>
-            <p>${summary.cashBack}</p>
-          </div>
-          <div className={styles.BenefitSummaryCard}>
-            <h3>Remaining Benefits Active</h3>
-            <p>{summary.remaining}</p>
-          </div>
-          <div className={styles.BenefitSummaryCardExpiring}>
-            <h3>Expiring Benefits</h3>
-            <p>{summary.expiring}</p>
-          </div>
+          ))}
         </div>
-      </div>
+      </section>
 
       {/* ---------- Tracked Benefits Heading ---------- */}
-      <div className={styles.BenefitTracked}>
-        <h2>Tracked Benefits</h2>
+      <div className={styles.section}>
+        <h2 className={styles.SectionTitle}>Tracked Benefits</h2>
       </div>
 
       {/* ---------- Benefit Cards ---------- */}
@@ -272,7 +266,7 @@ export default function BenefitsPage() {
                 <div className={styles.BenefitCardMenu}>
                   <button onClick={() => setMenuOpenId(menuOpenId === b.id ? null : b.id)}>⋮</button>
                   {menuOpenId === b.id && (
-                    <div className={styles.BenefitCardMenuDropdown}>
+                    <div className={styles.dropdown}>
                       <button onClick={() => handleEdit(b)}>Edit</button>
                       <button onClick={() => handleDelete(b.id)}>Delete</button>
                     </div>
@@ -303,7 +297,7 @@ export default function BenefitsPage() {
 
       {/* ---------- Log Benefit Button ---------- */}
       <button
-        className={styles.BenefitPrimaryBtn}
+        className={styles.ModalButton}
         onClick={() => { resetForm(); setShowModal(true); }}
       >
         + Log Benefit Usage
@@ -311,12 +305,12 @@ export default function BenefitsPage() {
 
       {/* ---------- Modal (Wizard Steps) ---------- */}
       {showModal && (
-        <div className={styles.BenefitModalOverlay}>
-          <div className={styles.BenefitModal}>
-            <div className={styles.BenefitModalHeader}>
+        <div className={styles.ModalOverlay}>
+          <div className={styles.Modal}>
+            <div className={styles.ModalTitle}>
               <h2>{editingBenefitId ? "Edit Benefit Usage" : "Log Benefit Usage"}</h2>
               <button
-                className={styles.BenefitModalCloseBtn}
+                className={styles.ModalXBtn}
                 onClick={() => { setShowModal(false); resetForm(); }}
               >
                 ×
@@ -324,7 +318,7 @@ export default function BenefitsPage() {
             </div>
 
             <select
-              className={styles.BenefitInput}
+              className={styles.ModalInput}
               value={form.card}
               onChange={(e) => {
                 const card = e.target.value;
@@ -341,7 +335,7 @@ export default function BenefitsPage() {
 
             {selectedCard && (
               <select
-                className={styles.BenefitInput}
+                className={styles.ModalInput}
                 value={form.benefitName}
                 onChange={(e) => {
                   const benefit = e.target.value;
@@ -364,7 +358,7 @@ export default function BenefitsPage() {
               <input
                 type="number"
                 placeholder="Input Amount Spent"
-                className={styles.BenefitInput}
+                className={styles.ModalInput}
                 value={form.used}
                 onChange={(e) => setForm({ ...form, used: e.target.value })}
               />
@@ -373,7 +367,7 @@ export default function BenefitsPage() {
             {selectedBenefit && (
               <>
                 <select
-                  className={styles.BenefitInput}
+                  className={styles.ModalInput}
                   value={form.resetType}
                   onChange={(e) => setForm({ ...form, resetType: e.target.value })}
                 >
@@ -388,7 +382,7 @@ export default function BenefitsPage() {
                     <label className={styles.BenefitStartDateLabel}>Start Date</label>
                     <input
                       type="date"
-                      className={styles.BenefitInput}
+                      className={styles.ModalInput}
                       value={form.date}
                       onChange={(e) => setForm({ ...form, date: e.target.value })}
                     />
@@ -398,16 +392,19 @@ export default function BenefitsPage() {
             )}
 
             {selectedBenefit && (
-              <div className={styles.BenefitModalActions}>
-                <button className={styles.BenefitSaveBtn} onClick={handleSave}>
-                  {editingBenefitId ? "Update" : "Save"}
-                </button>
+              <div className={styles.buttonRow}>
+
                 <button
-                  className={styles.BenefitCancelBtn}
+                  className={styles.cancelBtn}
                   onClick={() => { setShowModal(false); resetForm(); }}
                 >
                   Cancel
                 </button>
+
+                <button className={styles.saveBtn} onClick={handleSave}>
+                  {editingBenefitId ? "Update" : "Save"}
+                </button>
+
               </div>
             )}
           </div>

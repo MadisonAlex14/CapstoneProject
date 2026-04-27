@@ -667,11 +667,9 @@ export default function CardsPage() {
       <div className={styles.CardHeader}>
         
 
-        <button
-          type="button"
-          className={styles.CardAddButton}
+        <button className={styles.CardAddButton}
           onClick={handleOpenAddCard}
-        >
+          >
           + Add Card
         </button>
       </div>
@@ -682,13 +680,6 @@ export default function CardsPage() {
           <p className={styles.CardSubtitle}>
             Add your first card to start tracking rewards, benefits, and promos.
           </p>
-          <button
-            type="button"
-            className={styles.CardAddButton}
-            onClick={handleOpenAddCard}
-          >
-            Add Card
-          </button>
         </div>
       ) : (
         <div className={styles.CardGrid}>
@@ -741,7 +732,7 @@ export default function CardsPage() {
                 />
 
                 <div className={styles.CardTop} style={{ position: 'relative', zIndex: 2 }}>
-                  <span className={styles.CardIssuerID}>{card.issuer_id}</span>
+
 
                   <div
                     className={styles.CardMenuWrapper}
@@ -806,21 +797,21 @@ export default function CardsPage() {
       )}
 
       {showAddModal && (
-        <div className={styles.CardOverlay} onClick={handleCloseAddCard}>
+        <div className={styles.ModalOverlay} onClick={handleCloseAddCard}>
           <div
-            className={styles.CardModal}
+            className={styles.Modal}
             onClick={(e) => e.stopPropagation()}
           >
             <button
               type="button"
-              className={styles.CardCloseButton}
+              className={styles.ModalXBtn}
               onClick={handleCloseAddCard}
               aria-label="Close add card modal"
             >
               ×
             </button>
 
-            <h2 className={styles.CardModalTitle}>
+            <h2 className={styles.ModalTitle}>
               {editingCardId ? "Edit Card" : "Add a Card"}
             </h2>
 

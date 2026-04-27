@@ -7,6 +7,7 @@ import { getUserCards } from '../../../lib/functions/getUserCards';
 import { getMccLookup } from '../../../lib/functions/getMccLookup';
 import { upsertTransaction } from '../../../lib/functions/upsertTransaction';
 import { logBenefitUsage } from '../../../lib/functions/logBenefitUsage';
+import { TransactionCsvImport } from '../../../lib/components/TransactionCsvImport';
 
 type UserCard = {
   credit_card_id: string;
@@ -401,6 +402,33 @@ export default function Page() {
           </button>
         </div>
       </form>
+
+      {/* CSV Import Section */}
+      {form.credit_card_id && (
+        <div className="CardDetailsSection">
+          <TransactionCsvImport
+            creditCardId={form.credit_card_id}
+            accessToken={
+              (() => {
+                const localToken = localStorage.getItem('accessToken');
+                const supabaseToken = localStorage.getItem('supabase.auth.token');
+                let accessToken: string | null = localToken;
+                if (!accessToken && supabaseToken) {
+                  const session = JSON.parse(supabaseToken);
+                  accessToken = session?.currentSession?.access_token || session?.access_token || null;
+                }
+                return accessToken || '';
+              })()
+            }
+            onImportComplete={(result) => {
+              if (result.failed === 0) {
+                // Optionally navigate after successful import
+                setTimeout(() => router.push('/transactions'), 2000);
+              }
+            }}
+          />
+        </div>
+      )}
 
       {/* Triggered Benefits Modal */}
       {showBenefitModal && (
