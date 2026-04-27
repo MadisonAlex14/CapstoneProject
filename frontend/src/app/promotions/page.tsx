@@ -394,7 +394,17 @@ export default function PromotionsPage() {
       </div>
     );
   }
+  
+  return (
+    <div className={styles.PageContainer} onClick={() => setMenuOpenId(null)}>
+      <div className={styles.PageHero}>
+        <h1 className={styles.PageTitle}>Promotions</h1>
+        <p className={styles.PageSubtitle}>
+          Discover limited-time offers, bonus rewards, and special credit card deals.
+        </p>
+      </div>
 
+      {/* Summary */}
       <section className={styles.Summary}>
         <div className={styles.SummaryCards}>
           {[
@@ -411,20 +421,7 @@ export default function PromotionsPage() {
       </section>
 
       
-      {/* Enroll Button */}
-      <section className={styles.promotionsActions}>
-        <button
-          className={styles.promotionsEnrollButton}
-          onClick={(e) => {
-            e.stopPropagation();
-            setShowEnrollModal(true);
-          }}
-        >
-          + Enroll in Promotion
-        </button>
-      </section>
-
-    {/* Filters */}
+      {/* Filters */}
       <section className={styles.promotionsFilters}>
         <select
           className={styles.promotionsSelect}
@@ -460,6 +457,15 @@ export default function PromotionsPage() {
             : filterStatus === "AtRisk" ? "At Risk Promotions"
             : "Your Promotions"}
         </h2>
+        <button
+          className={styles.promotionsEnrollButton}
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowEnrollModal(true);
+          }}
+        >
+          + Enroll in Promotion
+        </button>
         <div className={styles.promotionsList}>
           {activePromotions.length === 0 ? (
             <p style={{ color: "#6b7280", padding: "1rem 0" }}>No promotions found.</p>
