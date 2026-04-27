@@ -732,7 +732,7 @@ export default function CardsPage() {
                 />
 
                 <div className={styles.CardTop} style={{ position: 'relative', zIndex: 2 }}>
-                  <span className={styles.CardIssuerID}>{card.issuer_id}</span>
+
 
                   <div
                     className={styles.CardMenuWrapper}
