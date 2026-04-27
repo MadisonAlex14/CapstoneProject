@@ -1,9 +1,20 @@
 "use client";
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { createClient } from '@supabase/supabase-js';
 import '@/App.css';
 import styles from '../../../styles/auth.module.css';
+import { getUserCards } from '../../../lib/functions/getUserCards';
+import { upsertTransaction } from '../../../lib/functions/upsertTransaction';
+import { getMccLookup } from '../../../lib/functions/getMccLookup';
+
+type UserCard = {
+  credit_card_id: string;
+  nickname: string;
+  last_four: string;
+  credit_card_type: { name: string; issuer_id: string };
+};
 
 type Transaction = {
   id: string;
@@ -27,6 +38,19 @@ const mccToCategory: Record<number, string> = {
   4814: 'Communication',
   5311: 'Department Store',
   5999: 'Miscellaneous',
+};
+
+type Transaction = {
+  id: string;
+  date: string;
+  merchant: string;
+  mcc: number;
+  amount: number;
+  card: string;
+  category: string;
+  reward: number;
+  benefit: string;
+  notes: string;
 };
 
 const STORAGE_KEY = 'capstone_transactions_v1';
@@ -61,10 +85,48 @@ type ImportRow = {
 export default function Page() {
   const router = useRouter();
   const [step, setStep] = useState(1);
-  const [card, setCard] = useState(sampleCardOptions[0]);
+  const [card, setCard] = useState('');
+  const [userCards, setUserCards] = useState<UserCard[]>([]);
+  const [loadingCards, setLoadingCards] = useState(true);
   const [rows, setRows] = useState<ImportRow[]>([]);
   const [fileError, setFileError] = useState('');
   const [editingRowIndex, setEditingRowIndex] = useState<number | null>(null);
+  const [isImporting, setIsImporting] = useState(false);
+  const [importProgress, setImportProgress] = useState(0);
+  const [importTotal, setImportTotal] = useState(0);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+
+  // Get access token and cards on mount
+  useEffect(() => {
+    const getTokenAndCards = async () => {
+      try {
+        const localToken = localStorage.getItem('accessToken');
+        const supabaseToken = localStorage.getItem('supabase.auth.token');
+        let accessToken: string | null = localToken;
+
+        if (!accessToken && supabaseToken) {
+          const session = JSON.parse(supabaseToken);
+          accessToken = session?.currentSession?.access_token || session?.access_token || null;
+        }
+
+        if (!accessToken) throw new Error('No access token');
+
+        setAccessToken(accessToken);
+
+        const cards = await getUserCards(accessToken);
+        setUserCards(cards ?? []);
+        if (cards && cards.length > 0) {
+          setCard(cards[0].credit_card_id);
+        }
+      } catch (err) {
+        console.error('Failed to get token or cards:', err);
+        setFileError('Failed to load cards. Please log in again.');
+      } finally {
+        setLoadingCards(false);
+      }
+    };
+    getTokenAndCards();
+  }, []);
 
   const validateRow = (raw: Partial<ImportRow>): ImportRow => {
     const errors: string[] = [];
@@ -102,10 +164,15 @@ export default function Page() {
     const extension = file.name.split('.').pop()?.toLowerCase();
     if (extension === 'csv') {
       const text = await file.text();
-      const parsed = text
+      const lines = text
         .trim()
         .split('\n')
-        .map((line) => line.split(',').map((cell) => cell.replace(/(^"|"$)/g, '').trim()));
+        .filter((line) => line.trim() && !line.trim().startsWith('#')); // Skip empty lines and comments
+      
+      const parsed = lines.map((line) => 
+        line.split(',').map((cell) => cell.replace(/(^"|"$)/g, '').trim())
+      );
+      
       if (parsed.length < 2) { setFileError('CSV has no data'); return; }
       const [header, ...body] = parsed;
       const keyMap = {
@@ -151,28 +218,92 @@ export default function Page() {
 
   const validRows = useMemo(() => rows.filter((row) => row.errors.length === 0), [rows]);
 
-  const importRows = () => {
-    const valid = validRows.map((row) => {
-      const mccVal = Number(row.mcc);
-      const amountVal = Number(row.amount);
-      return {
-        id: `imp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        date: row.transaction_date.includes('/') ? row.transaction_date.split('/').map((p, i) => (i===2 ? p : p.padStart(2,'0')).toString()).join('-') : row.transaction_date,
-        merchant: row.merchant_name,
-        mcc: mccVal,
-        amount: amountVal,
-        card,
-        category: mccToCategory[mccVal] || 'Uncategorized',
-        reward: amountVal * 0.03,
-        benefit: '',
-        notes: row.notes,
-      };
-    });
+  const importRows = async () => {
+    if (!accessToken) {
+      setFileError('No access token available. Please log in.');
+      return;
+    }
 
-    const existing = getSavedTransactions();
-    const next = [...valid, ...existing];
-    saveTransactions(next);
-    router.push('/transactions');
+    setIsImporting(true);
+    setImportProgress(0);
+    setFileError('');
+
+    const rowsToImport = validRows;
+    setImportTotal(rowsToImport.length);
+
+    let successCount = 0;
+    const errors: Array<{ row: number; error: string }> = [];
+
+    // Build a map of MCC codes to UUIDs by looking them up
+    const mccCodeToIdMap: Record<string, string> = {};
+    for (const row of rowsToImport) {
+      if (!mccCodeToIdMap[row.mcc_id]) {
+        try {
+          const mccResults = await getMccLookup(accessToken, row.mcc_id);
+          if (mccResults && mccResults.length > 0) {
+            mccCodeToIdMap[row.mcc_id] = mccResults[0].mcc_id;
+          }
+        } catch (err) {
+          console.error(`Failed to look up MCC ${row.mcc_id}:`, err);
+        }
+      }
+    }
+
+    // Import with concurrency limit (5 at a time to avoid overwhelming the API)
+    const BATCH_SIZE = 5;
+
+    for (let i = 0; i < rowsToImport.length; i += BATCH_SIZE) {
+      const batch = rowsToImport.slice(i, Math.min(i + BATCH_SIZE, rowsToImport.length));
+
+      const promises = batch.map((row, batchIndex) =>
+        (async () => {
+          const rowNum = i + batchIndex + 2; // +2 because header is row 1, data starts at row 2
+          const amountVal = Number(row.amount);
+          const mccUuid = mccCodeToIdMap[row.mcc_id];
+
+          if (!mccUuid) {
+            errors.push({ row: rowNum, error: `MCC ${row.mcc_id} not found` });
+            setImportProgress((prev) => prev + 1);
+            return;
+          }
+
+          try {
+            await upsertTransaction(accessToken!, {
+              credit_card_id: card,
+              transaction_date: row.transaction_date,
+              merchant_name: row.merchant_name,
+              mcc_id: mccUuid,
+              amount: amountVal,
+              booked_through_issuer_portal: false,
+              notes: row.notes || undefined,
+            });
+
+            successCount++;
+          } catch (err) {
+            const errorMsg = err instanceof Error ? err.message : 'Unknown error';
+            errors.push({ row: rowNum, error: errorMsg });
+          }
+
+          setImportProgress((prev) => prev + 1);
+        })()
+      );
+
+      await Promise.all(promises);
+    }
+
+    setIsImporting(false);
+
+    if (successCount === rowsToImport.length) {
+      // All successful
+      router.push('/transactions');
+    } else {
+      // Show errors but allow user to try again or navigate
+      setFileError(
+        `Import complete: ${successCount} succeeded, ${errors.length} failed.\n${errors
+          .map((e) => `Row ${e.row}: ${e.error}`)
+          .join('\n')}`
+      );
+    }
   };
 
   const handleEdit = (index: number) => {
@@ -210,13 +341,23 @@ export default function Page() {
           <div style={{ display: 'grid', gap: '0.85rem' }}>
             <label>
               Card
-              <select value={card} onChange={(e) => setCard(e.target.value)}>
-                {sampleCardOptions.map((c) => <option key={c} value={c}>{c}</option>)}
+              <select value={card} onChange={(e) => setCard(e.target.value)} disabled={loadingCards}>
+                {loadingCards ? (
+                  <option>Loading cards...</option>
+                ) : userCards.length === 0 ? (
+                  <option>No cards available</option>
+                ) : (
+                  userCards.map((c) => (
+                    <option key={c.credit_card_id} value={c.credit_card_id}>
+                      {c.credit_card_type.name} •••• {c.last_four}
+                    </option>
+                  ))
+                )}
               </select>
             </label>
             <div className="CardDetailsActionRow">
               <button className="CardDetailsButtonSecondary" onClick={() => router.push('/transactions')}>Cancel</button>
-              <button className="CardDetailsButtonPrimary" onClick={() => setStep(2)}>Next</button>
+              <button className="CardDetailsButtonPrimary" onClick={() => setStep(2)} disabled={!card}>Next</button>
             </div>
           </div>
         )}
@@ -231,9 +372,12 @@ export default function Page() {
               Drag and drop .csv (or .xlsx) here, or <label htmlFor="import-file" style={{ color: '#1f4d3a', cursor: 'pointer', textDecoration: 'underline' }}>browse</label>.
               <input id="import-file" type="file" accept=".csv,.xlsx" hidden onChange={onFileInput} />
             </div>
-            <p>
-              <a href="/transactions-import-template.csv" download>Download template file</a> (transaction_date, merchant_name, mcc, amount, notes)
+            <p style={{ fontSize: "0.9rem", color: "#666", marginBottom: "0.75rem" }}>
+              Download template file (transaction_date, merchant_name, mcc, amount, notes)
             </p>
+            <a href="/transactions-import-template.csv" download style={{ color: "#0066cc", textDecoration: "underline", fontSize: "0.9rem", cursor: "pointer" }}>
+              Download template
+            </a>
             {fileError && <p style={{ color: 'red' }}>{fileError}</p>}
             <div className="CardDetailsActionRow">
               <button className="CardDetailsButtonSecondary" onClick={() => setStep(1)}>Back</button>
@@ -313,12 +457,45 @@ export default function Page() {
                 ))}
               </tbody>
             </table>
+            {isImporting && (
+              <div style={{ marginTop: '1rem', marginBottom: '1rem' }}>
+                <div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.9rem', fontWeight: '500' }}>
+                    Importing: {importProgress} / {importTotal}
+                  </span>
+                  <span style={{ fontSize: '0.9rem', color: '#666' }}>
+                    {importTotal > 0 ? Math.round((importProgress / importTotal) * 100) : 0}%
+                  </span>
+                </div>
+                <div style={{ width: '100%', height: '24px', backgroundColor: '#e0e0e0', borderRadius: '4px', overflow: 'hidden' }}>
+                  <div
+                    style={{
+                      height: '100%',
+                      width: `${importTotal > 0 ? Math.round((importProgress / importTotal) * 100) : 0}%`,
+                      backgroundColor: '#4caf50',
+                      transition: 'width 0.3s ease',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'white',
+                      fontSize: '0.75rem',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    {importTotal > 0 && Math.round((importProgress / importTotal) * 100) > 5
+                      ? `${Math.round((importProgress / importTotal) * 100)}%`
+                      : ''}
+                  </div>
+                </div>
+              </div>
+            )}
+            {fileError && <p style={{ color: 'red', whiteSpace: 'pre-wrap' }}>{fileError}</p>}
             <div className="CardDetailsActionRow" style={{ marginTop: '1rem' }}>
-              <button className="CardDetailsButtonSecondary" onClick={() => setStep(2)}>Back</button>
-              <button className="CardDetailsButtonPrimary" disabled={validRows.length === 0} onClick={importRows}>
-                Import {validRows.length} Transaction{validRows.length === 1 ? '' : 's'}
+              <button className="CardDetailsButtonSecondary" onClick={() => setStep(2)} disabled={isImporting}>Back</button>
+              <button className="CardDetailsButtonPrimary" disabled={validRows.length === 0 || isImporting} onClick={importRows}>
+                {isImporting ? `Importing... (${importProgress}/${importTotal})` : `Import ${validRows.length} Transaction${validRows.length === 1 ? '' : 's'}`}
               </button>
-              <button className="CardDetailsButtonSecondary" onClick={() => router.push('/transactions')}>
+              <button className="CardDetailsButtonSecondary" onClick={() => router.push('/transactions')} disabled={isImporting}>
                 Cancel
               </button>
             </div>
