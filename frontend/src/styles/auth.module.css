@@ -3678,12 +3678,12 @@
 /* ====================== Action Buttons ====================== */
 .promotionsActions {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   margin-top: 1rem;
 }
 
 .promotionsEnrollButton {
-   background: linear-gradient(135deg, #10b981, #059669);
+  background: linear-gradient(135deg, #10b981, #059669);
   border: none;
   padding: 10px 16px;
   color: white;
@@ -3692,9 +3692,8 @@
   font-weight: 600;
   box-shadow: 0 6px 18px rgba(16, 185, 129, 0.25);
   transition: all 0.2s ease;
-  margin-top: 25px;
   display: block;
-  margin-left: auto;
+  margin-left: 0;
   margin-right: auto;
 }
 
