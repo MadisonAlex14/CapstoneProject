@@ -3372,9 +3372,25 @@
 /* ====================== Action Buttons ====================== */
 .promotionsActions {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   margin-top: 1rem;
 }
+
+.promotionsEnrollButton {
+  background: linear-gradient(135deg, #10b981, #059669);
+  border: none;
+  padding: 10px 16px;
+  color: white;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.25);
+  transition: all 0.2s ease;
+  display: block;
+  margin: 1rem auto;
+}
+
+.promotionsEnrollButton:hover { background: #059669; }
 
 .promotionsRemoveButton {
   background: #ef4444;

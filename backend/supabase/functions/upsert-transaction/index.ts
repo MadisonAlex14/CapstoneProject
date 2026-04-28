@@ -134,10 +134,20 @@ async function calculateRewardsEarned(
 }
 
 async function updatePromotionProgress(creditCardId: string, transactionDate: string, amount: number) {
-  // Fetch active, non-completed promotions that cover the transaction date
+  // Fetch active, non-completed promotions that cover the transaction date.
+  // Also pull initial_spend, goal_amount, and reward_amount so we can check
+  // for completion after updating spend_to_date.
   const { data: activePromos } = await supabase
     .from('user_promotion')
-    .select('user_promotion_id, spend_to_date')
+    .select(`
+      user_promotion_id,
+      spend_to_date,
+      initial_spend,
+      promotion(
+        promotion_condition(goal_amount),
+        promotion_reward(reward_amount)
+      )
+    `)
     .eq('credit_card_id', creditCardId)
     .is('completed_at', null)
     .lte('start_date', transactionDate)
@@ -148,9 +158,23 @@ async function updatePromotionProgress(creditCardId: string, transactionDate: st
   // Assume all promotions are spend-based for now
   for (const promo of activePromos) {
     const p = promo as any
+    const newSpend = p.spend_to_date + amount
+
+    // Check if this transaction pushes the promotion over the threshold.
+    // Effective progress = spend_to_date (new) + initial_spend.
+    const goalAmount = p.promotion?.promotion_condition?.[0]?.goal_amount
+    const isCompleted = goalAmount != null && (newSpend + p.initial_spend) >= goalAmount
+    const awardAmount = p.promotion?.promotion_reward?.[0]?.reward_amount ?? null
+
+    const updateData: Record<string, unknown> = { spend_to_date: newSpend }
+    if (isCompleted) {
+      updateData.completed_at = new Date().toISOString()
+      updateData.award_earned = awardAmount
+    }
+
     const { error } = await supabase
       .from('user_promotion')
-      .update({ spend_to_date: p.spend_to_date + amount })
+      .update(updateData)
       .eq('user_promotion_id', p.user_promotion_id)
 
     if (error) {
