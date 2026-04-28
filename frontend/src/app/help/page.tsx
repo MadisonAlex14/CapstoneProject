@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import styles from '../../styles/auth.module.css'
+import { CreditCardAssistant } from '@/lib/components/CreditCardAssistant'
 
 const faqItems = [
   {
@@ -267,6 +268,14 @@ ${formData.message}`
               </div>
             ))}
           </div>
+        </section>
+
+        <section className={styles.helpSection}>
+          <div className={styles.helpSectionHeader}>
+            <h2>AI Assistant</h2>
+            <p>Ask our AI assistant powered by project knowledge base for instant help.</p>
+          </div>
+          <CreditCardAssistant />
         </section>
 
         <section className={styles.helpContactSection}>
