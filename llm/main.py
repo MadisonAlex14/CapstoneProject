@@ -14,7 +14,7 @@ import uvicorn
 
 # Configuration
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-MODEL_NAME = "mistral:7b"
+MODEL_NAME = "gemma2:2b"
 KNOWLEDGE_BASE_FILE = "knowledge_base.json"
 PORT = int(os.getenv("LLM_PORT", 8000))
 

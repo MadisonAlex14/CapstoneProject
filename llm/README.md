@@ -3,16 +3,16 @@
 ## Overview
 
 This guide walks you through setting up a local LLM service that:
-- Runs the `mistral:7b` model via Ollama
+- Runs the `gemma2:2b` model via Ollama
 - Manages a custom knowledge base (JSON-backed)
 - Provides a REST API for your frontend to query
 - Augments responses with contextual knowledge
 
 ## Prerequisites
 
-1. **Ollama installed and running** with `mistral:7b` model
+1. **Ollama installed and running** with `gemma2:2b` model
    - Download from https://ollama.ai
-   - Run: `ollama pull mistral:7b`
+   - Run: `ollama pull gemma2:2b`
    - Start: `ollama serve` (default port 11434)
 
 2. **Python 3.9+**
