@@ -19,7 +19,8 @@
     "framer-motion": "^12.34.3",
     "next": "16.1.6",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "react-markdown": "^10.1.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.48.0",
@@ -34,4 +35,3 @@
     "typescript": "^5"
   }
 }
-
