@@ -184,5 +184,251 @@ test.describe('Add Amex Card', () => {
     
     // At least one should be true (either the grid is visible or the new card is visible)
     expect(cardGridVisible || amexCardVisible).toBeTruthy();
+
+    // Clean up: Delete the card that was just created
+    // Find the menu button for "My Amex Card" by looking for the card with that text
+    const amexCardElement = authenticatedPage.locator('text=My Amex Card').first();
+    
+    // Navigate to the card's menu button - the menu button is in the CardTop div
+    const cardBox = amexCardElement.locator('..').locator('..');
+    const menuButton = cardBox.locator('button[aria-label*="Open menu for"]').first();
+    
+    // Click the menu button to open dropdown
+    await menuButton.click();
+    
+    // Click the delete button in the dropdown
+    const deleteButton = cardBox.locator('button').filter({ hasText: 'Delete' }).first();
+    await deleteButton.click();
+    
+    // A confirmation dialog appears - click the OK button to confirm deletion
+    const okButton = authenticatedPage.locator('button').filter({ hasText: 'OK' }).first();
+    await okButton.click();
+    
+    // Wait for the deletion to complete
+    await authenticatedPage.waitForLoadState('networkidle');
+  });
+});
+
+test.describe('Add Chase Card', () => {
+  test('(Add Chase) login > navigate to cards > add Chase card with information filled out', async ({ authenticatedPage }) => {
+    // Navigate to the cards page
+    await authenticatedPage.goto('/cards');
+    await authenticatedPage.waitForLoadState('networkidle');
+
+    // Click the Add Card button to open the modal
+    const addButton = authenticatedPage.locator('button').filter({ hasText: 'Add Card' }).first();
+    await expect(addButton).toBeVisible();
+    await addButton.click();
+
+    // Wait for the modal to appear
+    const modal = authenticatedPage.locator('[class*="Modal"]').first();
+    await expect(modal).toBeVisible();
+
+    // Verify the modal title is "Add a Card"
+    const modalTitle = authenticatedPage.locator('h2', { hasText: 'Add a Card' });
+    await expect(modalTitle).toBeVisible();
+
+    // Step 1: Select Chase Card Type
+    // Wait for card types to load and find the Chase option
+    const cardTypeOptions = authenticatedPage.locator('button').filter({ hasText: /Chase/i });
+    await expect(cardTypeOptions.first()).toBeVisible({ timeout: 10000 });
+    
+    // Click the Chase card option
+    await cardTypeOptions.first().click();
+
+    // Verify the card type is selected (should have selected state)
+    await expect(cardTypeOptions.first()).toHaveClass(/.*Selected.*/);
+
+    // Step 2 should auto-expand after selecting a card type
+    // Wait for form inputs to appear - check for the "Last 4 Digits" label as a marker that step 2 is ready
+    await expect(authenticatedPage.locator('text=Last 4 Digits')).toBeVisible({ timeout: 5000 });
+
+    // Now fill in the form fields
+    // Fill in Card Nickname (optional) - first text input in the form
+    const nicknameInput = authenticatedPage.locator('input[type="text"]').first();
+    await nicknameInput.fill('My Chase Card');
+
+    // Fill in Last 4 Digits (required) - input with placeholder "1234"
+    const last4Input = authenticatedPage.locator('input[placeholder="1234"]');
+    await last4Input.fill('4321');
+
+    // Fill in Open Date (required) - first date input
+    const openDateInput = authenticatedPage.locator('input[type="date"]').first();
+    await openDateInput.fill('2022-06-10');
+
+    // Fill in Expiration Date (required) - second date input
+    const expirationDateInput = authenticatedPage.locator('input[type="date"]').nth(1);
+    await expirationDateInput.fill('2026-05-31');
+
+    // Fill in Statement Closing Date (required - must be between 1-31)
+    const statementClosingSelect = authenticatedPage.locator('select').first();
+    await statementClosingSelect.selectOption('20');
+
+    // Step 3: Auto-expands when step 2 is complete
+    // Wait for step 3 to expand by checking for the "Current Rewards Balance" label
+    await expect(authenticatedPage.locator('text=Current Rewards Balance')).toBeVisible({ timeout: 5000 });
+
+    // Now find and fill the rewards balance input by looking for the input within the expanded section
+    // Use a more specific approach: find the input that appears after "Current Rewards Balance" label
+    const rewardsInput = authenticatedPage.locator('label:has-text("Current Rewards Balance")').locator('..').locator('input[type="number"]');
+    await rewardsInput.fill('5000');
+
+    // Submit the form by clicking the "Save Card" button
+    const saveButton = authenticatedPage.locator('button:has-text("Save Card")');
+    await expect(saveButton).toBeEnabled();
+    await saveButton.click();
+
+    // Wait for the modal to close and verify success
+    await expect(modal).not.toBeVisible({ timeout: 5000 });
+
+    // Verify the card was added by checking if the page shows the card or empty state is gone
+    // Wait for network to idle after form submission
+    await authenticatedPage.waitForLoadState('networkidle');
+
+    // Check that either:
+    // 1. The newly added card is visible, or
+    // 2. The empty state is no longer visible (indicating a card was added)
+    const cardGrid = authenticatedPage.locator('[class*="CardGrid"]');
+    const chaseCardInGrid = authenticatedPage.locator('text=/My Chase Card|Chase/i');
+    
+    const cardGridVisible = await cardGrid.isVisible().catch(() => false);
+    const chaseCardVisible = await chaseCardInGrid.isVisible().catch(() => false);
+    
+    // At least one should be true (either the grid is visible or the new card is visible)
+    expect(cardGridVisible || chaseCardVisible).toBeTruthy();
+
+    // Clean up: Delete the card that was just created
+    // Find the menu button for "My Chase Card" by looking for the card with that text
+    const chaseCardElement = authenticatedPage.locator('text=My Chase Card').first();
+    
+    // Navigate to the card's menu button - the menu button is in the CardTop div
+    const cardBox = chaseCardElement.locator('..').locator('..');
+    const menuButton = cardBox.locator('button[aria-label*="Open menu for"]').first();
+    
+    // Click the menu button to open dropdown
+    await menuButton.click();
+    
+    // Click the delete button in the dropdown
+    const deleteButton = cardBox.locator('button').filter({ hasText: 'Delete' }).first();
+    await deleteButton.click();
+    
+    // A confirmation dialog appears - click the OK button to confirm deletion
+    const okButton = authenticatedPage.locator('button').filter({ hasText: 'OK' }).first();
+    await okButton.click();
+    
+    // Wait for the deletion to complete
+    await authenticatedPage.waitForLoadState('networkidle');
+  });
+});
+
+test.describe('Add Citi Card', () => {
+  test('(Add Citi) login > navigate to cards > add Citi card with information filled out', async ({ authenticatedPage }) => {
+    // Navigate to the cards page
+    await authenticatedPage.goto('/cards');
+    await authenticatedPage.waitForLoadState('networkidle');
+
+    // Click the Add Card button to open the modal
+    const addButton = authenticatedPage.locator('button').filter({ hasText: 'Add Card' }).first();
+    await expect(addButton).toBeVisible();
+    await addButton.click();
+
+    // Wait for the modal to appear
+    const modal = authenticatedPage.locator('[class*="Modal"]').first();
+    await expect(modal).toBeVisible();
+
+    // Verify the modal title is "Add a Card"
+    const modalTitle = authenticatedPage.locator('h2', { hasText: 'Add a Card' });
+    await expect(modalTitle).toBeVisible();
+
+    // Step 1: Select Citi Card Type
+    // Wait for card types to load and find the Citi option
+    const cardTypeOptions = authenticatedPage.locator('button').filter({ hasText: /Citi|Citibank/i });
+    await expect(cardTypeOptions.first()).toBeVisible({ timeout: 10000 });
+    
+    // Click the Citi card option
+    await cardTypeOptions.first().click();
+
+    // Verify the card type is selected (should have selected state)
+    await expect(cardTypeOptions.first()).toHaveClass(/.*Selected.*/);
+
+    // Step 2 should auto-expand after selecting a card type
+    // Wait for form inputs to appear - check for the "Last 4 Digits" label as a marker that step 2 is ready
+    await expect(authenticatedPage.locator('text=Last 4 Digits')).toBeVisible({ timeout: 5000 });
+
+    // Now fill in the form fields
+    // Fill in Card Nickname (optional) - first text input in the form
+    const nicknameInput = authenticatedPage.locator('input[type="text"]').first();
+    await nicknameInput.fill('My Citi Card');
+
+    // Fill in Last 4 Digits (required) - input with placeholder "1234"
+    const last4Input = authenticatedPage.locator('input[placeholder="1234"]');
+    await last4Input.fill('8765');
+
+    // Fill in Open Date (required) - first date input
+    const openDateInput = authenticatedPage.locator('input[type="date"]').first();
+    await openDateInput.fill('2021-03-20');
+
+    // Fill in Expiration Date (required) - second date input
+    const expirationDateInput = authenticatedPage.locator('input[type="date"]').nth(1);
+    await expirationDateInput.fill('2025-02-28');
+
+    // Fill in Statement Closing Date (required - must be between 1-31)
+    const statementClosingSelect = authenticatedPage.locator('select').first();
+    await statementClosingSelect.selectOption('10');
+
+    // Step 3: Auto-expands when step 2 is complete
+    // Wait for step 3 to expand by checking for the "Current Rewards Balance" label
+    await expect(authenticatedPage.locator('text=Current Rewards Balance')).toBeVisible({ timeout: 5000 });
+
+    // Now find and fill the rewards balance input by looking for the input within the expanded section
+    // Use a more specific approach: find the input that appears after "Current Rewards Balance" label
+    const rewardsInput = authenticatedPage.locator('label:has-text("Current Rewards Balance")').locator('..').locator('input[type="number"]');
+    await rewardsInput.fill('2500');
+
+    // Submit the form by clicking the "Save Card" button
+    const saveButton = authenticatedPage.locator('button:has-text("Save Card")');
+    await expect(saveButton).toBeEnabled();
+    await saveButton.click();
+
+    // Wait for the modal to close and verify success
+    await expect(modal).not.toBeVisible({ timeout: 5000 });
+
+    // Verify the card was added by checking if the page shows the card or empty state is gone
+    // Wait for network to idle after form submission
+    await authenticatedPage.waitForLoadState('networkidle');
+
+    // Check that either:
+    // 1. The newly added card is visible, or
+    // 2. The empty state is no longer visible (indicating a card was added)
+    const cardGrid = authenticatedPage.locator('[class*="CardGrid"]');
+    const citiCardInGrid = authenticatedPage.locator('text=/My Citi Card|Citi/i');
+    
+    const cardGridVisible = await cardGrid.isVisible().catch(() => false);
+    const citiCardVisible = await citiCardInGrid.isVisible().catch(() => false);
+    
+    // At least one should be true (either the grid is visible or the new card is visible)
+    expect(cardGridVisible || citiCardVisible).toBeTruthy();
+
+    // Clean up: Delete the card that was just created
+    // Find the menu button for "My Citi Card" by looking for the card with that text
+    const citiCardElement = authenticatedPage.locator('text=My Citi Card').first();
+    
+    // Navigate to the card's menu button - the menu button is in the CardTop div
+    const cardBox = citiCardElement.locator('..').locator('..');
+    const menuButton = cardBox.locator('button[aria-label*="Open menu for"]').first();
+    
+    // Click the menu button to open dropdown
+    await menuButton.click();
+    
+    // Click the delete button in the dropdown
+    const deleteButton = cardBox.locator('button').filter({ hasText: 'Delete' }).first();
+    await deleteButton.click();
+    
+    // A confirmation dialog appears - click the OK button to confirm deletion
+    const okButton = authenticatedPage.locator('button').filter({ hasText: 'OK' }).first();
+    await okButton.click();
+    
+    // Wait for the deletion to complete
+    await authenticatedPage.waitForLoadState('networkidle');
   });
 });
