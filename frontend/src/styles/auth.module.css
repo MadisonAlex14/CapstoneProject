@@ -78,7 +78,6 @@
   margin-bottom: 1.5rem;
   border-radius: 10px;
   border: 2px solid #314634;
-  background-color: #c1f0a0;
   font-size: 1rem;
   transition: all 0.2s ease;
   color: #23473b;
@@ -1232,8 +1231,6 @@
 
 
 /* HELP PAGE */
-
-.SupportHero {
 .SupportHero {
   text-align: center;
   margin-bottom: 2rem;
@@ -2183,28 +2180,6 @@
     linear-gradient(180deg, #f5f8f6 0%, #edf3ef 100%);
 }
 
-.CardBackButton {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  max-width: 1180px;
-  margin: 0 auto 1rem auto;
-  padding: 0;
-  background: none;
-  border: none;
-  color: #1f4d3a;
-  font-weight: 700;
-  cursor: pointer;
-  font-size: 0.95rem;
-  transition: color 0.2s ease, transform 0.2s ease;
-}
-
-.CardBackButton:hover {
-  color: #173b29;
-  transform: translateX(-2px);
-  text-decoration: none;
-}
-
 .CardDetailsContainer {
   max-width: 1180px;
   margin: 0 auto;
@@ -2844,6 +2819,8 @@
   display: block;
   font-weight: 700;
   color: #1f3b2d;
+}
+
 .PromotionName {
   display: block;
   font-weight: 700;
@@ -3018,7 +2995,6 @@
 }
 
 /* REWARDS PAGE */
-/* REWARDS PAGE */
 .R_page {
   padding: 28px;
   min-height: 100vh;
@@ -3027,7 +3003,6 @@
   font-family: Inter, system-ui, sans-serif;
 }
 
-.R_empty {
 .R_empty {
   padding: 16px;
   background: white;
@@ -3042,8 +3017,112 @@
 
 
 
+/*Home page new stlying before global*/
+.homePage {
+  width: 100%;
+  min-height: 100vh;
+  background: #f7f9fc;
+  padding: 2rem 1rem;
+}
 
+.homeSections {
+  display: flex;
+  flex-direction: column;
+  gap: 4rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
 
+/* SECTION LAYOUT */
+.homeSection {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2.5rem;
+  flex-wrap: wrap;
+}
+
+.homeSectionReverse {
+  flex-direction: row-reverse;
+}
+
+/* IMAGE */
+.homeSectionImgWrap {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.homeSectionImg {
+  width: 100%;
+  max-width: 420px;
+  border-radius: 16px;
+  object-fit: cover;
+}
+
+.homeImageContrast img {
+  filter: contrast(1.1) saturate(1.1);
+}
+
+.homeLogoFix {
+  max-width: 300px;
+}
+
+/* TEXT */
+.homeSectionText {
+  flex: 1;
+  min-width: 280px;
+}
+
+.homeSectionTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: #111;
+}
+
+.homeSectionBody {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: #444;
+}
+
+.homeSectionSubtle {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: #777;
+}
+
+/* REVIEWS */
+.homeReviewList {
+  list-style: none;
+  padding: 0;
+  margin-top: 1rem;
+}
+
+.homeReviewList li {
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+/* FEATURES */
+.homeFeatureGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.homeFeatureCard {
+  background: white;
+  padding: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+
+.homeFeatureCard h3 {
+  margin-bottom: 0.5rem;
+}
 
 
 
@@ -3124,36 +3203,6 @@
 
 
 /* ----- Global Styling -------------------- */
-/* Page Headers */
-.PageHero {
-  background: linear-gradient(135deg, #1f4d3a, #2f6a50);
-  color: white;
-  border-radius: 28px;
-  padding: 1.75rem;
-  box-shadow: 0 20px 42px rgba(0, 0, 0, 0.1);
-  position: relative;
-  overflow: hidden;
-  margin-bottom: 1.5rem;
-}
-
-.PageTitle {
-  font-size: clamp(2rem, 4vw, 2.6rem);
-  font-weight: 800;
-  color: #ffffff;
-  margin: 0 0 0.35rem 0;
-  letter-spacing: -0.02em;
-  text-align: left;
-}
-
-.PageSubtitle {
-  color: rgba(255, 255, 255, 0.88);
-  font-weight: 600;
-  margin: 0;
-  line-height: 1.5;
-  text-align: left;
-  font-size: 0.95rem;
-}
-
 /* Page Headers */
 .PageHero {
   background: linear-gradient(135deg, #1f4d3a, #2f6a50);
@@ -3293,12 +3342,13 @@
   color: #065f46; 
 }
 
-.SummaryCard p {
-
+.Summary p {
+  font-size: 1rem;
+  color: grey;
 }
 
 .SummaryLabel {
-  color: #6b7280;
+  color: #9ea5b3;
   font-size: 0.875rem;
 }
 
@@ -3553,6 +3603,13 @@
   justify-content: flex-start;
 }
 
+.homeCardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
 .InfoRow {
   display: flex;
   justify-content: space-between;
@@ -3582,4 +3639,26 @@
 
 .ThreeDots div:hover {
   background: #f3f4f6;
+}
+
+.BackButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 1180px;
+  font-size: 0.8rem;
+  font-weight: 750;
+  padding: 0;
+  background: none;
+  border: none;
+  color: #1f4d3a;
+
+  cursor: pointer;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.BackButton:hover {
+  color: #173b29;
+  transform: translateX(-2px);
+  text-decoration: none;
 }

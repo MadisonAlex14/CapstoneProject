@@ -116,8 +116,7 @@ ${formData.message}`
        <div className={styles.PageHero}>
         <h1 className={styles.PageTitle}>Help Center</h1>
         <p className={styles.PageSubtitle}>
-          Find answers, learn how to use CreditMaxxing, and get support for managing your cards and rewards.
-         </p>
+          Whether you're managing rewards or fixing account issues, we’ll guide you through it step by step.         </p>
        </div>
 
       <div className={styles.PageContainer}>
@@ -125,9 +124,7 @@ ${formData.message}`
           <div className={styles.helpHeroBadge}>Support Center</div>
           <h1 className={styles.helpTitle}>How can we help you today?</h1>
           <p className={styles.helpSubtitle}>
-            Find quick answers, report issues, and get support for anything in
-            CreditMaxxing.
-          </p>
+              Find quick answers, report issues, and get support for anything in CreditMaxxing.</p>
         </section>
 
         <section className={styles.helpAiSection}>

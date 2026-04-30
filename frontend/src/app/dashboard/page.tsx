@@ -99,7 +99,7 @@ export default function Dashboard() {
   return (
     <main>
       <section className={styles.PageContainer}>
-        {/* HERO HEADER */}
+ 
         <div className={styles.dHeroCard}>
           <div>
             <p className={styles.dGreeting}>{timeGreeting}</p>

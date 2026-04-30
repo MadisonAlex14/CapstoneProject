@@ -9,11 +9,9 @@ import logo from "../assets/creditmaxing.png";
 export default function NavBar() {
   const router = useRouter();
   const profileRef = useRef(null);
-  const dashboardRef = useRef(null);
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
-  const [showDashboardDropdown, setShowDashboardDropdown] = useState(false);
   const [firstName, setFirstName] = useState("");
 
   useEffect(() => {
@@ -32,9 +30,6 @@ export default function NavBar() {
     const handleClickOutside = (event) => {
       if (profileRef.current && !profileRef.current.contains(event.target)) {
         setShowProfileDropdown(false);
-      }
-      if (dashboardRef.current && !dashboardRef.current.contains(event.target)) {
-        setShowDashboardDropdown(false);
       }
     };
 
@@ -79,56 +74,30 @@ export default function NavBar() {
 
         {isLoggedIn && (
           <div className="nav-links-container">
-            {/* My Dashboard Dropdown */}
-            <div className="NavDropdown" ref={dashboardRef}>
-              <button
-                className="NavDropdown-button"
-                onClick={() => setShowDashboardDropdown(!showDashboardDropdown)}
-                type="button"
-              >
-                My Account ▼
-              </button>
-              {showDashboardDropdown && (
-                <div className="NavDropdown-menu">
-                  <Link
-                    href="/dashboard"
-                    className="NavDropdown-item"
-                    onClick={() => setShowDashboardDropdown(false)}
-                  >
-                    Dashboard
-                  </Link>
-                  <Link
-                    href="/promotions"
-                    className="NavDropdown-item"
-                    onClick={() => setShowDashboardDropdown(false)}
-                  >
-                    Promotions
-                  </Link>
-                  <Link
-                    href="/benefits"
-                    className="NavDropdown-item"
-                    onClick={() => setShowDashboardDropdown(false)}
-                  >
-                    Benefits
-                  </Link>
-                  <Link
-                    href="/rewards"
-                    className="NavDropdown-item"
-                    onClick={() => setShowDashboardDropdown(false)}
-                  >
-                    Rewards
-                  </Link>
-                </div>
-              )}
-            </div>
+            <Link href="/dashboard" className="nav-link">
+              Dashboard
+            </Link>
 
-            {/* Other nav links */}
+            <Link href="/promotions" className="nav-link">
+              Promotions
+            </Link>
+
+            <Link href="/benefits" className="nav-link">
+              Benefits
+            </Link>
+
+            <Link href="/rewards" className="nav-link">
+              Rewards
+            </Link>
+
             <Link href="/cards" className="nav-link">
               Cards
             </Link>
+
             <Link href="/transactions" className="nav-link">
               Transactions
             </Link>
+
             <Link href="/help" className="nav-link">
               Help
             </Link>
