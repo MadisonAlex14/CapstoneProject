@@ -54,6 +54,37 @@ function calculateCurrentCycleStartDate(
   return ref.toISOString().split('T')[0]
 }
 
+// Calculate the end date of the benefit cycle
+function calculateCycleEndDate(
+  resetFrequency: string,
+  cycleStartDate: string,
+): string {
+  const startDate = new Date(cycleStartDate)
+
+  if (resetFrequency === 'annual') {
+    const endDate = new Date(startDate.getFullYear() + 1, startDate.getMonth(), startDate.getDate() - 1)
+    return endDate.toISOString().split('T')[0]
+  }
+
+  if (resetFrequency === 'one_time') {
+    // For one-time benefits, set end date far in the future
+    const endDate = new Date(2099, 11, 31)
+    return endDate.toISOString().split('T')[0]
+  }
+
+  if (resetFrequency === 'monthly') {
+    const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, startDate.getDate() - 1)
+    return endDate.toISOString().split('T')[0]
+  }
+
+  if (resetFrequency === 'semi_annual') {
+    const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 6, startDate.getDate() - 1)
+    return endDate.toISOString().split('T')[0]
+  }
+
+  return new Date(2099, 11, 31).toISOString().split('T')[0]
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: withCors() })
@@ -171,6 +202,7 @@ Deno.serve(async (req) => {
       credit_card_id: string
       benefit_id: string
       cycle_start_date: string
+      cycle_end_date: string
       amount_used: number
       initial_amount_used: number
     }> = []
@@ -196,10 +228,12 @@ Deno.serve(async (req) => {
       if (found) {
         userBenefitIds.push(found.user_benefit_id)
       } else {
+        const cycleEndDate = calculateCycleEndDate(n.reset_frequency, n.cycle_start_date)
         toInsert.push({
           credit_card_id: n.credit_card_id,
           benefit_id: n.benefit_id,
           cycle_start_date: n.cycle_start_date,
+          cycle_end_date: cycleEndDate,
           amount_used: 0,
           initial_amount_used: 0,
         })
@@ -265,6 +299,7 @@ Deno.serve(async (req) => {
     })
   } catch (error) {
     const err = error as Error
+    console.error('get-user-benefits error:', err.message)
     return new Response(JSON.stringify({ error: err.message || 'Internal server error' }), {
       status: 500,
       headers: withCors({ 'Content-Type': 'application/json' }),
