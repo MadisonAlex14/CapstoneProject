@@ -31,7 +31,7 @@ Deno.serve(async (req) => {
         redemption_type,
         notes,
         created_at,
-        credit_card(
+        credit_card!inner(
           credit_card_id,
           nickname,
           last_four,

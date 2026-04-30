@@ -36,24 +36,18 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Verify ownership via credit_card join
+    // Verify ownership and delete in one step — !inner ensures null credit_card
+    // rows (other users' cards) are excluded rather than returned with null fields
     const { data: redemption, error: fetchError } = await supabase
       .from('reward_redemption')
-      .select('redemption_id, credit_card(profile_id)')
+      .select('redemption_id, credit_card!inner(profile_id)')
       .eq('redemption_id', redemption_id)
+      .eq('credit_card.profile_id', profileId)
       .single()
 
     if (fetchError || !redemption) {
-      return new Response(JSON.stringify({ error: 'Redemption not found' }), {
+      return new Response(JSON.stringify({ error: 'Redemption not found or access denied' }), {
         status: 404,
-        headers: withCors({ 'Content-Type': 'application/json' }),
-      })
-    }
-
-    const ownerProfileId = (redemption as any).credit_card?.profile_id
-    if (ownerProfileId !== profileId) {
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403,
         headers: withCors({ 'Content-Type': 'application/json' }),
       })
     }
