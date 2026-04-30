@@ -200,7 +200,7 @@ export default function ResetPassword() {
 
   return (
     <main className={styles.page}>
-      <form onSubmit={handleSubmit} className={styles.card}>
+      <form onSubmit={handleSubmit} className={`${styles.card} modular-form`}>
         <h2 className={styles.title}>Reset Password</h2>
 
         {!isValidLink ? (
@@ -236,12 +236,11 @@ export default function ResetPassword() {
               </div>
             )}
 
-            <div className={styles.field}>
-              <label className={styles.label} htmlFor="new-password">
+            <div className="form-field">
+              <label htmlFor="new-password">
                 New Password
               </label>
               <input
-                className={styles.input}
                 id="new-password"
                 type="password"
                 value={newPassword}
@@ -271,12 +270,11 @@ export default function ResetPassword() {
               )}
             </div>
 
-            <div className={styles.field}>
-              <label className={styles.label} htmlFor="confirm-password">
+            <div className="form-field">
+              <label htmlFor="confirm-password">
                 Confirm Password
               </label>
               <input
-                className={styles.input}
                 id="confirm-password"
                 type="password"
                 value={confirmPassword}
