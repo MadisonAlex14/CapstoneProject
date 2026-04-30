@@ -112,7 +112,7 @@ ${formData.message}`
 
   return (
 
-    <div className={styles.helpPage}>
+    <div className={styles.PageContainer}>
        <div className={styles.PageHero}>
         <h1 className={styles.PageTitle}>Help Center</h1>
         <p className={styles.PageSubtitle}>
@@ -120,8 +120,8 @@ ${formData.message}`
          </p>
        </div>
 
-      <div className={styles.helpContainer}>
-        <section className={styles.helpHero}>
+      <div className={styles.PageContainer}>
+        <section className={styles.SupportHero}>
           <div className={styles.helpHeroBadge}>Support Center</div>
           <h1 className={styles.helpTitle}>How can we help you today?</h1>
           <p className={styles.helpSubtitle}>
@@ -235,9 +235,9 @@ ${formData.message}`
           </div>
         </section>
 
-        <section className={styles.helpSection}>
-          <div className={styles.helpSectionHeader}>
-            <h2>Frequently Asked Questions</h2>
+        <section className={styles.Section}>
+          <div>
+            <h2 className={styles.SectionTitle}>Frequently Asked Questions</h2>
             <p>Click a question below to expand the answer.</p>
           </div>
 
@@ -269,13 +269,11 @@ ${formData.message}`
           </div>
         </section>
 
-        <section className={styles.helpContactSection}>
+        <section className={styles.Section}>
           <div className={styles.helpFormCard}>
-            <div className={styles.helpSectionHeader}>
-              <h2>Contact Support</h2>
-              <p>
-                Report a bug, ask a question, or let us know what needs attention.
-              </p>
+            <div>
+              <h2 className={styles.SectionTitle}>Contact Support</h2>
+              <p> Report a bug, ask a question, or let us know what needs attention.</p>
             </div>
 
             <form onSubmit={handleSubmit} className={styles.helpForm}>
@@ -335,8 +333,8 @@ ${formData.message}`
                 />
               </div>
 
-              <div className={styles.helpFormActions}>
-                <button type="submit" className={styles.helpSubmitButton}>
+              <div className={styles.buttonRow}>
+                <button type="submit" className={styles.ModalButton}>
                   Send Support Request
                 </button>
               </div>

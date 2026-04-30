@@ -296,7 +296,7 @@ export default function PromotionsPage() {
       {/* Your Promotions */}
       <section className={styles.Section}>
         <h2 className={styles.SectionTitle}>Your Promotions</h2>
-        <div className={styles.promotionsList}>
+        <div className={styles.CardList}>
           {promotions.map((promo, idx) => {
             const daysLeft = promo.end_date ? differenceInDays(parseISO(promo.end_date), new Date()) : 0;
             const daysClass =
@@ -311,7 +311,7 @@ export default function PromotionsPage() {
             const formattedStart = promo.start_date ? format(parseISO(promo.start_date), "MMMM d, yyyy") : "-";
 
             return (
-              <div key={idx} className={styles.promotionsCard} style={{ position: "relative" }}>
+              <div key={idx} className={styles.Card} style={{ position: "relative" }}>
                 <div
                   className={styles.promotionsCardMenuIcon}
                   onClick={() => setMenuOpenIndex(menuOpenIndex === idx ? null : idx)}
@@ -319,15 +319,15 @@ export default function PromotionsPage() {
                   &#8942;
                 </div>
                 {menuOpenIndex === idx && (
-                  <div className={styles.promotionsCardMenu}>
+                  <div className={styles.ThreeDots}>
                     <div onClick={() => handleEditPromotion(promo)}>Edit</div>
                     <div onClick={() => handleRemovePromotion(idx)}>Remove</div>
                   </div>
                 )}
-                <p className={styles.promotionsCardHeader}>{promo.cardName}</p>
-                <p className={styles.promotionsCardTitle}>{promo.promotionName}</p>
-                <p className={styles.promotionsCardDescription}>{promo.description}</p>
-                <div className={styles.promotionsCardRow}>
+                <p className={styles.CardHeader}>{promo.cardName}</p>
+                <p className={styles.CardTitle}>{promo.promotionName}</p>
+                <p className={styles.CardDescription}>{promo.description}</p>
+                <div className={styles.InfoRow}>
                   <span>Threshold: ${promo.threshold}</span>
                   <span>Award: {promo.award}</span>
                 </div>
@@ -337,7 +337,7 @@ export default function PromotionsPage() {
                 <p className={styles.promotionsProgressText}>
                   {promo.currentAmount} / {promo.threshold}
                 </p>
-                <div className={styles.promotionsCardRow}>
+                <div className={styles.InfoRow}>
                   <span>Start: {formattedStart}</span>
                   <span>
                     End: <span className={daysClass}>{daysLeft > 0 ? `${daysLeft} days left` : "Expired"}</span>
@@ -353,7 +353,7 @@ export default function PromotionsPage() {
       </section>
 
       {/* Enroll Button */}
-      <section className={styles.promotionsActions}>
+      <section className={styles.buttonRow}>
         <button className={styles.ModalButton} onClick={() => setShowEnrollPopup(true)}>
           + Enroll in Promotion
         </button>

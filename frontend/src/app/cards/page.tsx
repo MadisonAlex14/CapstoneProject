@@ -657,7 +657,7 @@ export default function CardsPage() {
   };
 
   return (
-    <div className={styles.CardPage}>
+    <div className={styles.PageContainer}>
       <div className={styles.PageHero}>
         <h1 className={styles.PageTitle}>Your Cards</h1>
           <p className={styles.PageSubtitle}>
@@ -667,7 +667,7 @@ export default function CardsPage() {
       <div className={styles.CardHeader}>
         
 
-        <button className={styles.CardAddButton}
+        <button className={styles.ModalButton}
           onClick={handleOpenAddCard}
           >
           + Add Card
@@ -1209,10 +1209,10 @@ export default function CardsPage() {
 
               {formError && <p className={styles.CardError}>{formError}</p>}
 
-              <div className={styles.CardActions}>
+              <div className={styles.buttonRow}>
                 <button
                   type="button"
-                  className={styles.CardCancelButton}
+                  className={styles.cancelBtn}
                   onClick={handleCloseAddCard}
                 >
                   Cancel
@@ -1220,7 +1220,7 @@ export default function CardsPage() {
 
                 <button
                   type="submit"
-                  className={styles.CardSaveButton}
+                  className={styles.saveBtn}
                   disabled={!step1Complete || !step2Complete}
                 >
                   {editingCardId ? "Update Card" : "Save Card"}

@@ -1121,6 +1121,7 @@
   border-radius: 50%;
   font-size: 1.1rem;
   cursor: pointer;
+
 }
 
 .cardMenuItem {
@@ -1155,25 +1156,46 @@
   background: #fff1f1;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* HELP PAGE */
 
-.helpPage {
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 2.5rem;
-  font-family: "Inter", sans-serif;
-  background: #f5f7fa;
-  color: #111827;
-}
-
-.helpContainer {
-  max-width: 1100px;
-  margin: 0 auto;
-  width: 100%;
-}
-
-.helpHero {
+.SupportHero {
   text-align: center;
   margin-bottom: 2rem;
   padding: 2.75rem 1.5rem;
@@ -1211,7 +1233,6 @@
 }
 
 /* AI SUPPORT SECTION */
-
 .helpAiSection {
   margin-bottom: 2.5rem;
 }
@@ -1361,29 +1382,7 @@
   font-weight: 600;
 }
 
-/* SECTION */
-
-.helpSection {
-  margin-bottom: 2.5rem;
-}
-
-.helpSectionHeader {
-  margin-bottom: 1.1rem;
-}
-
-.helpSectionHeader h2 {
-  color: #173b29;
-  font-size: 1.85rem;
-  margin-bottom: 0.35rem;
-}
-
-.helpSectionHeader p {
-  color: #617368;
-  margin: 0;
-}
-
 /* FAQ ACCORDION */
-
 .helpFaqAccordion {
   display: flex;
   flex-direction: column;
@@ -1447,10 +1446,6 @@
 
 /* CONTACT FORM */
 
-.helpContactSection {
-  margin-bottom: 2rem;
-}
-
 .helpFormCard {
   background: rgba(255, 255, 255, 0.94);
   border: 1px solid #dbe6df;
@@ -1474,6 +1469,7 @@
 .helpInputGroup {
   display: flex;
   flex-direction: column;
+  row-gap: 10px;
 }
 
 .helpInputGroup label {
@@ -1521,24 +1517,6 @@
   margin-top: 0.4rem;
 }
 
-.helpSubmitButton {
-  background: linear-gradient(135deg, #1e4f36, #2f7550);
-  color: white;
-  border: none;
-  border-radius: 14px;
-  padding: 0.95rem 1.4rem;
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 10px 22px rgba(34, 94, 64, 0.22);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.helpSubmitButton:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 14px 26px rgba(34, 94, 64, 0.28);
-}
-
 .helpSuccessMessage {
   margin-top: 0.75rem;
   color: #2c6a48;
@@ -1546,7 +1524,6 @@
 }
 
 /* RESPONSIVE */
-
 @media (max-width: 950px) {
   .helpFormRow {
     grid-template-columns: 1fr;
@@ -1554,14 +1531,6 @@
 }
 
 @media (max-width: 700px) {
-  .helpPage {
-    padding: 4.5rem 1rem 2rem 1rem;
-  }
-
-  .helpHero {
-    padding: 2rem 1rem;
-  }
-
   .helpFormCard,
   .helpAiCard {
     padding: 1.35rem;
@@ -1585,24 +1554,20 @@
   }
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* ------------ DASHBOARD ------------ */
-
-.dPage {
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 2.5rem;
-  font-family: "Inter", sans-serif;
-  background: #f5f7fa;
-  color: #111827;
-}
-
-.dContainer {
-  max-width: 1180px;
-  margin: 0 auto;
-  width: 100%;
-}
-
 .dHeroCard {
   position: relative;
   overflow: hidden;
@@ -1695,244 +1660,6 @@
   font-size: 0.96rem;
 }
 
-.dGrid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.85fr);
-  gap: 1.5rem;
-}
-
-.dSideColumn {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.dCardHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-  margin-bottom: 1.25rem;
-}
-
-.dSectionTitle {
-  color: #173b29;
-  font-size: 1.35rem;
-  font-weight: 800;
-  text-align: center;
-}
-
-.dSectionSubtitle {
-  color: #66776f;
-  line-height: 1.6;
-  font-size: 0.95rem;
-  text-align: center;
-}
-
-.dScoreBadge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.45rem 0.85rem;
-  border-radius: 999px;
-  font-size: 0.83rem;
-  font-weight: 800;
-  border: 1px solid transparent;
-  white-space: nowrap;
-}
-
-.dScoreNeutral {
-  background: #eef2f1;
-  color: #667670;
-  border-color: #dde5e1;
-}
-
-.dScorePoor {
-  background: #fff1f1;
-  color: #b42318;
-  border-color: #f6d0d0;
-}
-
-.dScoreFair {
-  background: #fff7e8;
-  color: #b26b00;
-  border-color: #f2dfb5;
-}
-
-.dScoreGood {
-  background: #eef7ff;
-  color: #1f5ea8;
-  border-color: #d5e5f7;
-}
-
-.dScoreVeryGood {
-  background: #edf7f1;
-  color: #246b49;
-  border-color: #d4e7dc;
-}
-
-.dScoreExcellent {
-  background: #efe9ff;
-  color: #6843c6;
-  border-color: #ddd2fb;
-}
-
-.dScoreLayout {
-  display: grid;
-  grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
-  gap: 1.5rem;
-  align-items: center;
-}
-
-.dMeterWrap {
-  position: relative;
-  width: 220px;
-  height: 220px;
-  margin: 0 auto;
-}
-
-.dMeter {
-  width: 100%;
-  height: 100%;
-  transform: rotate(-90deg);
-}
-
-.dMeterTrack {
-  fill: none;
-  stroke: #e8efeb;
-  stroke-width: 12;
-}
-
-.dMeterProgress {
-  fill: none;
-  stroke-width: 12;
-  stroke-linecap: round;
-  transition: stroke-dashoffset 0.5s ease;
-}
-
-.dMeterProgress.dScorePoor {
-  stroke: #d74c4c;
-}
-.dMeterProgress.dScoreFair {
-  stroke: #d99a2b;
-}
-.dMeterProgress.dScoreGood {
-  stroke: #4b8ed8;
-}
-.dMeterProgress.dScoreVeryGood {
-  stroke: #3b8f62;
-}
-.dMeterProgress.dScoreExcellent {
-  stroke: #7b5ce1;
-}
-.dMeterProgress.dScoreNeutral {
-  stroke: #a7b4ae;
-}
-
-.dMeterCenter {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.dMeterScore {
-  font-size: 2.3rem;
-  font-weight: 800;
-  color: #163827;
-  line-height: 1;
-}
-
-.dMeterLabel {
-  margin-top: 0.4rem;
-  color: #66776f;
-  font-size: 0.92rem;
-  font-weight: 600;
-}
-
-.dScoreDetails {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
-}
-
-.dStatCard {
-  background: linear-gradient(135deg, #f7fbf8, #eef5f1);
-  border: 1px solid #dde8e1;
-  border-radius: 18px;
-  padding: 1rem;
-}
-
-.dStatLabel {
-  display: block;
-  margin-bottom: 0.45rem;
-  color: #687a72;
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-.dStatValue {
-  color: #173b29;
-  font-size: 1.4rem;
-  font-weight: 800;
-}
-
-.dGoalProgressWrap {
-  grid-column: 1 / -1;
-  margin-top: 0.25rem;
-}
-
-.dGoalProgressTop {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.55rem;
-  color: #5d7068;
-  font-size: 0.92rem;
-  font-weight: 700;
-}
-
-.dGoalProgressBar {
-  width: 100%;
-  height: 12px;
-  background: #e8efeb;
-  border-radius: 999px;
-  overflow: hidden;
-}
-
-.dGoalProgressFill {
-  height: 100%;
-  border-radius: 999px;
-  background: linear-gradient(90deg, #86c5a2, #4f7c6b);
-  transition: width 0.4s ease;
-}
-
-.dEmptyState {
-  text-align: center;
-  padding: 2rem 1rem 1rem 1rem;
-}
-
-.dEmptyIcon {
-  font-size: 2.2rem;
-  margin-bottom: 0.75rem;
-}
-
-.dEmptyTitle {
-  margin: 0 0 0.6rem 0;
-  color: #173b29;
-  font-size: 1.25rem;
-  font-weight: 800;
-}
-
-.dEmptyText {
-  max-width: 520px;
-  margin: 0 auto 1rem auto;
-  color: #66776f;
-  line-height: 1.7;
-}
-
 .dPrimaryButton {
   border: none;
   background: linear-gradient(135deg, #1f4d3a, #2d6a4f);
@@ -1948,49 +1675,6 @@
 .dPrimaryButton:hover {
   transform: translateY(-1px);
   box-shadow: 0 14px 24px rgba(31, 77, 58, 0.24);
-}
-
-.dInsightText {
-  margin: 0;
-  color: #5d6f67;
-  line-height: 1.75;
-  font-size: 0.98rem;
-}
-
-.dStepsList {
-  display: flex;
-  flex-direction: column;
-  gap: 0.9rem;
-}
-
-.dStepItem {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.85rem;
-  padding: 0.95rem 1rem;
-  background: #f8fbf9;
-  border: 1px solid #e0ebe4;
-  border-radius: 16px;
-}
-
-.dStepNumber {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: #e6f4ec;
-  color: #20563a;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  font-size: 0.9rem;
-  flex-shrink: 0;
-}
-
-.dStepText {
-  color: #294838;
-  line-height: 1.6;
-  font-weight: 600;
 }
 
 .dLoadingCard,
@@ -2014,37 +1698,21 @@
   .dQuickActions {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
-  .dGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .dScoreLayout {
-    grid-template-columns: 1fr;
-  }
 }
 
 @media (max-width: 700px) {
   .dPage {
     padding: 4.5rem 1rem 2rem 1rem;
   }
-
   .dHeroCard {
     padding: 1.5rem;
   }
-
   .dQuickActions {
     grid-template-columns: 1fr;
   }
-
-  .dScoreDetails {
-    grid-template-columns: 1fr;
-  }
-
   .dTitle {
     font-size: 2rem;
   }
-
   .dHeroGlow {
     display: none;
   }
@@ -2079,41 +1747,6 @@
 
 
 /* ------------ Cards Pages ------------ */
-.CardPage {
- padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 2.5rem;
-  font-family: "Inter", sans-serif;
-  background: #f5f7fa;
-  color: #111827;
-}
-
-.CardAddButton {
-  background: linear-gradient(135deg, #10b981, #059669);
-  border: none;
-  padding: 10px 16px;
-  color: white;
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: 600;
-  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.25);
-  transition: all 0.2s ease;
-  margin-top: 25px;
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.CardAddButton:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 16px 28px rgba(31, 77, 58, 0.24);
-}
-
-.CardAddButton:active {
-  transform: translateY(0);
-}
-
 .CardForm {
   display: flex;
   flex-direction: column;
@@ -2211,40 +1844,6 @@
   justify-content: flex-end;
   gap: 0.8rem;
   margin-top: 0.5rem;
-}
-
-.CardCancelButton {
-  border: 1px solid #d8e5de;
-  background: #ffffff;
-  color: #294838;
-  border-radius: 14px;
-  padding: 0.9rem 1.2rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
-}
-
-.CardCancelButton:hover {
-  background: #f6faf7;
-  border-color: #c8dbd1;
-  transform: translateY(-1px);
-}
-
-.CardSaveButton {
-  border: none;
-  background: linear-gradient(135deg, #1f4d3a, #2d6a4f);
-  color: white;
-  border-radius: 14px;
-  padding: 0.9rem 1.2rem;
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 10px 22px rgba(31, 77, 58, 0.18);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.CardSaveButton:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 14px 24px rgba(31, 77, 58, 0.24);
 }
 
 .CardGrid {
@@ -2469,123 +2068,25 @@
   font-weight: 600;
 }
 
-/* ---------- BENEFITS & PROMOTIONS ---------- */
 
-.BenefitCard {
-  border: 1px solid #dbe8e0;
-  background: linear-gradient(135deg, #f8fcf9 0%, #f4f9f6 100%);
-  border-radius: 18px;
-  padding: 1.25rem;
-  margin-bottom: 1rem;
-}
 
-.BenefitHeader {
-  margin-bottom: 1rem;
-}
 
-.BenefitName {
-  margin: 0 0 0.5rem 0;
-  font-size: 1rem;
-  font-weight: 700;
-  color: #1f3b2d;
-}
 
-.BenefitDescription {
-  margin: 0.5rem 0 0.5rem 0;
-  font-size: 0.95rem;
-  color: #3d5247;
-  line-height: 1.6;
-  font-weight: 500;
-}
 
-.BenefitMeta {
-  margin: 0.5rem 0 0 0;
-  font-size: 0.88rem;
-  color: #687a72;
-  font-weight: 600;
-}
 
-.BenefitFields {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.85rem;
-}
 
-.DynamicFieldList {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
 
-.CheckboxList {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
 
-.PromotionItem {
-  border: 1px solid #dbe8e0;
-  background: linear-gradient(135deg, #f8fcf9 0%, #f4f9f6 100%);
-  border-radius: 18px;
-  padding: 1.25rem;
-  margin-bottom: 0.25rem;
-}
 
-.CheckboxRow {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  cursor: pointer;
-  font-weight: 500;
-  color: #294838;
-}
 
-.CheckboxRow input[type="checkbox"] {
-  margin-top: 0.35rem;
-  accent-color: #1f4d3a;
-  cursor: pointer;
-  width: 18px;
-  height: 18px;
-}
 
-.PromotionName {
-  display: block;
-  font-weight: 700;
-  color: #1f3b2d;
-  font-size: 1rem;
-  margin-bottom: 0.4rem;
-}
 
-.PromotionDescription {
-  margin: 0.35rem 0;
-  font-size: 0.95rem;
-  color: #3d5247;
-  line-height: 1.6;
-  font-weight: 500;
-}
 
-.PromotionCategory {
-  margin: 0.35rem 0 0 0;
-  font-size: 0.88rem;
-  color: #687a72;
-  font-weight: 600;
-}
 
-.PromotionSubFields {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #d5e0d9;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.85rem;
-}
 
-.HelperText {
-  margin: 0;
-  color: #687a72;
-  font-size: 0.92rem;
-  font-style: italic;
-}
+
+
+
 
 
 
@@ -2594,7 +2095,6 @@
 
 
 /* ---------- CARD DETAILS PAGE ---------- */
-
 .CardDetailsPage {
   min-height: 100vh;
   width: 100%;
@@ -2913,13 +2413,13 @@
 }
 
 .CardStepSection {
-  border: 1px solid #dbe8e0;
-  border-radius: 18px;
+  border: 1px solid #ccf6dc;
+  border-radius: 15px;
   background: #fcfefd;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 5;
 }
 
 .CardStepHeader {
@@ -2951,7 +2451,7 @@
 
 .CardStepTitle {
   margin: 0;
-  font-size: 1rem;
+  font-size: 15px;
   font-weight: 800;
   color: #173b29;
 }
@@ -3046,7 +2546,7 @@
 
 .CardStepSubtitle {
   margin: 0.2rem 0 0;
-  font-size: 0.9rem;
+  font-size: 12px;
   color: #5f7068;
   line-height: 1.4;
 }
@@ -3258,70 +2758,12 @@
 
 
 /* ====================== PROMOTIONS PAGE ====================== */
-
-.promotionsFilters {
-  display: flex;
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.promotionsSelect {
-  border: 1px solid #d1d5db;
-  border-radius: 0.75rem;
-  padding: 0.5rem 0.75rem;
-  font-size: 1rem;
-  outline: none;
-  transition: 0.2s;
-}
-
-.promotionsSelect:focus {
-  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3); 
-}
-
-/* ====================== Promotions List ====================== */
-
-.promotionsList {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-/* Promotion Cards */
-.promotionsCard {
-  flex: 1;
-  min-width: 300px;
-  max-width: 420px;
-  background: #ffffff;
-  border-radius: 1rem;
-  padding: 1.5rem;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.promotionsCardHeader {
-  font-weight: 600;
-  color: #065f46;
-}
-
-.promotionsCardTitle {
+.PromotionName {
+  display: block;
   font-weight: 700;
-  font-size: 1.25rem;
-  color: #10b981; 
-}
-
-.promotionsCardDescription {
-  color: #374151;
-  font-size: 0.9rem;
-}
-
-.promotionsCardRow {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.875rem;
-  color: #111827;
+  color: #1f3b2d;
+  font-size: 1rem;
+  margin-bottom: 0.4rem;
 }
 
 /* Progress Bar */
@@ -3369,68 +2811,6 @@
 .promotionsDaysRed { color: #dc2626; font-weight: 700; }
 .promotionsDaysDefault { color: #374151; }
 
-/* ====================== Action Buttons ====================== */
-.promotionsActions {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 1rem;
-}
-
-.promotionsRemoveButton {
-  background: #ef4444;
-  color: #ffffff;
-  padding: 0.5rem 1.25rem;
-  border-radius: 0.75rem;
-  font-weight: 600;
-  transition: background 0.2s;
-}
-
-.promotionsRemoveButton:hover { background: #b91c1c; }
-
-/* ====================== Enroll Popup ====================== */
-.promotionsPopupOverlay {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.35);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 50;
-}
-
-.promotionsPopup {
-  background: #ffffff;
-  border-radius: 1rem;
-  padding: 2rem;
-  max-width: 500px;
-  width: 90%;
-  box-shadow: 0 12px 35px rgba(0,0,0,0.2);
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.promotionsPopupTitle {
-  font-weight: 700;
-  font-size: 1.5rem;
-  color: #065f46;
-}
-
-.promotionsPopupSelect,
-.promotionsPopupInput {
-  border: 1px solid #d1d5db;
-  border-radius: 0.75rem;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.95rem;
-  outline: none;
-  transition: 0.2s;
-}
-
-.promotionsPopupSelect:focus,
-.promotionsPopupInput:focus {
-  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
-}
 
 .promotionsPopupChecklist {
   display: flex;
@@ -3449,40 +2829,6 @@
   accent-color: #10b981;
 }
 
-.promotionsPopupActions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-}
-
-.promotionsPopupCancel {
-  border: 1px solid #d1d5db;
-  border-radius: 0.75rem;
-  padding: 0.5rem 1rem;
-  background: #ffffff;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.promotionsPopupCancel:hover {
-  background: #f3f4f6;
-}
-
-.promotionsPopupAdd {
-  background: #10b981;
-  color: #ffffff;
-  border-radius: 0.75rem;
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  font-weight: 600;
-  transition: background 0.2s;
-}
-
-.promotionsPopupAdd:hover {
-  background: #059669;
-}
-
-/* ------------------ Promotions Card Three-dot Menu ------------------ */
 .promotionsCardMenuIcon {
   position: absolute;
   top: 10px;
@@ -3491,56 +2837,14 @@
   font-size: 1.25rem;
 }
 
-.promotionsCardMenu {
-  position: absolute;
-  top: 30px;
-  right: 10px;
-  background: #ffffff;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  z-index: 100;
-  width: 120px;
-  display: flex;
-  flex-direction: column;
-}
-
-.promotionsCardMenu div {
-  padding: 0.5rem;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.promotionsCardMenu div:hover {
-  background: #f3f4f6;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* --------------------BENEFITS PAGE -------------------- */
+.BenefitName {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1f3b2d;
+}
 
-/* -------------------- BENEFIT CARDS -------------------- */
 .BenefitCardsContainer {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -3558,7 +2862,6 @@
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Top Section */
 .BenefitCardTop {
   display: flex;
   justify-content: space-between;
@@ -3581,7 +2884,6 @@
   cursor: pointer;
 }
 
-/* Progress Bar */
 .ProgressBarContainer {
   background: #e5e7eb;
   border-radius: 12px;
@@ -3601,7 +2903,6 @@
   transition: width 0.3s ease;
 }
 
-/* Bottom Section */
 .BenefitCardBottom {
   display: flex;
   justify-content: space-between;
@@ -3609,76 +2910,18 @@
   font-size: 0.9rem;
 }
 
-/* Wrapper for calendar and label */
 .BenefitStartDateWrapper {
   display: flex;
   flex-direction: column;
   margin-top: 0.5rem;
 }
 
-/* Small heading above the calendar */
 .BenefitStartDateLabel {
   font-size: 0.85rem;
   font-weight: 600;
   color: #fff;
   margin-bottom: 10px;
 }
-
-.BenefitTracked h2 {
-  font-size: 1.75rem;        
-  font-weight: 600;         
-  color: #059669;           
-  margin-bottom: 1rem;      
-}
-
-/* Read-only message for edit mode */
-.ReadOnlyMessage {
-  padding: 1rem;
-  background-color: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  border-radius: 8px;
-  text-align: center;
-}
-
-.ReadOnlyMessage p {
-  color: #166534;
-  font-weight: 500;
-  margin: 0;
-}
-
-.PageHero {
-  background: linear-gradient(135deg, #1f4d3a, #2f6a50);
-  color: white;
-  border-radius: 28px;
-  padding: 1.75rem;
-  box-shadow: 0 20px 42px rgba(0, 0, 0, 0.1);
-  position: relative;
-  overflow: hidden;
-  margin-bottom: 1.5rem;
-}
-
-.PageTitle {
-  font-size: clamp(2rem, 4vw, 2.6rem);
-  font-weight: 800;
-  color: #ffffff;
-  margin: 0 0 0.35rem 0;
-  letter-spacing: -0.02em;
-  text-align: left;
-}
-
-.PageSubtitle {
-  color: rgba(255, 255, 255, 0.88);
-  font-weight: 600;
-  margin: 0;
-  line-height: 1.5;
-  text-align: left;
-  font-size: 0.95rem;
-}
-
-
-
-
-
 
 /* REWARDS PAGE */
 .R_page {
@@ -3689,40 +2932,6 @@
   font-family: Inter, system-ui, sans-serif;
 }
 
-/* HEADER */
-.R_header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.R_title {
-  font-size: 30px;
-  font-weight: 700;
-  letter-spacing: -0.5px;
-}
-
-/* SECTIONS */
-.R_section {
-  margin-top: 2.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.R_sectionTitle {
-  font-size: 1.125rem;
-  font-weight: 600;
-  margin-bottom: 0.75rem;
-  color: #111827;
-  letter-spacing: 0.2px;
-  line-height: 1.3;
-}
-
-
-
-/* EMPTY STATE */
 .R_empty {
   padding: 16px;
   background: white;
@@ -3764,7 +2973,64 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* ----- Global Styling -------------------- */
+/* Page Headers */
+.PageHero {
+  background: linear-gradient(135deg, #1f4d3a, #2f6a50);
+  color: white;
+  border-radius: 28px;
+  padding: 1.75rem;
+  box-shadow: 0 20px 42px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.PageTitle {
+  font-size: clamp(2rem, 4vw, 2.6rem);
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 0.35rem 0;
+  letter-spacing: -0.02em;
+  text-align: left;
+}
+
+.PageSubtitle {
+  color: rgba(255, 255, 255, 0.88);
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.5;
+  text-align: left;
+  font-size: 0.95rem;
+}
+
 /* Tables */
 .table {
   width: 100%;
@@ -4096,4 +3362,71 @@
   width: 3px;
   border-radius: 2px;
   background: #6366f1; /* accent color */
+}
+
+/*Summary Cards*/ 
+.Card {
+  flex: 0 1 280px;
+  background: #ffffff;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.CardHeader {
+  font-weight: 600;
+  color: #065f46;
+}
+
+.CardTitle {
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: #10b981; 
+}
+
+.CardDescription {
+  color: #374151;
+  font-size: 0.9rem;
+}
+
+.CardList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: flex-start;
+}
+
+.InfoRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  color: #111827;
+}
+
+.ThreeDots {
+  position: absolute;
+  top: 30px;
+  right: 10px;
+  background: #ffffff;
+  border: 1px solid #c4fcbf;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  z-index: 100;
+  width: 120px;
+  display: flex;
+  flex-direction: column;
+}
+
+.ThreeDots div {
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.ThreeDots div:hover {
+  background: #f3f4f6;
 }
