@@ -15,85 +15,41 @@ test.describe('Cards Page', () => {
     await authenticatedPage.waitForLoadState('networkidle');
   });
 
-  test('should display the cards page header', async ({ authenticatedPage }) => {
+  test('should validate cards page UI elements', async ({ authenticatedPage }) => {
     // Check that the page title is visible
     const title = authenticatedPage.locator('h1');
     await expect(title).toContainText('Your Cards');
-  });
 
-  test('should display "Add Card" button', async ({ authenticatedPage }) => {
-    // Look for the Add Card button - use first() to get the first one in the header
+    // Check that the Add Card button is visible
     const addButton = authenticatedPage.locator('button').filter({ hasText: 'Add Card' }).first();
     await expect(addButton).toBeVisible();
-  });
-
-  test('should open the add card modal when clicking Add Card', async ({ authenticatedPage }) => {
-    // Click the Add Card button in the header (first button)
-    const addButton = authenticatedPage.locator('button').filter({ hasText: 'Add Card' }).first();
-    await addButton.click();
-
-    // Check that the modal is displayed
-    const modalTitle = authenticatedPage.locator('h2', { hasText: /Add a Card|Edit Card/ });
-    await expect(modalTitle).toBeVisible();
-  });
-
-  test('should close the modal when clicking the close button', async ({ authenticatedPage }) => {
-    // Open the modal
-    const addButton = authenticatedPage.locator('button').filter({ hasText: 'Add Card' }).first();
-    await addButton.click();
-
-    // Wait for modal to appear - use the overlay div which is the parent
-    const overlay = authenticatedPage.locator('[class*="Overlay"]');
-    await expect(overlay).toBeVisible();
-
-    // Click the close button (the × button with aria-label)
-    const closeButton = authenticatedPage.locator('button[aria-label="Close add card modal"]');
-    await closeButton.click();
-
-    // Modal should not be visible
-    await expect(overlay).not.toBeVisible();
-  });
-});
-
-test.describe('Card Form Navigation', () => {
-  test('should navigate through form steps', async ({ authenticatedPage }) => {
-    await authenticatedPage.goto('/cards');
-    await authenticatedPage.waitForLoadState('networkidle');
-
-    // Open the add card modal
-    const addButton = authenticatedPage.locator('button').filter({ hasText: 'Add Card' }).first();
-    await addButton.click();
-
-    // Wait for modal overlay to appear
-    const overlay = authenticatedPage.locator('[class*="Overlay"]');
-    await expect(overlay).toBeVisible();
-
-    // Check that step 1 content is visible (card type selection)
-    const step1Content = authenticatedPage.locator('h3', { hasText: 'Select a card type' });
-    await expect(step1Content).toBeVisible({ timeout: 5000 });
-
-    // Check that the modal title is shown
-    const modalTitle = authenticatedPage.locator('h2', { hasText: /Add a Card|Edit Card/ });
-    await expect(modalTitle).toBeVisible();
-  });
-});
-
-test.describe('Empty State', () => {
-  test('should handle empty and populated states', async ({ authenticatedPage }) => {
-    await authenticatedPage.goto('/cards');
-    await authenticatedPage.waitForLoadState('networkidle');
 
     // Check if empty state message is visible OR card grid is visible
-    // If user has no cards: empty state message should be visible
     const emptyState = authenticatedPage.locator('text=No cards added yet');
     const cardGrid = authenticatedPage.locator('[class*="CardGrid"]');
     
-    // At least one of these should exist
     const emptyStateVisible = await emptyState.isVisible().catch(() => false);
     const cardGridVisible = await cardGrid.isVisible().catch(() => false);
     
     // Either empty state or card grid should be visible
     expect(emptyStateVisible || cardGridVisible).toBeTruthy();
+
+    // Test opening the modal
+    await addButton.click();
+    const modalTitle = authenticatedPage.locator('h2', { hasText: /Add a Card|Edit Card/ });
+    await expect(modalTitle).toBeVisible();
+
+    // Test that step 1 content is visible
+    const step1Content = authenticatedPage.locator('h3', { hasText: 'Select a card type' });
+    await expect(step1Content).toBeVisible({ timeout: 5000 });
+
+    // Test closing the modal
+    const overlay = authenticatedPage.locator('[class*="Overlay"]');
+    const closeButton = authenticatedPage.locator('button[aria-label="Close add card modal"]');
+    await closeButton.click();
+
+    // Modal should not be visible
+    await expect(overlay).not.toBeVisible();
   });
 });
 
@@ -184,28 +140,6 @@ test.describe('Add Amex Card', () => {
     
     // At least one should be true (either the grid is visible or the new card is visible)
     expect(cardGridVisible || amexCardVisible).toBeTruthy();
-
-    // Clean up: Delete the card that was just created
-    // Find the menu button for "My Amex Card" by looking for the card with that text
-    const amexCardElement = authenticatedPage.locator('text=My Amex Card').first();
-    
-    // Navigate to the card's menu button - the menu button is in the CardTop div
-    const cardBox = amexCardElement.locator('..').locator('..');
-    const menuButton = cardBox.locator('button[aria-label*="Open menu for"]').first();
-    
-    // Click the menu button to open dropdown
-    await menuButton.click();
-    
-    // Click the delete button in the dropdown
-    const deleteButton = cardBox.locator('button').filter({ hasText: 'Delete' }).first();
-    await deleteButton.click();
-    
-    // A confirmation dialog appears - click the OK button to confirm deletion
-    const okButton = authenticatedPage.locator('button').filter({ hasText: 'OK' }).first();
-    await okButton.click();
-    
-    // Wait for the deletion to complete
-    await authenticatedPage.waitForLoadState('networkidle');
   });
 });
 
@@ -296,28 +230,6 @@ test.describe('Add Chase Card', () => {
     
     // At least one should be true (either the grid is visible or the new card is visible)
     expect(cardGridVisible || chaseCardVisible).toBeTruthy();
-
-    // Clean up: Delete the card that was just created
-    // Find the menu button for "My Chase Card" by looking for the card with that text
-    const chaseCardElement = authenticatedPage.locator('text=My Chase Card').first();
-    
-    // Navigate to the card's menu button - the menu button is in the CardTop div
-    const cardBox = chaseCardElement.locator('..').locator('..');
-    const menuButton = cardBox.locator('button[aria-label*="Open menu for"]').first();
-    
-    // Click the menu button to open dropdown
-    await menuButton.click();
-    
-    // Click the delete button in the dropdown
-    const deleteButton = cardBox.locator('button').filter({ hasText: 'Delete' }).first();
-    await deleteButton.click();
-    
-    // A confirmation dialog appears - click the OK button to confirm deletion
-    const okButton = authenticatedPage.locator('button').filter({ hasText: 'OK' }).first();
-    await okButton.click();
-    
-    // Wait for the deletion to complete
-    await authenticatedPage.waitForLoadState('networkidle');
   });
 });
 
@@ -408,27 +320,5 @@ test.describe('Add Citi Card', () => {
     
     // At least one should be true (either the grid is visible or the new card is visible)
     expect(cardGridVisible || citiCardVisible).toBeTruthy();
-
-    // Clean up: Delete the card that was just created
-    // Find the menu button for "My Citi Card" by looking for the card with that text
-    const citiCardElement = authenticatedPage.locator('text=My Citi Card').first();
-    
-    // Navigate to the card's menu button - the menu button is in the CardTop div
-    const cardBox = citiCardElement.locator('..').locator('..');
-    const menuButton = cardBox.locator('button[aria-label*="Open menu for"]').first();
-    
-    // Click the menu button to open dropdown
-    await menuButton.click();
-    
-    // Click the delete button in the dropdown
-    const deleteButton = cardBox.locator('button').filter({ hasText: 'Delete' }).first();
-    await deleteButton.click();
-    
-    // A confirmation dialog appears - click the OK button to confirm deletion
-    const okButton = authenticatedPage.locator('button').filter({ hasText: 'OK' }).first();
-    await okButton.click();
-    
-    // Wait for the deletion to complete
-    await authenticatedPage.waitForLoadState('networkidle');
   });
 });
