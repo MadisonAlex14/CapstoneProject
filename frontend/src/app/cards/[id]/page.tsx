@@ -346,8 +346,8 @@ export default function CardDashboard({
 
   if (!card) {
     return (
-      <main>
-        <div className={styles.PageContainer}>
+      <main className={styles.CardDetailsPage}>
+        <div className={styles.CardDetailsContainer}>
           <section className={styles.CardDetailsSection}>
             <h2>Loading card...</h2>
             <p>Loading card details...</p>
@@ -358,8 +358,8 @@ export default function CardDashboard({
   }
 
   return (
-    <main>
-      <div className={styles.PageContainer}>
+    <main className={styles.CardDetailsPage}>
+      <div className={styles.CardDetailsContainer}>
         <button
           className={styles.CardBackButton}
           type="button"
@@ -375,7 +375,7 @@ export default function CardDashboard({
           </p>
         </section>
 
-        <section className={styles.CardDeatilsSection}>
+        <section className={styles.CardDetailsSection}>
           <div className={styles.CardDetailsMetaGrid}>
             <div className={styles.CardDetailsStat}>
               <span className={styles.CardDetailsStatLabel}>Annual fee</span>
@@ -573,7 +573,7 @@ export default function CardDashboard({
                     <>
                       <div className={styles.CardDetailsActionRow}>
                         <button
-                          className={styles.SecondaryButton}
+                          className={styles.CardDetailsButtonSecondary}
                           type="button"
                           onClick={() => router.push(`/benefits?cardId=${cardId}`)}
                         >
@@ -626,7 +626,7 @@ export default function CardDashboard({
 
                                 <button
                                   type="button"
-                                  className={styles.SecondaryButton}
+                                  className={styles.CardDetailsButtonSecondary}
                                   onClick={() => {
                                     setSelectedBenefitId(benefit.credit_card_type_id);
                                     setShowBenefitModal(true);
@@ -670,11 +670,11 @@ export default function CardDashboard({
                     <>
                       <div className={styles.CardDetailsActionRow}>
                         <button
-                          className={styles.ModalButton}
+                          className={styles.CardDetailsButtonPrimary}
                           type="button"
                           onClick={() => setShowEnrollPromoModal(true)}
                         >
-                          + Enroll in promotion
+                          Enroll in promotion
                         </button>
                       </div>
 
@@ -840,17 +840,17 @@ export default function CardDashboard({
 
             <section className={styles.CardDetailsSection}>
               <h2>Quick Actions</h2>
-              <div className={styles.buttonRow}>
+              <div className={styles.CardDetailsActionRow}>
                 <button
                   type="button"
-                  className={styles.ModalButton}
+                  className={styles.CardDetailsButtonPrimary}
                   onClick={() => router.push(`/transactions/new?cardId=${cardId}`)}
                 >
                   Add Transaction
                 </button>
                 <button
                   type="button"
-                  className={styles.ModalButton}
+                  className={styles.CardDetailsButtonSecondary}
                   onClick={() => setShowEnrollPromoModal(true)}
                 >
                   Add Promotion

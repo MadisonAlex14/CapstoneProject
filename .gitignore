@@ -12,3 +12,10 @@ test-results/
 playwright-report/
 blob-report/
 playwright/.cache/
+
+# LLM service - generated/temporary files
+llm/venv/
+llm/knowledge_base.json
+llm/__pycache__/
+llm/*.pyc
+llm/.pytest_cache/
