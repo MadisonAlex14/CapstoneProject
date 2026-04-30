@@ -1113,16 +1113,26 @@
 
 .cardMenuButton {
   border: none;
-  background: rgba(255, 255, 255, 0.8);
-  color: white;
+  background: rgb(255, 255, 255);
   width: 34px;
   height: 34px;
   border-radius: 50%;
   font-size: 1.1rem;
-  cursor: pointer;
-
-
 }
+
+.cardMenuDropdown {
+  position: absolute;
+  top: 42px;
+  right: 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  padding: 6px;
+  min-width: 140px;
+  z-index: 9999;
+}
+
+
 
 .cardMenuItem {
   width: 100%;
@@ -1906,13 +1916,13 @@
 
 .CardBox {
   position: relative;
-  color: rgb(102, 176, 97);
-  border-radius: 18px;
-  padding: 1.4rem;
+  color: rgb(255, 255, 255);
+  border-radius: 10px;
+  padding: .5rem;
   overflow: hidden;
   cursor: pointer;
   aspect-ratio: 1.6 / 1;
-  min-height: 190px;
+  min-height: 220px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -1937,13 +1947,8 @@
   pointer-events: none;
 }
 
-
-.CardBox:hover {
-  transform: translateY(-6px) scale(1.02);
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25);
-}
-
 .CardTop {
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -2023,24 +2028,27 @@
 .CardMenuWrapper {
   position: relative;
   top: 1rem;
-  right: 1rem;
+  right: 5px;
 }
 
 .CardMenuButton {
+  position: absolute;
+  left: 300px;
+  
   border: none;
-  background: rgba(255, 255, 255, 0.14);
-  color: rgb(28, 58, 13);
-  width: 34px;
-  height: 34px;
+  background: rgb(255, 246, 246);
+  color: rgba(91, 141, 67, 0.747);
+  width: 40px;
+  height: 40px;
   border-radius: 10px;
   cursor: pointer;
-  font-size: 1.2rem;
+  font-size: 20px;
   line-height: 1;
   transition: background 0.2s ease, transform 0.2s ease;
 }
 
 .CardMenuButton:hover {
-  background: rgba(255, 255, 255, 0.22);
+  background: rgb(64, 102, 77);
   transform: scale(1.04);
 }
 
@@ -3661,4 +3669,65 @@
   color: #173b29;
   transform: translateX(-2px);
   text-decoration: none;
+}
+
+.MoveWrapper {
+  position: absolute;
+  display: inline-block;
+  top: 20px;
+  right: 25px;
+}
+
+.MoveButtons {
+  width: 40px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  color: #065f46;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  outline: none;
+}
+
+.MoveButtons:hover {
+  background: rgba(16, 185, 129, 0.10);
+  color: #059669;
+  transform: scale(1.05);
+}
+
+.MoveDropdown {
+  position: absolute;
+  top: 38px;
+  right: 0;
+  min-width: 170px;
+  background: #ffffff;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.10);
+  padding: 6px;
+  z-index: 999;
+  animation: fadeIn 0.12s ease-out;
+}
+
+.MoveMenu {
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.MoveMenu:hover {
+  background: rgba(16, 185, 129, 0.08);
+  color: #065f46;
+  cursor: pointer;
 }

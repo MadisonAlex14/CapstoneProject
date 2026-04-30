@@ -429,8 +429,8 @@ export default function CardDashboard({
                   onDragOver={handleDragOver}
                   onDrop={(e) => handleDrop(e, moduleId)}
                 >
-                  <div className={styles.CardTop}>
-                    <h2>
+                  <div>
+                    <h2 className={styles.SummaryTitle}>
                       {isRewards
                         ? "Rewards Breakdown"
                         : isBenefits
@@ -440,37 +440,37 @@ export default function CardDashboard({
                         : "Recent Transactions"}
                     </h2>
 
-                    <div className={styles.CardMoveMenuWrapper}>
+                    <div className={styles.MoveWrapper}>
                       <button
                         type="button"
-                        className={styles.CardMoveMenuButton}
+                        className={styles.MoveButton}
                         title="Reorder section"
                         onClick={() =>
                           setOpenMoveMenuId((prev) => (prev === moduleId ? null : moduleId))
                         }
                       >
-                        ☰
+                        ⋮
                       </button>
 
                       {openMoveMenuId === moduleId && (
-                        <div className={styles.CardMoveMenuDropdown}>
+                        <div className={styles.MoveDropdown}>
                           <button
                             type="button"
-                            className={styles.CardMoveMenuItem}
+                            className={styles.MoveMenu}
                             onClick={() => moveModuleToTop(moduleId)}
                           >
                             Move to Top
                           </button>
                           <button
                             type="button"
-                            className={styles.CardMoveMenuItem}
+                            className={styles.MoveMenu}
                             onClick={() => enableMoveMode(moduleId)}
                           >
                             Move
                           </button>
                           <button
                             type="button"
-                            className={styles.CardMoveMenuItem}
+                            className={styles.MoveMenu}
                             onClick={() => moveModuleToBottom(moduleId)}
                           >
                             Move to Bottom
@@ -576,6 +576,7 @@ export default function CardDashboard({
 
                   {isBenefits && (
                     <>
+                     
                       <div className={styles.buttonRow}>
                         <button
                           className={styles.SecondaryButton}
@@ -836,7 +837,7 @@ export default function CardDashboard({
 
           <aside className={styles.CardDetailsSidebar}>
             <section className={styles.Summary}>
-              <h2>Card Snapshot</h2>
+              <h2 className={styles.SummaryTitle}>Card Snapshot</h2>
               <p>
                 Track how this card performs over time, which perks you are actually using,
                 and whether the annual fee is worth it.
@@ -844,7 +845,7 @@ export default function CardDashboard({
             </section>
 
             <section className={styles.Summary}>
-              <h2>Quick Actions</h2>
+              <h2 className={styles.SummaryTitle}>Quick Actions</h2>
               <div className={styles.buttonRow}>
                 <button
                   type="button"
@@ -869,8 +870,8 @@ export default function CardDashboard({
       {showBenefitModal && selectedBenefit && (
         <div className={styles.ModalOverlay}>
           <div className={styles.Modal}>
-            <h2 className={styles.ModalTitle}>Log benefit use</h2>
-            <p style={{ color: "#476154", marginTop: 0 }}>
+            <h2 className={styles.ModalTitle}>Log Benefit Use For:</h2>
+            <p className={styles.SummaryValue}>
               {selectedBenefit.name} ({selectedBenefit.merchant ?? "Any merchant"})
             </p>
 
@@ -884,7 +885,7 @@ export default function CardDashboard({
                   placeholder="Amount used"
                   value={benefitUseAmount}
                   onChange={(e) => setBenefitUseAmount(e.target.value)}
-                  className={styles.CardInput}
+                  className={styles.ModalInput}
                 />
               </div>
 
@@ -894,19 +895,19 @@ export default function CardDashboard({
                   placeholder="Merchant / notes (optional)"
                   value={benefitNote}
                   onChange={(e) => setBenefitNote(e.target.value)}
-                  className={styles.CardInput}
+                  className={styles.ModalInput}
                 />
               </div>
 
-              <div className={styles.CardActions}>
+              <div className={styles.buttonRow}>
                 <button
                   type="button"
-                  className={styles.CardCancelButton}
+                  className={styles.cancelBtn}
                   onClick={() => setShowBenefitModal(false)}
                 >
                   Cancel
                 </button>
-                <button type="submit" className={styles.CardSaveButton}>
+                <button type="submit" className={styles.saveBtn}>
                   Save
                 </button>
               </div>
@@ -927,7 +928,7 @@ export default function CardDashboard({
                   placeholder="Promotion name"
                   value={newPromoTitle}
                   onChange={(e) => setNewPromoTitle(e.target.value)}
-                  className={styles.CardInput}
+                  className={styles.ModalInput}
                 />
               </div>
 
@@ -938,7 +939,7 @@ export default function CardDashboard({
                     type="date"
                     value={newPromoStart}
                     onChange={(e) => setNewPromoStart(e.target.value)}
-                    className={styles.CardInput}
+                    className={styles.ModalInput}
                   />
                 </div>
 

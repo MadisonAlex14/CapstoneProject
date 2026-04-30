@@ -664,15 +664,13 @@ export default function CardsPage() {
             Manage your credit cards, track usage, and explore available rewards and benefits.
           </p>
        </div>
-      <div className={styles.CardHeader}>
-        
 
-        <button className={styles.ModalButton}
+
+       <button className={styles.ModalButton}
           onClick={handleOpenAddCard}
           >
           + Add Card
         </button>
-      </div>
 
       {cards.length === 0 ? (
         <div className={styles.CardEmptyState}>
@@ -731,11 +729,10 @@ export default function CardsPage() {
                   }}
                 />
 
-                <div className={styles.CardTop} style={{ position: 'relative', zIndex: 2 }}>
 
 
+                <div className={styles.CardMenuWrapper}>
                   <div
-                    className={styles.CardMenuWrapper}
                     onClick={(e) => e.stopPropagation()}
                   >
                     <button
@@ -1209,10 +1206,10 @@ export default function CardsPage() {
 
               {formError && <p className={styles.CardError}>{formError}</p>}
 
-              <div className={styles.buttonRow}>
+              <div className={styles.CardActions}>
                 <button
                   type="button"
-                  className={styles.cancelBtn}
+                  className={styles.CardCancelButton}
                   onClick={handleCloseAddCard}
                 >
                   Cancel
@@ -1220,7 +1217,7 @@ export default function CardsPage() {
 
                 <button
                   type="submit"
-                  className={styles.saveBtn}
+                  className={styles.CardSaveButton}
                   disabled={!step1Complete || !step2Complete}
                 >
                   {editingCardId ? "Update Card" : "Save Card"}
