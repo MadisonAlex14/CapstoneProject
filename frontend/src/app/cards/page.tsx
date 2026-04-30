@@ -1,1235 +1,1005 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getUserCards } from "../../lib/functions/getUserCards";
-import { getCardTypes } from "../../lib/functions/getCardTypes";
-import { upsertUserCard } from "../../lib/functions/upsertUserCard";
-import { deleteUserCard } from "../../lib/functions/deleteUserCard";
-import styles from "../../styles/auth.module.css";
-
-type CardBenefit = {
-  credit_card_type_id: string;
-  label: string;
-};
-
-type CardPromotion = {
-  credit_card_type_id: string;
-  label: string;
-};
-
-type ApiBenefit = {
-  benefit_id: string;
-  name: string;
-  description: string;
-  value_unit: string;
-  value_amount: number;
-  reset_frequency: string;
-};
-
-type ApiPromotion = {
-  promotion_id: string;
-  name: string;
-  description: string;
-  promotion_category: string;
-};
-
-type CardType = {
-  credit_card_type_id: string;
-  name: string;
-  issuer_id: string;
-  network_id: string;
-  annual_fee: number;
-  description?: string;
-  image_url?: string | null;
-  reward_currency_type: string;
-  reward_unit_name: string;
-  reward_unit_symbol: string;
-  cash_value_per_unit: number;
-  benefit?: ApiBenefit[];
-  promotion?: ApiPromotion[];
-};
-
-type BenefitUsageState = Record<string, string>;
-
-type PromotionState = Record<
-  string,
-  {
-    active: boolean;
-    start_date: string;
-    initial_spend: string;
-  }
->;
+import styles from "../../../styles/auth.module.css";
 
 type CreditCard = {
-  credit_card_type_id: string;
+  credit_card_type_id: number;
   cardName: string;
   issuer_id: string;
   last4: string;
   rewardsType: string;
-  cardNickname: string;
-  network_id: string;
-  openDate: string;
-  creditLimit: number | null;
-  annual_fee: number | null;
-  notes: string;
-  createdAt: string;
-  image_url?: string | null;
-
-  initialCardState: {
-    currentRewardsBalance: number | null;
-    benefitsUsed: Record<string, number | null>;
-    benefitCycleDates: Record<string, string>;
-    activePromotions: Record<
-      string,
-      {
-        active: boolean;
-        start_date: string;
-        initial_spend: string;
-      }
-    >;
-    statementClosingDate: number | null;
-  };
 };
 
-const STORAGE_KEY = "userCards";
+type Transaction = {
+  credit_card_type_id: string;
+  date: string;
+  description: string;
+  amount: number;
+  category: string;
+  rewardValue: number;
+};
 
-function normalizeStoredCards(rawCards: any[], cardTypes: CardType[] = []): CreditCard[] {
-  return rawCards.map((card, index) => {
-    const matchedType =
-      cardTypes.find(
-        (type: CardType) =>
-          type.credit_card_type_id === card.cardTypeId ||
-          type.name === card.cardName ||
-          type.name === card.credit_card_type?.name
-      ) || null;
+type Promotion = {
+  credit_card_type_id: string;
+  title: string;
+  details?: string;
+  created_at: string;
+  expires: string;
+  threshold: number;
+  reward: number;
+  spentToDate: number;
+};
 
-    const normalizedId =
-      card.credit_card_id || card.credit_card_type_id || card.id || `${Date.now()}-${index}`;
-    
-    const nickname = card.nickname || card.cardNickname || matchedType?.name || "";
-    const cardNameFromType = card.credit_card_type?.name || matchedType?.name || "";
-    const cardName = card.cardName || nickname || cardNameFromType;
+type Benefit = {
+  credit_card_type_id: string;
+  name: string;
+  merchant?: string;
+  allotted: number;
+  used: number;
+  resetDate: string;
+};
 
-    const issuer =
-      card.issuer_id || card.issuer || matchedType?.issuer_id || card.credit_card_type?.issuer_id || "";
-
-    // Extract benefits from user_benefit array
-    const benefitsUsedMap: Record<string, number | null> = {};
-    const benefitCycleDatesMap: Record<string, string> = {};
-    
-    if (Array.isArray(card.user_benefit)) {
-      card.user_benefit.forEach((ub: any) => {
-        if (ub.benefit_id) {
-          benefitsUsedMap[ub.benefit_id] = ub.initial_amount_used ?? null;
-          benefitCycleDatesMap[ub.benefit_id] = ub.cycle_start_date ?? "";
-        }
-      });
-    }
-
-    // Extract promotions from user_promotion array
-    const activePromotionsMap: Record<string, { active: boolean; start_date: string; initial_spend: string }> = {};
-    
-    if (Array.isArray(card.user_promotion)) {
-      card.user_promotion.forEach((up: any) => {
-        if (up.promotion_id) {
-          activePromotionsMap[up.promotion_id] = {
-            active: true,
-            start_date: up.start_date ?? "",
-            initial_spend: up.initial_spend?.toString() ?? "0",
-          };
-        }
-      });
-    }
-
-    return {
-      credit_card_type_id: String(normalizedId),
-      cardName: cardName,
-      issuer_id: issuer,
-      last4: card.last4 ?? card.last_four ?? "",
-      rewardsType: card.rewardsType ?? matchedType?.reward_unit_name ?? "Points",
-      cardNickname: card.cardNickname ?? card.nickname ?? matchedType?.name ?? "",
-      network_id: card.network_id ?? card.network ?? matchedType?.network_id ?? "",
-      image_url: card.image_url ?? card.credit_card_type?.image_url ?? matchedType?.image_url ?? null,
-
-      openDate: card.openDate ?? card.open_date ?? "",
-      creditLimit:
-        card.creditLimit !== null &&
-        card.creditLimit !== undefined &&
-        card.creditLimit !== ""
-          ? Number(card.creditLimit)
-          : null,
-      annual_fee:
-        card.annual_fee !== null &&
-        card.annual_fee !== undefined &&
-        card.annual_fee !== ""
-          ? Number(card.annual_fee)
-          : matchedType?.annual_fee ?? null,
-      notes: card.notes ?? "",
-      createdAt: card.createdAt ?? card.tracking_start_date ?? new Date().toISOString(),
-
-      initialCardState: {
-        currentRewardsBalance:
-          (card.initialCardState?.currentRewardsBalance ?? card.initial_rewards_balance) !== null &&
-          (card.initialCardState?.currentRewardsBalance ?? card.initial_rewards_balance) !== undefined &&
-          (card.initialCardState?.currentRewardsBalance ?? card.initial_rewards_balance) !== ""
-            ? Number(card.initialCardState?.currentRewardsBalance ?? card.initial_rewards_balance)
-            : null,
-        benefitsUsed: Object.keys(benefitsUsedMap).length > 0 ? benefitsUsedMap : (card.initialCardState?.benefitsUsed ?? {}),
-        benefitCycleDates: benefitCycleDatesMap,
-        activePromotions: Object.keys(activePromotionsMap).length > 0 ? activePromotionsMap : (card.initialCardState?.activePromotions ?? {}),
-        statementClosingDate:
-          (card.initialCardState?.statementClosingDate ?? card.statement_close_day) !== null &&
-          (card.initialCardState?.statementClosingDate ?? card.statement_close_day) !== undefined &&
-          (card.initialCardState?.statementClosingDate ?? card.statement_close_day) !== ""
-            ? Number(card.initialCardState?.statementClosingDate ?? card.statement_close_day)
-            : null,
-      },
-    };
-  });
-}
-
-export default function CardsPage() {
-  const cardsFetchGuard = useRef(false);
+export default function CardDashboard({
+  params,
+}: {
+  params: { cardId: string };
+}) {
   const router = useRouter();
+  const { cardId } = params;
 
-  const [cards, setCards] = useState<CreditCard[]>([]);
-  const [hasLoadedCards, setHasLoadedCards] = useState(false);
-  const [cardTypes, setCardTypes] = useState<CardType[]>([]);
-  const [loadingCardTypes, setLoadingCardTypes] = useState(false);
+  const [card, setCard] = useState<CreditCard | null>(null);
 
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
-  const [editingCardId, setEditingCardId] = useState<string | null>(null);
-  const [formError, setFormError] = useState("");
-
-  // Step 1
-  const [selectedCardTypeId, setSelectedCardTypeId] = useState("");
-
-  // Step 2
-  const [cardNickname, setCardNickname] = useState("");
-  const [last4, setLast4] = useState("");
-  const [openDate, setOpenDate] = useState("");
-  const [expirationDate, setExpirationDate] = useState("");
-
-  // Step 3
-  const [currentRewardsBalance, setCurrentRewardsBalance] = useState("");
-  const [benefitsUsed, setBenefitsUsed] = useState<BenefitUsageState>({});
-  const [benefitCycleDates, setBenefitCycleDates] = useState<Record<string, string>>({});
-  const [activePromotions, setActivePromotions] = useState<PromotionState>({});
-  const [statementClosingDate, setStatementClosingDate] = useState("");
-
-  const [openSections, setOpenSections] = useState({
-    step1: true,
-    step2: false,
-    step3: false,
-  });
+  const [openMoveMenuId, setOpenMoveMenuId] = useState<string | null>(null);
+  const [dragEnabledId, setDragEnabledId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (cardsFetchGuard.current) return;
-    cardsFetchGuard.current = true;
+    const storedCards =
+      typeof window !== "undefined" ? localStorage.getItem("userCards") : null;
 
-    const loadCards = async () => {
-      let fetchedCards: any[] | null = null;
-
+    if (storedCards) {
       try {
-        const localToken = localStorage.getItem('accessToken');
-        const supabaseToken = localStorage.getItem('supabase.auth.token');
-        let accessToken: string | null = localToken;
-
-        if (!accessToken && supabaseToken) {
-          const session = JSON.parse(supabaseToken);
-          accessToken = session?.currentSession?.access_token || session?.access_token || null;
+        const parsed = JSON.parse(storedCards) as CreditCard[];
+        const found = parsed.find((c) => String(c.credit_card_type_id) === cardId);
+        if (found) {
+          setCard(found);
+          return;
         }
-
-        if (!accessToken) {
-          throw new Error('No access token')
-        }
-
-        const cardData = await getUserCards(accessToken)
-        if (Array.isArray(cardData)) {
-          fetchedCards = cardData
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(cardData))
-        }
-      } catch (apiError) {
-        console.warn('API card load failed, falling back to local cache', apiError)
+      } catch {
+        // ignore parsing errors
       }
-
-      if (fetchedCards) {
-        setCards(normalizeStoredCards(fetchedCards, cardTypes))
-      } else {
-        try {
-          const savedCards = localStorage.getItem(STORAGE_KEY)
-          if (savedCards) {
-            const parsed = JSON.parse(savedCards)
-            setCards(Array.isArray(parsed) ? normalizeStoredCards(parsed, cardTypes) : [])
-          } else {
-            setCards([])
-          }
-        } catch (error) {
-          console.error('Failed to load cards from local cache:', error)
-          setCards([])
-        }
-      }
-
-      setHasLoadedCards(true)
     }
 
-    loadCards()
-  }, []);
+    setCard({
+      credit_card_type_id: Number(cardId),
+      cardName: "Everyday Rewards",
+      issuer_id: "Acme Bank",
+      last4: "1234",
+      rewardsType: "Cash Back",
+    });
+  }, [cardId]);
+
+  const annual_fee = 95.0;
+
+  const [rewardFilter, setRewardFilter] = useState<"month" | "year" | "all" | "custom">("month");
+  const [customRange, setCustomRange] = useState({ start: "", end: "" });
+
+  const [benefits, setBenefits] = useState<Benefit[]>([
+    {
+      credit_card_type_id: "benefit-1",
+      name: "Dining credit",
+      merchant: "Any restaurant",
+      allotted: 120,
+      used: 70,
+      resetDate: "2026-04-01",
+    },
+    {
+      credit_card_type_id: "benefit-2",
+      name: "Travel reimbursement",
+      merchant: "Airlines",
+      allotted: 150,
+      used: 150,
+      resetDate: "2026-03-25",
+    },
+    {
+      credit_card_type_id: "benefit-3",
+      name: "Streaming credit",
+      merchant: "Entertainment",
+      allotted: 60,
+      used: 20,
+      resetDate: "2026-05-01",
+    },
+  ]);
+
+  const [promotions, setPromotions] = useState<Promotion[]>([
+    {
+      credit_card_type_id: "promo-1",
+      title: "Spend $500, earn $50 back",
+      expires: "2026-04-15",
+      details: "Earn $50 statement credit after $500 spend.",
+      created_at: "2026-03-01",
+      threshold: 500,
+      reward: 50,
+      spentToDate: 320,
+    },
+    {
+      credit_card_type_id: "promo-2",
+      title: "2x dining points",
+      expires: "2026-03-22",
+      details: "Earn double points on dining this month.",
+      created_at: "2026-03-01",
+      threshold: 0,
+      reward: 0,
+      spentToDate: 420,
+    },
+  ]);
+
+  const transactions: Transaction[] = [
+    {
+      credit_card_type_id: "tx-1",
+      date: "Mar 15, 2026",
+      description: "Coffee Shop",
+      amount: -6.82,
+      category: "Dining",
+      rewardValue: 0.34,
+    },
+    {
+      credit_card_type_id: "tx-2",
+      date: "Mar 14, 2026",
+      description: "Grocery Store",
+      amount: -112.34,
+      category: "Groceries",
+      rewardValue: 1.12,
+    },
+    {
+      credit_card_type_id: "tx-3",
+      date: "Mar 11, 2026",
+      description: "Monthly Subscription",
+      amount: -15.99,
+      category: "Services",
+      rewardValue: 0.16,
+    },
+    {
+      credit_card_type_id: "tx-4",
+      date: "Mar 09, 2026",
+      description: "Refund - Online Store",
+      amount: 25.0,
+      category: "Refund",
+      rewardValue: 0,
+    },
+  ];
+
+  const [showBenefitModal, setShowBenefitModal] = useState(false);
+  const [selectedBenefitId, setSelectedBenefitId] = useState<string | null>(null);
+  const [benefitUseAmount, setBenefitUseAmount] = useState("");
+  const [benefitNote, setBenefitNote] = useState("");
+
+  const [showEnrollPromoModal, setShowEnrollPromoModal] = useState(false);
+  const [newPromoTitle, setNewPromoTitle] = useState("");
+  const [newPromoStart, setNewPromoStart] = useState("");
+  const [newPromoEnd, setNewPromoEnd] = useState("");
+  const [newPromoThreshold, setNewPromoThreshold] = useState("");
+  const [newPromoReward, setNewPromoReward] = useState("");
+  const [newPromoSpent, setNewPromoSpent] = useState("");
+
+  const rewardsBreakdown = useMemo(
+    () => [
+      { category: "Dining", spent: 380.12, rate: 0.05, earned: 19.0 },
+      { category: "Travel", spent: 640.0, rate: 0.03, earned: 19.2 },
+      { category: "Groceries", spent: 510.5, rate: 0.02, earned: 10.21 },
+    ],
+    []
+  );
+
+  const annual_feeValue = annual_fee;
+
+  const rewardsEarned = useMemo(
+    () => rewardsBreakdown.reduce((sum, row) => sum + row.earned, 0),
+    [rewardsBreakdown]
+  );
+
+  const benefitsUsed = useMemo(
+    () => benefits.reduce((sum, item) => sum + item.used, 0),
+    [benefits]
+  );
+
+  const promotionsEarned = useMemo(
+    () =>
+      promotions
+        .filter((p) => p.spentToDate >= p.threshold)
+        .reduce((sum, p) => sum + p.reward, 0),
+    [promotions]
+  );
+
+  const netValue = useMemo(
+    () => rewardsEarned + benefitsUsed + promotionsEarned - annual_feeValue,
+    [rewardsEarned, benefitsUsed, promotionsEarned, annual_feeValue]
+  );
+
+  const defaultModuleOrder = ["rewards", "benefits", "promotions", "transactions"];
+  const [moduleOrder, setModuleOrder] = useState<string[]>(defaultModuleOrder);
 
   useEffect(() => {
-    if (!hasLoadedCards) return;
+    const storedOrder =
+      typeof window !== "undefined"
+        ? localStorage.getItem(`cardModuleOrder:${cardId}`)
+        : null;
 
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
-    } catch (error) {
-      console.error("Failed to save cards:", error);
-    }
-  }, [cards, hasLoadedCards]);
-
-  const selectedCardType = useMemo(() => {
-    return cardTypes.find((card: CardType) => card.credit_card_type_id === selectedCardTypeId) || null;
-  }, [selectedCardTypeId, cardTypes]);
-
-  const step1Complete = !!selectedCardTypeId;
-
-  const step2Complete =
-    !!selectedCardTypeId && last4.trim().length === 4 && !!openDate.trim();
-
-  useEffect(() => {
-    if (step1Complete) {
-      setOpenSections((prev) => ({
-        ...prev,
-        step2: true,
-      }));
-    }
-  }, [step1Complete]);
-
-  useEffect(() => {
-    if (step2Complete) {
-      setOpenSections((prev) => ({
-        ...prev,
-        step3: true,
-      }));
-    }
-  }, [step2Complete]);
-
-  const resetForm = () => {
-    setEditingCardId(null);
-    setFormError("");
-    setSelectedCardTypeId("");
-    setCardNickname("");
-    setLast4("");
-    setOpenDate("");
-    setExpirationDate("");
-    setCurrentRewardsBalance("");
-    setBenefitsUsed({});
-    setBenefitCycleDates({});
-    setActivePromotions({});
-    setStatementClosingDate("");
-    setOpenSections({
-      step1: true,
-      step2: false,
-      step3: false,
-    });
-  };
-
-  const handleOpenAddCard = async () => {
-    resetForm();
-    setLoadingCardTypes(true);
-    try {
-      const localToken = localStorage.getItem('accessToken');
-      const supabaseToken = localStorage.getItem('supabase.auth.token');
-      let accessToken: string | null = localToken;
-
-      if (!accessToken && supabaseToken) {
-        const session = JSON.parse(supabaseToken);
-        accessToken = session?.currentSession?.access_token || session?.access_token || null;
+    if (storedOrder) {
+      try {
+        const parsed = JSON.parse(storedOrder) as string[];
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setModuleOrder(parsed);
+        }
+      } catch {
+        // ignore
       }
-
-      if (accessToken) {
-        const types = await getCardTypes(accessToken);
-        setCardTypes(Array.isArray(types) ? types : []);
-      }
-    } catch (error) {
-      console.error('Failed to load card types:', error);
-      setCardTypes([]);
-    } finally {
-      setLoadingCardTypes(false);
     }
-    setShowAddModal(true);
-  };
+  }, [cardId]);
 
-  const handleCloseAddCard = () => {
-    setShowAddModal(false);
-    setOpenMenuId(null);
-    setFormError("");
-  };
+  const saveModuleOrder = (nextOrder: string[]) => {
+    setModuleOrder(nextOrder);
 
-  const toggleSection = (section: "step1" | "step2" | "step3") => {
-    setOpenSections((prev) => ({
-      ...prev,
-      [section]: !prev[section],
-    }));
-  };
-
-  const handleBenefitUsedChange = (benefitId: string, value: string) => {
-    setBenefitsUsed((prev) => ({
-      ...prev,
-      [benefitId]: value.replace(/[^\d]/g, ""),
-    }));
-  };
-
-  const handleBenefitCycleDateChange = (benefitId: string, date: string) => {
-    setBenefitCycleDates((prev) => ({
-      ...prev,
-      [benefitId]: date,
-    }));
-  };
-
-  const handlePromotionToggle = (promotionId: string) => {
-    setActivePromotions((prev) => {
-      const current = prev[promotionId] || {
-        active: false,
-        start_date: "",
-        initial_spend: "",
-      };
-
-      return {
-        ...prev,
-        [promotionId]: {
-          ...current,
-          active: !current.active,
-        },
-      };
-    });
-  };
-
-  const handlePromotionFieldChange = (
-    promotionId: string,
-    field: "start_date" | "initial_spend",
-    value: string
-  ) => {
-    setActivePromotions((prev) => {
-      const current = prev[promotionId] || {
-        active: true,
-        start_date: "",
-        initial_spend: "",
-      };
-
-      return {
-        ...prev,
-        [promotionId]: {
-          ...current,
-          [field]: field === "initial_spend" ? value.replace(/[^\d]/g, "") : value,
-        },
-      };
-    });
-  };
-
-  const handleDeleteCard = async (cardId: string) => {
-    const confirmed = window.confirm("Are you sure you want to delete this card? This action cannot be undone.");
-    if (!confirmed) return;
-
-    try {
-      // Get the access token
-      let token: string | null = localStorage.getItem("accessToken");
-      if (!token) {
-        // Try to get from Supabase auth session
-        const { createClient } = await import("@supabase/supabase-js");
-        const supabase = createClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
-        );
-        const { data } = await supabase.auth.getSession();
-        token = data.session?.access_token || null;
-      }
-
-      if (!token) {
-        alert("Please log in to delete a card");
-        return;
-      }
-
-      // Call the delete API
-      await deleteUserCard(token, cardId);
-      
-      // Remove from local state
-      setCards((prev) => prev.filter((card) => card.credit_card_type_id !== cardId));
-      setOpenMenuId(null);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to delete card";
-      alert(`Error deleting card: ${errorMessage}`);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(`cardModuleOrder:${cardId}`, JSON.stringify(nextOrder));
     }
   };
 
-  const handleCardClick = (cardId: string) => {
-    router.push(`/cards/${cardId}`);
+  const moveModuleToTop = (moduleId: string) => {
+    const filtered = moduleOrder.filter((id) => id !== moduleId);
+    const next = [moduleId, ...filtered];
+    saveModuleOrder(next);
+    setOpenMoveMenuId(null);
   };
 
-  const handleEditCard = (card: CreditCard) => {
-    const matchedType =
-      cardTypes.find((type: CardType) => type.name === card.cardName) || null;
-
-    setEditingCardId(card.credit_card_type_id);
-    setFormError("");
-    setSelectedCardTypeId(matchedType?.credit_card_type_id || "");
-    setCardNickname(card.cardNickname || "");
-    setLast4(card.last4 || "");
-    setOpenDate(card.openDate || "");
-    setCurrentRewardsBalance(
-      card.initialCardState.currentRewardsBalance?.toString() || ""
-    );
-
-    const loadedBenefits: BenefitUsageState = {};
-    Object.entries(card.initialCardState.benefitsUsed || {}).forEach(
-      ([key, value]) => {
-        loadedBenefits[key] = value?.toString() || "";
-      }
-    );
-    setBenefitsUsed(loadedBenefits);
-
-    setBenefitCycleDates(card.initialCardState.benefitCycleDates || {});
-
-    const loadedPromotions: PromotionState = {};
-    Object.entries(card.initialCardState.activePromotions || {}).forEach(
-      ([key, value]) => {
-        loadedPromotions[key] = {
-          active: value.active,
-          start_date: value.start_date || "",
-          initial_spend: value.initial_spend || "",
-        };
-      }
-    );
-    setActivePromotions(loadedPromotions);
-
-    setStatementClosingDate(
-      card.initialCardState.statementClosingDate?.toString() || ""
-    );
-
-    setOpenSections({
-      step1: true,
-      step2: true,
-      step3: true,
-    });
-
-    setShowAddModal(true);
-    setOpenMenuId(null);
+  const moveModuleToBottom = (moduleId: string) => {
+    const filtered = moduleOrder.filter((id) => id !== moduleId);
+    const next = [...filtered, moduleId];
+    saveModuleOrder(next);
+    setOpenMoveMenuId(null);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const enableMoveMode = (moduleId: string) => {
+    setDragEnabledId(moduleId);
+    setOpenMoveMenuId(null);
+  };
+
+  const disableMoveMode = () => {
+    setDragEnabledId(null);
+  };
+
+  const handleDragStart = (e: React.DragEvent, moduleId: string) => {
+    e.dataTransfer.setData("text/plain", moduleId);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
-    setFormError("");
-
-    if (!step1Complete || !step2Complete || !selectedCardType) {
-      setFormError("Please complete the required card details.");
-      return;
-    }
-
-    const finalNickname = cardNickname.trim() || selectedCardType.name;
-
-    // Validate benefits - check that usage doesn't exceed benefit value_amount
-    for (const benefit of selectedCardType?.benefit || []) {
-      const usedAmount = benefitsUsed[benefit.benefit_id]
-        ? Number(benefitsUsed[benefit.benefit_id])
-        : 0;
-      
-      if (usedAmount > benefit.value_amount) {
-        alert(
-          `Invalid benefit usage for "${benefit.name}": Usage (${usedAmount}) cannot exceed the benefit value (${benefit.value_amount})`
-        );
-        return;
-      }
-    }
-
-    // Prepare benefits data
-    const benefits = (selectedCardType?.benefit || [])
-      .map((benefit: ApiBenefit) => ({
-        benefit_id: benefit.benefit_id,
-        initial_amount_used: benefitsUsed[benefit.benefit_id]
-          ? Number(benefitsUsed[benefit.benefit_id])
-          : 0,
-      }));
-
-    // Prepare promotions data
-    const promotions = (selectedCardType?.promotion || [])
-      .filter((promo: ApiPromotion) => activePromotions[promo.promotion_id]?.active)
-      .map((promo: ApiPromotion) => {
-        const promoData = activePromotions[promo.promotion_id];
-        return {
-          promotion_id: promo.promotion_id,
-          start_date: promoData.start_date || new Date().toISOString().split('T')[0], // Use today if not set
-          initial_spend: promoData.initial_spend
-            ? Number(promoData.initial_spend)
-            : 0,
-        };
-      });
-
-    console.log('Sending data:', {
-      benefits: benefits.length,
-      promotions: promotions.length,
-      activePromotions,
-      selectedCardType: selectedCardType?.promotion?.length,
-    });
-
-    try {
-      const localToken = localStorage.getItem('accessToken');
-      const supabaseToken = localStorage.getItem('supabase.auth.token');
-      let accessToken: string | null = localToken;
-
-      if (!accessToken && supabaseToken) {
-        const session = JSON.parse(supabaseToken);
-        accessToken = session?.currentSession?.access_token || session?.access_token || null;
-      }
-
-      if (!accessToken) {
-        throw new Error('No access token');
-      }
-
-      const response = await upsertUserCard(accessToken, {
-        credit_card_id: editingCardId || undefined,
-        credit_card_type_id: selectedCardType.credit_card_type_id,
-        nickname: finalNickname,
-        last_four: last4,
-        open_date: openDate,
-        expiration_date: expirationDate,
-        statement_close_day: statementClosingDate ? Number(statementClosingDate) : 0,
-        initial_rewards_balance: currentRewardsBalance ? Number(currentRewardsBalance) : 0,
-        tracking_start_date: new Date().toISOString(),
-        benefits: benefits.length > 0 ? benefits : undefined,
-        promotions: promotions.length > 0 ? promotions : undefined,
-      });
-
-      const cardToSave: CreditCard = {
-        credit_card_type_id: editingCardId ?? String(Date.now()),
-        cardName: selectedCardType.name,
-        issuer_id: selectedCardType.issuer_id,
-        last4: last4,
-        rewardsType: selectedCardType.reward_unit_name,
-
-        cardNickname: finalNickname,
-        network_id: selectedCardType.network_id,
-        openDate: openDate,
-        creditLimit: null,
-        annual_fee: selectedCardType.annual_fee,
-        notes: "",
-        createdAt: editingCardId
-          ? cards.find((card) => card.credit_card_type_id === editingCardId)?.createdAt ||
-            new Date().toISOString()
-          : new Date().toISOString(),
-
-        initialCardState: {
-          currentRewardsBalance: currentRewardsBalance
-            ? Number(currentRewardsBalance)
-            : null,
-          benefitsUsed: Object.entries(benefitsUsed).reduce(
-            (acc, [key, value]) => {
-              acc[key] = value === "" ? null : Number(value);
-              return acc;
-            },
-            {} as Record<string, number | null>
-          ),
-          benefitCycleDates: benefitCycleDates,
-          activePromotions: activePromotions,
-          statementClosingDate: statementClosingDate
-            ? Number(statementClosingDate)
-            : null,
-        },
-      };
-
-      setCards((prevCards) => {
-        if (editingCardId !== null) {
-          return prevCards.map((card) =>
-            card.credit_card_type_id === editingCardId ? cardToSave : card
-          );
-        }
-
-        return [...prevCards, cardToSave];
-      });
-
-      handleCloseAddCard();
-      resetForm();
-    } catch (error) {
-      const err = error as Error;
-      setFormError(err.message || 'Failed to save card');
-      console.error('Error saving card:', error);
-    }
   };
+
+  const handleDrop = (e: React.DragEvent, targetId: string) => {
+    e.preventDefault();
+    const draggedId = e.dataTransfer.getData("text/plain");
+    if (!draggedId || draggedId === targetId) return;
+
+    const next = [...moduleOrder];
+    const fromIndex = next.indexOf(draggedId);
+    const toIndex = next.indexOf(targetId);
+
+    if (fromIndex === -1 || toIndex === -1) return;
+
+    next.splice(fromIndex, 1);
+    next.splice(toIndex, 0, draggedId);
+
+    saveModuleOrder(next);
+    disableMoveMode();
+  };
+
+  const selectedBenefit = selectedBenefitId
+    ? benefits.find((b) => b.credit_card_type_id === selectedBenefitId)
+    : null;
+
+  const handleMarkBenefitUsed = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedBenefit) return;
+
+    const amount = Number(benefitUseAmount);
+    if (Number.isNaN(amount) || amount <= 0) return;
+
+    setBenefits((prev) =>
+      prev.map((b) =>
+        b.credit_card_type_id === selectedBenefit.credit_card_type_id
+          ? { ...b, used: Math.min(b.allotted, b.used + amount) }
+          : b
+      )
+    );
+
+    setShowBenefitModal(false);
+    setBenefitUseAmount("");
+    setBenefitNote("");
+  };
+
+  const handleEnrollPromotion = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const newPromo: Promotion = {
+      credit_card_type_id: `promo-${Date.now()}`,
+      title: newPromoTitle || "Custom promotion",
+      expires: newPromoEnd || "",
+      details: "",
+      created_at: newPromoStart || "",
+      threshold: Number(newPromoThreshold) || 0,
+      reward: Number(newPromoReward) || 0,
+      spentToDate: Number(newPromoSpent) || 0,
+    };
+
+    setPromotions((prev) => [newPromo, ...prev]);
+    setShowEnrollPromoModal(false);
+    setNewPromoTitle("");
+    setNewPromoStart("");
+    setNewPromoEnd("");
+    setNewPromoThreshold("");
+    setNewPromoReward("");
+    setNewPromoSpent("");
+  };
+
+  if (!card) {
+    return (
+      <main>
+        <div className={styles.PageContainer}>
+          <section className={styles.CardDetailsSection}>
+            <h2>Loading card...</h2>
+            <p>Loading card details...</p>
+          </section>
+        </div>
+      </main>
+    );
+  }
 
   return (
-    <div className={styles.PageContainer}>
-      <div className={styles.PageHero}>
-        <h1 className={styles.PageTitle}>Your Cards</h1>
-          <p className={styles.PageSubtitle}>
-            Manage your credit cards, track usage, and explore available rewards and benefits.
-          </p>
-       </div>
-      <div className={styles.CardHeader}>
-        
-
-        <button className={styles.ModalButton}
-          onClick={handleOpenAddCard}
-          >
-          + Add Card
+    <main>
+      <div className={styles.PageContainer}>
+        <button
+          className={styles.CardBackButton}
+          type="button"
+          onClick={() => router.push("/cards")}
+        >
+          ← Back to Cards
         </button>
-      </div>
 
-      {cards.length === 0 ? (
-        <div className={styles.CardEmptyState}>
-          <h2 className={styles.CardSectionTitle}>No cards added yet</h2>
-          <p className={styles.CardSubtitle}>
-            Add your first card to start tracking rewards, benefits, and promos.
+        <section className={styles.CardDetailsHero}>
+          <h1 className={styles.CardDetailsTitle}>{card.cardName}</h1>
+          <p className={styles.CardDetailsIssuerID}>
+            {card.issuer_id} • •••• {card.last4} • {card.rewardsType}
           </p>
-        </div>
-      ) : (
-        <div className={styles.CardGrid}>
-          {cards.map((card) => (
-            <div
-              key={card.credit_card_type_id}
-              className={`
-                ${styles.CardBox}
-                ${card.cardName.toLowerCase().includes("chase") ? styles.chase :
-                  card.cardName.toLowerCase().includes("amex") ? styles.amex :
-                  card.cardName.toLowerCase().includes("capital one") ? styles.capitalone :
-                  styles.defaultCard
-                }
-              `}
-              onClick={() => handleCardClick(card.credit_card_type_id)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  handleCardClick(card.credit_card_type_id);
-                }
-              }}
-            >
-              <div
-                style={{
-                  position: 'relative',
-                  width: '100%',
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  backgroundImage: card.image_url ? `url('${card.image_url}')` : 'none',
-                }}
-              >
-                {/* Background overlay for better text readability */}
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.4) 100%)',
-                    borderRadius: 'inherit',
-                    zIndex: 1,
-                  }}
-                />
+        </section>
 
-                <div className={styles.CardTop} style={{ position: 'relative', zIndex: 2 }}>
-
-
-                  <div
-                    className={styles.CardMenuWrapper}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <button
-                      type="button"
-                      className={styles.CardMenuButton}
-                      aria-label={`Open menu for ${
-                        card.cardNickname || card.cardName
-                      }`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setOpenMenuId((prev) => (prev === card.credit_card_type_id ? null : card.credit_card_type_id));
-                      }}
-                    >
-                      ⋯
-                    </button>
-
-                    {openMenuId === card.credit_card_type_id && (
-                      <div className={styles.CardMenuDropdown}>
-                        <button
-                          type="button"
-                          className={styles.CardMenuItem}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEditCard(card);
-                          }}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          type="button"
-                          className={styles.CardMenuDelete}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteCard(card.credit_card_type_id);
-                          }}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className={styles.CardCardBody} style={{ position: 'relative', zIndex: 2 }}>
-                  <h2 className={styles.CardName}>{card.cardName}</h2>
-
-                  {card.cardNickname && card.cardNickname !== card.cardName && (
-                    <p className={styles.CardMeta}>{card.cardNickname}</p>
-                  )}
-                </div>
-
-                <div className={styles.CardBottomRow} style={{ position: 'relative', zIndex: 2 }}>
-                  <p className={styles.CardNumber}>•••• {card.last4}</p>
-                </div>
-              </div>
+        <section className={styles.CardDeatilsSection}>
+          <div className={styles.CardDetailsMetaGrid}>
+            <div className={styles.CardDetailsStat}>
+              <span className={styles.CardDetailsStatLabel}>Annual fee</span>
+              <span className={styles.CardDetailsStatValue}>-${annual_feeValue.toFixed(2)}</span>
             </div>
-          ))}
-        </div>
-      )}
+            <div className={styles.CardDetailsStat}>
+              <span className={styles.CardDetailsStatLabel}>Rewards earned</span>
+              <span className={styles.CardDetailsStatValue}>${rewardsEarned.toFixed(2)}</span>
+            </div>
+            <div className={styles.CardDetailsStat}>
+              <span className={styles.CardDetailsStatLabel}>Benefits used</span>
+              <span className={styles.CardDetailsStatValue}>${benefitsUsed.toFixed(2)}</span>
+            </div>
+            <div className={styles.CardDetailsStat}>
+              <span className={styles.CardDetailsStatLabel}>Promotions earned</span>
+              <span className={styles.CardDetailsStatValue}>${promotionsEarned.toFixed(2)}</span>
+            </div>
+            <div className={styles.CardDetailsStat}>
+              <span className={styles.CardDetailsStatLabel}>Net value</span>
+              <span
+                className={styles.CardDetailsStatValue}
+                style={{ color: netValue < 0 ? "#b42318" : "#173b29" }}
+              >
+                {netValue < 0 ? "-" : "+"}${Math.abs(netValue).toFixed(2)}
+              </span>
+            </div>
+          </div>
+        </section>
 
-      {showAddModal && (
-        <div className={styles.ModalOverlay} onClick={handleCloseAddCard}>
-          <div
-            className={styles.Modal}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              type="button"
-              className={styles.ModalXBtn}
-              onClick={handleCloseAddCard}
-              aria-label="Close add card modal"
-            >
-              ×
-            </button>
+        <div className={styles.CardDetailsGrid}>
+          <div className={styles.CardDetailsMain}>
+            {moduleOrder.map((moduleId) => {
+              const isRewards = moduleId === "rewards";
+              const isBenefits = moduleId === "benefits";
+              const isPromotions = moduleId === "promotions";
+              const isTransactions = moduleId === "transactions";
 
-            <h2 className={styles.ModalTitle}>
-              {editingCardId ? "Edit Card" : "Add a Card"}
-            </h2>
-
-            <form onSubmit={handleSubmit} className={styles.CardForm}>
-              <section className={styles.CardStepSection}>
-                <button
-                  type="button"
-                  className={styles.CardStepHeader}
-                  onClick={() => toggleSection("step1")}
+              return (
+                <section
+                  key={moduleId}
+                  className={`${styles.CardDetailsSection} ${
+                    dragEnabledId === moduleId ? styles.CardDetailsSectionMoving : ""
+                  }`}
+                  draggable={dragEnabledId === moduleId}
+                  onDragStart={(e) => handleDragStart(e, moduleId)}
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => handleDrop(e, moduleId)}
                 >
-                  <div className={styles.CardStepHeaderLeft}>
-                    <span
-                      className={`${styles.CardStepStatus} ${
-                        step1Complete ? styles.CardStepStatusComplete : ""
-                      }`}
-                    >
-                      {step1Complete ? "✓" : "1"}
-                    </span>
+                  <div className={styles.CardTop}>
+                    <h2>
+                      {isRewards
+                        ? "Rewards Breakdown"
+                        : isBenefits
+                        ? "Benefits"
+                        : isPromotions
+                        ? "Promotions"
+                        : "Recent Transactions"}
+                    </h2>
 
-                    <div>
-                      <h3 className={styles.CardStepTitle}>
-                        Select a card type
-                      </h3>
-                      <p className={styles.CardStepSubtitle}>
-                        Choose the card you want to add.
-                      </p>
-                    </div>
-                  </div>
+                    <div className={styles.CardMoveMenuWrapper}>
+                      <button
+                        type="button"
+                        className={styles.CardMoveMenuButton}
+                        title="Reorder section"
+                        onClick={() =>
+                          setOpenMoveMenuId((prev) => (prev === moduleId ? null : moduleId))
+                        }
+                      >
+                        ☰
+                      </button>
 
-                  <span className={styles.CardStepChevron}>
-                    {openSections.step1 ? "−" : "+"}
-                  </span>
-                </button>
-
-                {openSections.step1 && (
-                  <div className={styles.CardStepContent}>
-                    <div className={styles.CardTypeGrid}>
-                      {loadingCardTypes ? (
-                        <p>Loading card types...</p>
-                      ) : cardTypes.length > 0 ? (
-                        cardTypes.map((card: CardType) => {
-                          const selected = selectedCardTypeId === card.credit_card_type_id;
-
-                          return (
-                            <button
-                              key={card.credit_card_type_id}
-                              type="button"
-                              onClick={() => setSelectedCardTypeId(card.credit_card_type_id)}
-                              className={`${styles.CardTypeOption} ${
-                                selected ? styles.CardTypeOptionSelected : ""
-                              }`}
-                            >
-                              {card.image_url && (
-                                <img
-                                  src={card.image_url}
-                                  alt={card.name}
-                                  style={{
-                                    width: '100%',
-                                    height: '120px',
-                                    objectFit: 'cover',
-                                    marginBottom: '0.5rem',
-                                    borderRadius: '4px',
-                                  }}
-                                />
-                              )}
-                              <div className={styles.CardTypeOptionTop}>
-                                <span className={styles.CardTypeName}>
-                                  {card.name}
-                                </span>
-                              </div>
-
-                              <div className={styles.CardTypeMeta}>
-                                <span>${card.annual_fee} AF</span>
-                              </div>
-                            </button>
-                          );
-                        })
-                      ) : (
-                        <p>No card types available</p>
+                      {openMoveMenuId === moduleId && (
+                        <div className={styles.CardMoveMenuDropdown}>
+                          <button
+                            type="button"
+                            className={styles.CardMoveMenuItem}
+                            onClick={() => moveModuleToTop(moduleId)}
+                          >
+                            Move to Top
+                          </button>
+                          <button
+                            type="button"
+                            className={styles.CardMoveMenuItem}
+                            onClick={() => enableMoveMode(moduleId)}
+                          >
+                            Move
+                          </button>
+                          <button
+                            type="button"
+                            className={styles.CardMoveMenuItem}
+                            onClick={() => moveModuleToBottom(moduleId)}
+                          >
+                            Move to Bottom
+                          </button>
+                        </div>
                       )}
                     </div>
                   </div>
-                )}
-              </section>
 
-              <section className={styles.CardStepSection}>
-                <button
-                  type="button"
-                  className={styles.CardStepHeader}
-                  onClick={() => toggleSection("step2")}
-                >
-                  <div className={styles.CardStepHeaderLeft}>
-                    <span
-                      className={`${styles.CardStepStatus} ${
-                        step2Complete ? styles.CardStepStatusComplete : ""
-                      }`}
-                    >
-                      {step2Complete ? "✓" : "2"}
-                    </span>
+                  {dragEnabledId === moduleId && (
+                    <p className={styles.CardMoveHint}>
+                      Drag this section to where you want it, then drop it.
+                    </p>
+                  )}
 
-                    <div>
-                      <h3 className={styles.CardStepTitle}>
-                        Fill in card details
-                      </h3>
-                      <p className={styles.CardStepSubtitle}>
-                        Required fields are marked with an asterisk.
-                      </p>
-                    </div>
-                  </div>
-
-                  <span className={styles.CardStepChevron}>
-                    {openSections.step2 ? "−" : "+"}
-                  </span>
-                </button>
-
-                {openSections.step2 && (
-                  <div className={styles.CardStepContent}>
-                    <div className={styles.FormGrid}>
-                      <div className={styles.FormGroup}>
-                        <label className={styles.FormLabel}>Card Nickname</label>
-                        <input
-                          type="text"
-                          value={cardNickname}
-                          onChange={(e) => setCardNickname(e.target.value)}
-                          className={styles.FormInput}
-                          placeholder={
-                            selectedCardType
-                              ? `Defaults to ${selectedCardType.name}`
-                              : "Defaults to selected card name"
-                          }
-                        />
-                      </div>
-
-                      <div className={styles.FormGroup}>
-                        <label className={styles.FormLabel}>
-                          Last 4 Digits{" "}
-                          <span className={styles.RequiredStar}>*</span>
-                        </label>
-                        <input
-                          type="text"
-                          inputMode="numeric"
-                          maxLength={4}
-                          value={last4}
-                          onChange={(e) =>
-                            setLast4(
-                              e.target.value.replace(/\D/g, "").slice(0, 4)
-                            )
-                          }
-                          className={styles.FormInput}
-                          placeholder="1234"
-                        />
-                      </div>
-
-                      <div className={styles.FormGroup}>
-                        <label className={styles.FormLabel}>
-                          Open Date{" "}
-                          <span className={styles.RequiredStar}>*</span>
-                        </label>
-                        <input
-                          type="date"
-                          value={openDate}
-                          onChange={(e) => setOpenDate(e.target.value)}
-                          className={styles.FormInput}
-                        />
-                      </div>
-
-                      <div className={styles.FormGroup}>
-                        <label className={styles.FormLabel}>
-                          Expiration Date{" "}
-                          <span className={styles.RequiredStar}>*</span>
-                        </label>
-                        <input
-                          type="date"
-                          value={expirationDate}
-                          onChange={(e) => setExpirationDate(e.target.value)}
-                          className={styles.FormInput}
-                        />
-                      </div>
-
-                      <div className={styles.FormGroup}>
-                        <label className={styles.FormLabel}>
-                          Statement Closing Date
-                        </label>
+                  {isRewards && (
+                    <>
+                      <div className={styles.CardActions} style={{ justifyContent: "space-between" }}>
+                        <label className={styles.CardLabel}>Date range</label>
                         <select
-                          value={statementClosingDate}
+                          value={rewardFilter}
                           onChange={(e) =>
-                            setStatementClosingDate(e.target.value)
-                          }
-                          className={styles.FormInput}
-                        >
-                          <option value="">Select a day</option>
-                          {Array.from({ length: 31 }, (_, i) => i + 1).map(
-                            (day) => (
-                              <option key={day} value={day}>
-                                {day}
-                              </option>
+                            setRewardFilter(
+                              e.target.value as "month" | "year" | "all" | "custom"
                             )
-                          )}
+                          }
+                          className={styles.CardInput}
+                          style={{ maxWidth: "220px" }}
+                        >
+                          <option value="month">This month</option>
+                          <option value="year">This year</option>
+                          <option value="all">All time</option>
+                          <option value="custom">Custom</option>
                         </select>
                       </div>
-                    </div>
-                  </div>
-                )}
-              </section>
 
-              <section className={styles.CardStepSection}>
-                <button
-                  type="button"
-                  className={styles.CardStepHeader}
-                  onClick={() => toggleSection("step3")}
-                >
-                  <div className={styles.CardStepHeaderLeft}>
-                    <span className={styles.CardStepStatus}>3</span>
+                      {rewardFilter === "custom" && (
+                        <div className={styles.CardExpirationRow} style={{ marginTop: "1rem" }}>
+                          <div className={styles.CardFieldGroup}>
+                            <label className={styles.CardLabel}>From</label>
+                            <input
+                              type="date"
+                              value={customRange.start}
+                              onChange={(e) =>
+                                setCustomRange((prev) => ({
+                                  ...prev,
+                                  start: e.target.value,
+                                }))
+                              }
+                              className={styles.CardInput}
+                            />
+                          </div>
 
-                    <div>
-                      <h3 className={styles.CardStepTitle}>
-                        Fill in initial card state
-                      </h3>
-                      <p className={styles.CardStepSubtitle}>
-                        Everything in this section is optional.
-                      </p>
-                    </div>
-                  </div>
+                          <div className={styles.CardFieldGroup}>
+                            <label className={styles.CardLabel}>To</label>
+                            <input
+                              type="date"
+                              value={customRange.end}
+                              onChange={(e) =>
+                                setCustomRange((prev) => ({
+                                  ...prev,
+                                  end: e.target.value,
+                                }))
+                              }
+                              className={styles.CardInput}
+                            />
+                          </div>
+                        </div>
+                      )}
 
-                  <span className={styles.CardStepChevron}>
-                    {openSections.step3 ? "−" : "+"}
-                  </span>
-                </button>
+                      <div style={{ overflowX: "auto", marginTop: "1rem" }}>
+                        <table className={styles.CardDashboardTable}>
+                          <thead>
+                            <tr>
+                              <th>Category</th>
+                              <th>Total spent</th>
+                              <th>Reward rate</th>
+                              <th>Rewards earned</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {rewardsBreakdown.map((row) => (
+                              <tr key={row.category}>
+                                <td>{row.category}</td>
+                                <td>${row.spent.toFixed(2)}</td>
+                                <td>{(row.rate * 100).toFixed(0)}%</td>
+                                <td>${row.earned.toFixed(2)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                          <tfoot>
+                            <tr>
+                              <td colSpan={3} style={{ textAlign: "right", fontWeight: 700 }}>
+                                Total rewards earned
+                              </td>
+                              <td>${rewardsEarned.toFixed(2)}</td>
+                            </tr>
+                          </tfoot>
+                        </table>
+                      </div>
+                    </>
+                  )}
 
-                {openSections.step3 && (
-                  <div className={styles.CardStepContent}>
-                    <div className={styles.FormGrid}>
-                      <div className={`${styles.FormGroup} ${styles.CenteredFormGroup}`}>
-                        <label className={styles.FormLabel}>
-                          Current Rewards Balance
-                        </label>
-                        <input
-                          type="number"
-                          min="0"
-                          value={currentRewardsBalance}
-                          onChange={(e) =>
-                            setCurrentRewardsBalance(e.target.value)
-                          }
-                          className={styles.FormInput}
-                          placeholder="0"
-                        />
+                  {isBenefits && (
+                    <>
+                      <div className={styles.CardDetailsActionRow}>
+                        <button
+                          className={styles.SecondaryButton}
+                          type="button"
+                          onClick={() => router.push(`/benefits?cardId=${cardId}`)}
+                        >
+                          View all benefits
+                        </button>
                       </div>
 
-                      <div className={styles.FormGroupFull}>
-                        <label className={styles.FormLabel}>
-                          Benefits
-                        </label>
-                        {editingCardId ? (
-                          <div className={styles.ReadOnlyMessage}>
-                            <p>Seed state for promotions and benefits are not updatable</p>
-                          </div>
-                        ) : selectedCardType?.benefit && selectedCardType.benefit.length > 0 ? (
-                          <div className={styles.DynamicFieldList}>
-                            {selectedCardType.benefit.map((benefit: ApiBenefit) => (
-                              <div key={benefit.benefit_id} className={styles.BenefitCard}>
-                                <div className={styles.BenefitHeader}>
-                                  <h4 className={styles.BenefitName}>{benefit.name}</h4>
-                                  <p className={styles.BenefitDescription}>{benefit.description}</p>
-                                  <p className={styles.BenefitMeta}>
-                                    Resets: {benefit.reset_frequency}
+                      <div style={{ display: "flex", flexDirection: "column", gap: "0.9rem", marginTop: "1rem" }}>
+                        {benefits.map((benefit) => {
+                          const progress = Math.min((benefit.used / benefit.allotted) * 100, 100);
+                          const isComplete = benefit.used >= benefit.allotted;
+                          const expiresSoon =
+                            new Date(benefit.resetDate).getTime() - Date.now() <=
+                            7 * 24 * 60 * 60 * 1000;
+
+                          return (
+                            <div
+                              key={benefit.credit_card_type_id}
+                              className={styles.CardRewardsBox}
+                              style={{
+                                borderColor: isComplete
+                                  ? "#86efac"
+                                  : !isComplete && expiresSoon
+                                  ? "#facc15"
+                                  : undefined,
+                                background: isComplete
+                                  ? "#f0fdf4"
+                                  : !isComplete && expiresSoon
+                                  ? "#fefce8"
+                                  : undefined,
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  alignItems: "flex-start",
+                                  gap: "1rem",
+                                  marginBottom: "0.85rem",
+                                }}
+                              >
+                                <div>
+                                  <p style={{ margin: 0, fontWeight: 800, color: "#173b29" }}>
+                                    {benefit.name}
+                                  </p>
+                                  <p style={{ margin: "0.25rem 0 0 0", color: "#5f7068" }}>
+                                    {benefit.merchant ?? "Any merchant"} • Reset {benefit.resetDate}
                                   </p>
                                 </div>
-                                <div className={styles.BenefitFields}>
-                                  <div className={styles.FormGroup}>
-                                    <label className={styles.FormLabel}>
-                                      Usage So Far
-                                    </label>
-                                    <input
-                                      type="number"
-                                      min="0"
-                                      value={benefitsUsed[benefit.benefit_id] || ""}
-                                      onChange={(e) =>
-                                        handleBenefitUsedChange(
-                                          benefit.benefit_id,
-                                          e.target.value
-                                        )
-                                      }
-                                      className={styles.FormInput}
-                                      placeholder="0"
-                                    />
-                                  </div>
+
+                                <button
+                                  type="button"
+                                  className={styles.SecondaryButton}
+                                  onClick={() => {
+                                    setSelectedBenefitId(benefit.credit_card_type_id);
+                                    setShowBenefitModal(true);
+                                  }}
+                                >
+                                  Mark used
+                                </button>
+                              </div>
+
+                              <div style={{ display: "flex", flexDirection: "column", gap: "0.45rem" }}>
+                                <div style={{ fontSize: "0.9rem", fontWeight: 600, color: "#476154" }}>
+                                  {benefit.used.toFixed(0)}/{benefit.allotted.toFixed(0)} used
+                                </div>
+                                <div
+                                  style={{
+                                    width: "100%",
+                                    height: "10px",
+                                    borderRadius: "999px",
+                                    overflow: "hidden",
+                                    background: "#e2e8f0",
+                                  }}
+                                >
+                                  <div
+                                    style={{
+                                      width: `${progress}%`,
+                                      height: "100%",
+                                      borderRadius: "999px",
+                                      background: "linear-gradient(90deg, #16a34a, #22c55e)",
+                                    }}
+                                  />
                                 </div>
                               </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <p className={styles.HelperText}>
-                            No benefits available for this card.
-                          </p>
-                        )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )}
+
+                  {isPromotions && (
+                    <>
+                      <div className={styles.CardDetailsActionRow}>
+                        <button
+                          className={styles.ModalButton}
+                          type="button"
+                          onClick={() => setShowEnrollPromoModal(true)}
+                        >
+                          + Enroll in promotion
+                        </button>
                       </div>
 
-                      <div className={styles.FormGroupFull}>
-                        <label className={styles.FormLabel}>
-                          Active Promotions
-                        </label>
-                        {editingCardId ? (
-                          <div className={styles.ReadOnlyMessage}>
-                            <p>Seed state for promotions and benefits are not updatable</p>
-                          </div>
-                        ) : selectedCardType?.promotion && selectedCardType.promotion.length > 0 ? (
-                          <div className={styles.CheckboxList}>
-                            {selectedCardType.promotion.map((promotion: ApiPromotion) => {
-                              const promotionState =
-                                activePromotions[promotion.promotion_id] || {
-                                  active: false,
-                                  start_date: "",
-                                  initial_spend: "",
-                                };
+                      <div style={{ display: "flex", flexDirection: "column", gap: "0.9rem", marginTop: "1rem" }}>
+                        {promotions.map((promo) => {
+                          const now = new Date();
+                          const end = new Date(promo.expires);
+                          const completed = promo.spentToDate >= promo.threshold;
+                          const expired = end < now && !completed;
+                          const pct = promo.threshold
+                            ? Math.min((promo.spentToDate / promo.threshold) * 100, 100)
+                            : 100;
 
-                              return (
-                                <div
-                                  key={promotion.promotion_id}
-                                  className={styles.PromotionItem}
-                                >
-                                  <label className={styles.CheckboxRow}>
-                                    <input
-                                      type="checkbox"
-                                      checked={promotionState.active}
-                                      onChange={() =>
-                                        handlePromotionToggle(promotion.promotion_id)
-                                      }
-                                    />
-                                    <div>
-                                      <span className={styles.PromotionName}>{promotion.name}</span>
-                                      <p className={styles.PromotionDescription}>
-                                        {promotion.description}
-                                      </p>
-                                      <p className={styles.PromotionCategory}>
-                                        Category: {promotion.promotion_category}
-                                      </p>
-                                    </div>
-                                  </label>
-
-                                  {promotionState.active && (
-                                    <div className={styles.PromotionSubFields}>
-                                      <div className={styles.FormGroup}>
-                                        <label className={styles.FormLabel}>
-                                          Start Date
-                                        </label>
-                                        <input
-                                          type="date"
-                                          value={promotionState.start_date}
-                                          onChange={(e) =>
-                                            handlePromotionFieldChange(
-                                              promotion.promotion_id,
-                                              "start_date",
-                                              e.target.value
-                                            )
-                                          }
-                                          className={styles.FormInput}
-                                        />
-                                      </div>
-
-                                      <div className={styles.FormGroup}>
-                                        <label className={styles.FormLabel}>
-                                          Initial Spend
-                                        </label>
-                                        <input
-                                          type="number"
-                                          min="0"
-                                          value={promotionState.initial_spend}
-                                          onChange={(e) =>
-                                            handlePromotionFieldChange(
-                                              promotion.promotion_id,
-                                              "initial_spend",
-                                              e.target.value
-                                            )
-                                          }
-                                          className={styles.FormInput}
-                                          placeholder="0"
-                                        />
-                                      </div>
-                                    </div>
-                                  )}
+                          return (
+                            <div
+                              key={promo.credit_card_type_id}
+                              className={styles.CardRewardsBox}
+                              style={{
+                                borderColor: completed
+                                  ? "#86efac"
+                                  : expired
+                                  ? "#fecaca"
+                                  : undefined,
+                                background: completed
+                                  ? "#f0fdf4"
+                                  : expired
+                                  ? "#fef2f2"
+                                  : undefined,
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  alignItems: "flex-start",
+                                  gap: "1rem",
+                                  marginBottom: "0.85rem",
+                                }}
+                              >
+                                <div>
+                                  <p style={{ margin: 0, fontWeight: 800, color: "#173b29" }}>
+                                    {promo.title}
+                                  </p>
+                                  <p style={{ margin: "0.25rem 0 0 0", color: "#5f7068" }}>
+                                    {promo.details}
+                                  </p>
                                 </div>
-                              );
-                            })}
-                          </div>
-                        ) : (
-                          <p className={styles.HelperText}>
-                            No active promotions for this card.
-                          </p>
-                        )}
+                                <div style={{ fontSize: "1.2rem" }}>
+                                  {completed ? "✅" : expired ? "⚪" : "⏳"}
+                                </div>
+                              </div>
+
+                              <div
+                                style={{
+                                  display: "flex",
+                                  flexWrap: "wrap",
+                                  gap: "0.75rem 1rem",
+                                  marginBottom: "0.85rem",
+                                  color: "#476154",
+                                  fontSize: "0.9rem",
+                                }}
+                              >
+                                <span>
+                                  {promo.spentToDate.toFixed(0)}/{promo.threshold.toFixed(0)} spent
+                                </span>
+                                <span>Ends {promo.expires}</span>
+                                <span>Reward ${promo.reward.toFixed(2)}</span>
+                              </div>
+
+                              <div
+                                style={{
+                                  width: "100%",
+                                  height: "10px",
+                                  borderRadius: "999px",
+                                  overflow: "hidden",
+                                  background: "#e2e8f0",
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    width: `${pct}%`,
+                                    height: "100%",
+                                    borderRadius: "999px",
+                                    background: "linear-gradient(90deg, #16a34a, #22c55e)",
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
-                    </div>
-                  </div>
-                )}
-              </section>
+                    </>
+                  )}
 
-              {formError && <p className={styles.CardError}>{formError}</p>}
+                  {isTransactions && (
+                    <>
+                      <div className={styles.CardDetailsActionRow}>
+                        <button
+                          className={styles.CardDetailsButtonSecondary}
+                          type="button"
+                          onClick={() => router.push(`/transactions?cardId=${cardId}`)}
+                        >
+                          View all
+                        </button>
+                        <button
+                          className={styles.CardDetailsButtonPrimary}
+                          type="button"
+                          onClick={() => router.push(`/transactions/new?cardId=${cardId}`)}
+                        >
+                          + Log transaction
+                        </button>
+                      </div>
 
+                      <div style={{ overflowX: "auto", marginTop: "1rem" }}>
+                        <table className={styles.CardDashboardTable}>
+                          <thead>
+                            <tr>
+                              <th>Date</th>
+                              <th>Merchant</th>
+                              <th>Category</th>
+                              <th style={{ textAlign: "right" }}>Amount</th>
+                              <th style={{ textAlign: "right" }}>Rewards</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {transactions.slice(0, 10).map((tx) => (
+                              <tr key={tx.credit_card_type_id}>
+                                <td>{tx.date}</td>
+                                <td>{tx.description}</td>
+                                <td>{tx.category}</td>
+                                <td
+                                  style={{
+                                    textAlign: "right",
+                                    color: tx.amount < 0 ? "#b42318" : "#1f4d3a",
+                                    fontWeight: 700,
+                                  }}
+                                >
+                                  {tx.amount < 0 ? "-" : "+"}${Math.abs(tx.amount).toFixed(2)}
+                                </td>
+                                <td style={{ textAlign: "right" }}>
+                                  ${tx.rewardValue.toFixed(2)}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </>
+                  )}
+                </section>
+              );
+            })}
+          </div>
+
+          <aside className={styles.CardDetailsSidebar}>
+            <section className={styles.CardDetailsSection}>
+              <h2>Card Snapshot</h2>
+              <p>
+                Track how this card performs over time, which perks you are actually using,
+                and whether the annual fee is worth it.
+              </p>
+            </section>
+
+            <section className={styles.CardDetailsSection}>
+              <h2>Quick Actions</h2>
               <div className={styles.buttonRow}>
                 <button
                   type="button"
-                  className={styles.cancelBtn}
-                  onClick={handleCloseAddCard}
+                  className={styles.ModalButton}
+                  onClick={() => router.push(`/transactions/new?cardId=${cardId}`)}
+                >
+                  Add Transaction
+                </button>
+                <button
+                  type="button"
+                  className={styles.ModalButton}
+                  onClick={() => setShowEnrollPromoModal(true)}
+                >
+                  Add Promotion
+                </button>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </div>
+
+      {showBenefitModal && selectedBenefit && (
+        <div className={styles.ModalOverlay}>
+          <div className={styles.Modal}>
+            <h2 className={styles.ModalTitle}>Log benefit use</h2>
+            <p style={{ color: "#476154", marginTop: 0 }}>
+              {selectedBenefit.name} ({selectedBenefit.merchant ?? "Any merchant"})
+            </p>
+
+            <form onSubmit={handleMarkBenefitUsed} className={styles.CardForm}>
+              <div className={styles.CardFieldGroup}>
+                <label className={styles.CardLabel}>Amount used</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="Amount used"
+                  value={benefitUseAmount}
+                  onChange={(e) => setBenefitUseAmount(e.target.value)}
+                  className={styles.CardInput}
+                />
+              </div>
+
+              <div className={styles.CardFieldGroup}>
+                <label className={styles.CardLabel}>Merchant / notes</label>
+                <input
+                  placeholder="Merchant / notes (optional)"
+                  value={benefitNote}
+                  onChange={(e) => setBenefitNote(e.target.value)}
+                  className={styles.CardInput}
+                />
+              </div>
+
+              <div className={styles.CardActions}>
+                <button
+                  type="button"
+                  className={styles.CardCancelButton}
+                  onClick={() => setShowBenefitModal(false)}
                 >
                   Cancel
                 </button>
-
-                <button
-                  type="submit"
-                  className={styles.saveBtn}
-                  disabled={!step1Complete || !step2Complete}
-                >
-                  {editingCardId ? "Update Card" : "Save Card"}
+                <button type="submit" className={styles.CardSaveButton}>
+                  Save
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
-    </div>
+
+      {showEnrollPromoModal && (
+        <div className={styles.ModalOverlay}>
+          <div className={styles.Modal}>
+            <h2 className={styles.ModalTitle}>Enroll in a promotion</h2>
+
+            <form onSubmit={handleEnrollPromotion} className={styles.CardForm}>
+              <div className={styles.CardFieldGroup}>
+                <label className={styles.CardLabel}>Promotion name</label>
+                <input
+                  placeholder="Promotion name"
+                  value={newPromoTitle}
+                  onChange={(e) => setNewPromoTitle(e.target.value)}
+                  className={styles.CardInput}
+                />
+              </div>
+
+              <div className={styles.CardExpirationRow}>
+                <div className={styles.CardFieldGroup}>
+                  <label className={styles.CardLabel}>Start date</label>
+                  <input
+                    type="date"
+                    value={newPromoStart}
+                    onChange={(e) => setNewPromoStart(e.target.value)}
+                    className={styles.CardInput}
+                  />
+                </div>
+
+                <div className={styles.CardFieldGroup}>
+                  <label className={styles.CardLabel}>End date</label>
+                  <input
+                    type="date"
+                    value={newPromoEnd}
+                    onChange={(e) => setNewPromoEnd(e.target.value)}
+                    className={styles.ModalInput}
+                  />
+                </div>
+              </div>
+
+              <div className={styles.CardExpirationRow}>
+                <div className={styles.CardFieldGroup}>
+                  <label className={styles.CardLabel}>Spend threshold</label>
+                  <input
+                    type="number"
+                    placeholder="Spend threshold"
+                    value={newPromoThreshold}
+                    onChange={(e) => setNewPromoThreshold(e.target.value)}
+                    className={styles.ModalInput}
+                  />
+                </div>
+
+                <div className={styles.CardFieldGroup}>
+                  <label className={styles.CardLabel}>Reward amount</label>
+                  <input
+                    type="number"
+                    placeholder="Reward amount"
+                    value={newPromoReward}
+                    onChange={(e) => setNewPromoReward(e.target.value)}
+                    className={styles.ModalInput}
+                  />
+                </div>
+              </div>
+
+              <div className={styles.CardFieldGroup}>
+                <label className={styles.CardLabel}>Spend to date</label>
+                <input
+                  type="number"
+                  placeholder="Spend to date"
+                  value={newPromoSpent}
+                  onChange={(e) => setNewPromoSpent(e.target.value)}
+                  className={styles.ModalInput}
+                />
+              </div>
+
+              <div className={styles.ButtonRow}>
+                <button
+                  type="button"
+                  className={styles.cancelBtn}
+                  onClick={() => setShowEnrollPromoModal(false)}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className={styles.saveBtn}>
+                  Add promotion
+                </button>
+              </div>
+              
+            </form>
+          </div>
+        </div>
+      )}
+    </main>
   );
 }
