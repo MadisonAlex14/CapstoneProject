@@ -13,14 +13,17 @@ export default function NavBar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [firstName, setFirstName] = useState("");
+  const [profilePic, setProfilePic] = useState("");
 
   useEffect(() => {
     const syncAuthState = () => {
       const token = localStorage.getItem("accessToken");
       const savedFirstName = localStorage.getItem("firstName");
+      const savedProfilePic = localStorage.getItem("profilePic");
 
       setIsLoggedIn(!!token);
       setFirstName(savedFirstName || "");
+      setProfilePic(savedProfilePic || "");
     };
 
     syncAuthState();
@@ -50,9 +53,11 @@ export default function NavBar() {
     localStorage.removeItem("firstName");
     localStorage.removeItem("userEmail");
     localStorage.removeItem("memberSince");
+    localStorage.removeItem("profilePic");
 
     setIsLoggedIn(false);
     setFirstName("");
+    setProfilePic("");
     setShowProfileDropdown(false);
 
     window.dispatchEvent(new Event("auth-changed"));
@@ -77,19 +82,15 @@ export default function NavBar() {
             <Link href="/dashboard" className="nav-link">
               Dashboard
             </Link>
-
             <Link href="/promotions" className="nav-link">
               Promotions
             </Link>
-
             <Link href="/benefits" className="nav-link">
               Benefits
             </Link>
-
             <Link href="/rewards" className="nav-link">
               Rewards
             </Link>
-
             <Link href="/cards" className="nav-link">
               Cards
             </Link>
@@ -122,7 +123,13 @@ export default function NavBar() {
               onClick={() => setShowProfileDropdown(!showProfileDropdown)}
               type="button"
             >
-              <div className="profile-avatar">{userInitial}</div>
+              <div className="profile-avatar">
+                {profilePic ? (
+                  <img src={profilePic} alt="Profile" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                ) : (
+                  userInitial
+                )}
+              </div>
               <span className="dropdown-arrow">▼</span>
             </button>
 
