@@ -1132,8 +1132,6 @@
   z-index: 9999;
 }
 
-
-
 .cardMenuItem {
   width: 100%;
   border: none;
@@ -3306,7 +3304,7 @@
   padding: 2rem;
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
+  gap: .5rem;
   font-family: "Inter", sans-serif;
   background: #f5f7fa;
   color: #111827;
