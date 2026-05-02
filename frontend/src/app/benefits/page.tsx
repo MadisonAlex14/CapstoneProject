@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import styles from "../../styles/auth.module.css";
 import { getUserBenefits } from "../../lib/functions/getUserBenefits";
-import { logBenefitUsage } from "../../lib/functions/logBenefitUsage";
 import { deleteBenefitEntry } from "../../lib/functions/deleteBenefitEntry";
 
 // ---------------------- TYPES ----------------------
@@ -107,6 +107,7 @@ function getAppliesTo(benefit: Benefit): string {
 // ---------------------- COMPONENT ----------------------
 
 export default function BenefitsPage() {
+  const router = useRouter();
   const [userBenefits, setUserBenefits] = useState<UserBenefit[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -118,16 +119,6 @@ export default function BenefitsPage() {
 
   // Expanded history row
   const [expandedId, setExpandedId] = useState<string | null>(null);
-
-  // Log Usage modal
-  const [showModal, setShowModal] = useState(false);
-  const [modalBenefit, setModalBenefit] = useState<(UserBenefit & { remaining: number }) | null>(null);
-  const [modalAmount, setModalAmount] = useState("");
-  const [modalDate, setModalDate] = useState(new Date().toISOString().split("T")[0]);
-  const [modalMerchant, setModalMerchant] = useState("");
-  const [modalNotes, setModalNotes] = useState("");
-  const [modalLoading, setModalLoading] = useState(false);
-  const [modalError, setModalError] = useState<string | null>(null);
 
   // ---------------------- DATA LOAD ----------------------
 
@@ -193,47 +184,17 @@ export default function BenefitsPage() {
   // ---------------------- HANDLERS ----------------------
 
   function openLogModal(ub: typeof enriched[number]) {
-    setModalBenefit(ub);
-    setModalAmount(String(ub.remaining));
-    setModalDate(new Date().toISOString().split("T")[0]);
-    setModalMerchant("");
-    setModalNotes("");
-    setModalError(null);
-    setShowModal(true);
-  }
-
-  function closeModal() {
-    setShowModal(false);
-    setModalBenefit(null);
-    setModalError(null);
-  }
-
-  async function handleLogUsage() {
-    if (!modalBenefit) return;
-    const amount = parseFloat(modalAmount);
-    if (isNaN(amount) || amount <= 0) { setModalError("Enter a valid amount greater than 0."); return; }
-    if (amount > modalBenefit.remaining) { setModalError(`Amount cannot exceed remaining balance (${modalBenefit.remaining}).`); return; }
-    if (!modalDate) { setModalError("Please select a date."); return; }
-    try {
-      setModalLoading(true);
-      setModalError(null);
-      const token = getAccessToken();
-      if (!token) throw new Error("Not authenticated");
-      await logBenefitUsage(token, {
-        benefit_id: modalBenefit.benefit.benefit_id,
-        credit_card_id: modalBenefit.credit_card.credit_card_id,
-        amount,
-        usage_date: modalDate,
-        merchant_name: modalMerchant || undefined,
-        notes: modalNotes || undefined,
-      });
-      closeModal();
-      await load();
-    } catch (err) {
-      setModalError((err as Error).message ?? "Failed to log usage");
-    } finally {
-      setModalLoading(false);
-    }
+    // Build the merchant options from the benefit targeting
+    const merchantOptions = ub.benefit.targeting_type === "merchant"
+      ? ub.benefit.benefit_merchant?.map((m) => m.merchant_name ?? m.merchant_keyword).filter(Boolean) ?? []
+      : [];
+    
+    // Navigate to transactions/new with pre-filled params
+    const params = new URLSearchParams({
+      card_id: ub.credit_card.credit_card_id,
+      merchants: merchantOptions.join(","),
+    });
+    router.push(`/transactions/new?${params.toString()}`);
   }
 
   async function handleDeleteEntry(entryId: string) {
@@ -476,96 +437,6 @@ export default function BenefitsPage() {
           </div>
         )}
       </div>
-
-      {/* Log Usage Modal — matches transaction edit modal pattern */}
-      {showModal && modalBenefit && (
-        <div style={{
-          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
-          background: "rgba(0,0,0,0.4)", display: "flex",
-          alignItems: "center", justifyContent: "center", zIndex: 2000,
-        }}>
-          <div style={{
-            background: "#fff", borderRadius: "16px", width: "520px",
-            maxWidth: "95%", padding: "1.5rem",
-            boxShadow: "0 16px 34px rgba(0,0,0,0.25)",
-            maxHeight: "90vh", overflowY: "auto",
-          }}>
-            <h2 style={{ margin: "0 0 0.25rem" }}>Log Benefit Usage</h2>
-            <p style={{ margin: "0 0 1.25rem", fontSize: "0.9rem", color: "#6b7280" }}>
-              <strong>{modalBenefit.benefit.name}</strong> — {modalBenefit.credit_card.nickname} ···{modalBenefit.credit_card.last_four}
-              <br />
-              Remaining: {formatAmount(modalBenefit.remaining, modalBenefit.benefit.value_unit)}
-            </p>
-
-            <form style={{ display: "grid", gap: "0.75rem" }} onSubmit={(e) => { e.preventDefault(); handleLogUsage(); }}>
-              <label>
-                Amount Used
-                <input
-                  type="number"
-                  required
-                  min={0.01}
-                  max={modalBenefit.remaining}
-                  step={0.01}
-                  style={{ display: "block", width: "100%", padding: "0.6rem", marginTop: "0.3rem", backgroundColor: "#e1f5e7", border: "2px solid #314634", borderRadius: "6px", fontSize: "0.95rem", boxSizing: "border-box" }}
-                  value={modalAmount}
-                  onChange={(e) => setModalAmount(e.target.value)}
-                />
-              </label>
-
-              <label>
-                Date
-                <input
-                  type="date"
-                  required
-                  style={{ display: "block", width: "100%", padding: "0.6rem", marginTop: "0.3rem", backgroundColor: "#e1f5e7", border: "2px solid #314634", borderRadius: "6px", fontSize: "0.95rem", boxSizing: "border-box" }}
-                  value={modalDate}
-                  onChange={(e) => setModalDate(e.target.value)}
-                />
-              </label>
-
-              <label>
-                Merchant (optional)
-                <input
-                  type="text"
-                  style={{ display: "block", width: "100%", padding: "0.6rem", marginTop: "0.3rem", backgroundColor: "#e1f5e7", border: "2px solid #314634", borderRadius: "6px", fontSize: "0.95rem", boxSizing: "border-box" }}
-                  placeholder="e.g. Delta, Uber, Whole Foods"
-                  value={modalMerchant}
-                  onChange={(e) => setModalMerchant(e.target.value)}
-                />
-                {modalBenefit.benefit.targeting_type === "merchant" && modalBenefit.benefit.benefit_merchant?.length > 0 && (
-                  <span style={{ fontSize: "0.78rem", color: "#6b7280", marginTop: "0.25rem", display: "block" }}>
-                    Eligible merchants: {modalBenefit.benefit.benefit_merchant.map((m) => m.merchant_name ?? m.merchant_keyword).filter(Boolean).join(", ")}
-                  </span>
-                )}
-              </label>
-
-              <label>
-                Notes (optional)
-                <input
-                  type="text"
-                  style={{ display: "block", width: "100%", padding: "0.6rem", marginTop: "0.3rem", backgroundColor: "#e1f5e7", border: "2px solid #314634", borderRadius: "6px", fontSize: "0.95rem", boxSizing: "border-box" }}
-                  placeholder="e.g. Round trip LAX–JFK"
-                  value={modalNotes}
-                  onChange={(e) => setModalNotes(e.target.value)}
-                />
-              </label>
-
-              {modalError && (
-                <p style={{ color: "#b42318", fontSize: "0.875rem", margin: 0 }}>{modalError}</p>
-              )}
-
-              <div style={{ display: "flex", gap: "0.6rem", justifyContent: "flex-end", marginTop: "0.5rem" }}>
-                <button type="button" className="CardDetailsButtonSecondary" onClick={closeModal} disabled={modalLoading}>
-                  Cancel
-                </button>
-                <button type="submit" className="CardDetailsButtonPrimary" disabled={modalLoading}>
-                  {modalLoading ? "Saving…" : "Save"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

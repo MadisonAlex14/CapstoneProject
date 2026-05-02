@@ -51,8 +51,21 @@ Deno.serve(async (req) => {
       })
     }
 
+    // First delete associated user_benefits to avoid FK constraint violation
+    const { error: deleteBenefitsError } = await supabase
+      .from('user_benefit')
+      .delete()
+      .eq('credit_card_id', credit_card_id)
+
+    if (deleteBenefitsError) {
+      return new Response(JSON.stringify({ error: 'Failed to delete associated benefits: ' + deleteBenefitsError.message }), {
+        status: 500,
+        headers: withCors({ 'Content-Type': 'application/json' }),
+      })
+    }
+
     // Delete the credit card
-    // Note: Associated user_benefit and user_promotion, transaction records will be automatically deleted
+    // Note: Associated user_promotion, transaction records will be automatically deleted
     // by database cascade delete constraints (ON DELETE CASCADE on credit_card_id FKs)
     const { error: deleteError } = await supabase
       .from('credit_card')
