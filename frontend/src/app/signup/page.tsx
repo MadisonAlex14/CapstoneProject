@@ -20,10 +20,17 @@ export default function Signup() {
     e.preventDefault()
     setError('')
     setLoading(true)
+
     try {
       const data = await signup(email, password, firstName, lastName, birthdate)
       console.log('Signed up', data)
+
+      localStorage.setItem('firstName', firstName)
+      localStorage.setItem('userEmail', email)
+      localStorage.setItem('memberSince', new Date().getFullYear().toString())
+
       setSignupComplete(true)
+      window.dispatchEvent(new Event('auth-changed'))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred during signup')
       console.error('Error', err)
@@ -60,6 +67,14 @@ export default function Signup() {
           >
             Back to Signup
           </button>
+
+          <button
+            type="button"
+            className={styles.button}
+            onClick={() => router.push('/login')}
+          >
+            Go to Login
+          </button>
         </div>
       </main>
     )
@@ -68,7 +83,7 @@ export default function Signup() {
   return (
     <main className={styles.page}>
       <form onSubmit={handleSubmit} className={styles.card}>
-        <h2 className={styles.title}>Signup</h2>
+        <h2 className={styles.title}>Create Account</h2>
 
         {error && <div className={styles.error}>{error}</div>}
 

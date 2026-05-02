@@ -1,61 +1,69 @@
-// Follow this setup guide to integrate the Deno language server with your editor:
-// https://deno.land/manual/getting_started/setup_your_environment
-// This enables autocomplete, go to definition, etc.
-
-// Setup type definitions for built-in Supabase Runtime APIs
 import "@supabase/functions-js/edge-runtime.d.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const supabase = createClient(
-  Deno.env.get('SUPABASE_URL') ?? '',
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-)
-
-console.log("Hello from Functions!")
+import { supabase } from "../_shared/createClient.ts"
+import { withCors } from "../_shared/cors.ts"
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight
+  console.log('[SIGNUP] Received request:', { method: req.method, url: req.url })
+  
   if (req.method === 'OPTIONS') {
-    return new Response('ok', {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-      },
-    })
+    return new Response('ok', { headers: withCors() })
   }
 
   if (req.method !== 'POST') {
-    return new Response('Method not allowed', { status: 405 })
+    console.log('[SIGNUP] Invalid method:', req.method)
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+      status: 405,
+      headers: withCors({ 'Content-Type': 'application/json' }),
+    })
   }
 
-  const { email, password, firstName, lastName, birthdate } = await req.json()
+  let requestBody
+  try {
+    requestBody = await req.json()
+    console.log('[SIGNUP] Request body received:', { email: requestBody.email, firstName: requestBody.firstName, lastName: requestBody.lastName })
+  } catch (parseError) {
+    console.error('[SIGNUP] Failed to parse request body:', parseError)
+    return new Response(JSON.stringify({ error: 'Invalid request body' }), {
+      status: 400,
+      headers: withCors({ 'Content-Type': 'application/json' }),
+    })
+  }
+
+  const { email, password, firstName, lastName, birthdate } = requestBody
 
   // Validate required fields
   if (!firstName || !lastName || !birthdate) {
+    console.warn('[SIGNUP] Validation failed:', { firstName, lastName, birthdate })
     return new Response(JSON.stringify({ error: 'First name, last name, and birthdate are required' }), {
       status: 400,
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      headers: withCors({ 'Content-Type': 'application/json' }),
     })
   }
+
+  console.log('[SIGNUP] Validation passed, checking for existing users...')
 
   // Check if email already exists
   const { data: existingUser, error: checkError } = await supabase.auth.admin.listUsers()
   
   if (checkError) {
+    console.error('[SIGNUP] Failed to list users:', checkError)
     return new Response(JSON.stringify({ error: 'Failed to check existing users' }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      headers: withCors({ 'Content-Type': 'application/json' }),
     })
   }
 
-  const emailExists = existingUser?.users?.some(user => user.email === email)
+  const emailExists = existingUser?.users?.some((user: any) => user.email === email)
   
   if (emailExists) {
+    console.warn('[SIGNUP] Email already exists:', email)
     return new Response(JSON.stringify({ error: 'Email already registered' }), {
       status: 400,
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      headers: withCors({ 'Content-Type': 'application/json' }),
     })
   }
+
+  console.log('[SIGNUP] Attempting to sign up user:', email)
 
   const { data, error } = await supabase.auth.signUp({
     email,
@@ -66,14 +74,23 @@ Deno.serve(async (req) => {
   })
 
   if (error) {
+    console.error('[SIGNUP] Auth signup failed:', { 
+      error: error.message, 
+      status: error.status,
+      code: (error as any).code
+    })
     return new Response(JSON.stringify({ error: error.message }), {
       status: 400,
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      headers: withCors({ 'Content-Type': 'application/json' }),
     })
   }
 
+  console.log('[SIGNUP] Auth signup successful, user ID:', data.user?.id)
+
   // If signup successful and user was created, create profile
   if (data.user?.id) {
+    console.log('[SIGNUP] Creating profile for user:', data.user.id)
+    
     const { error: profileError } = await supabase
       .from('profile')
       .insert({
@@ -84,25 +101,19 @@ Deno.serve(async (req) => {
       })
 
     if (profileError) {
-      console.error('Failed to create profile:', profileError)
+      console.error('[SIGNUP] Failed to create profile:', profileError)
       // Note: We don't return an error here because the auth user was already created
       // The profile creation is supplementary
+    } else {
+      console.log('[SIGNUP] Profile created successfully')
     }
+  } else {
+    console.warn('[SIGNUP] No user ID in signup response')
   }
 
+  console.log('[SIGNUP] Signup flow completed successfully')
+  
   return new Response(JSON.stringify(data), {
-    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+    headers: withCors({ 'Content-Type': 'application/json' }),
   })
 })
-
-/* To invoke locally:
-
-  1. Run `supabase start` (see: https://supabase.com/docs/reference/cli/supabase-start)
-  2. Make an HTTP request:
-
-  curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/signup' \
-    --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0' \
-    --header 'Content-Type: application/json' \
-    --data '{"email":"test@example.com","password":"password"}'
-
-*/

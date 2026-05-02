@@ -6,7 +6,7 @@ export async function getSelf(accessToken: string) {
   }
 
   const res = await fetch(`${supabaseUrl}/functions/v1/get-self`, {
-    method: 'POST',
+    method: 'GET',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${accessToken}`

@@ -1,7 +1,6 @@
-// frontend/src/app/dashboard/page.tsx
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSelf } from "@/lib/functions/getSelf";
 import styles from "../../styles/auth.module.css";
@@ -14,6 +13,8 @@ export default function Dashboard() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [error, setError] = useState("");
+  const [currentScore, setCurrentScore] = useState<number | null>(null);
+  const [goalScore, setGoalScore] = useState<number | null>(null);
 
   const hasChecked = useRef(false);
 
@@ -22,13 +23,11 @@ export default function Dashboard() {
       if (hasChecked.current) return;
       hasChecked.current = true;
 
-      // Read access_token from URL (email verification redirect)
       const urlToken =
         typeof window !== "undefined"
           ? new URLSearchParams(window.location.search).get("access_token")
           : null;
 
-      // Or from localStorage (existing login)
       const storedToken =
         typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
 
@@ -40,15 +39,22 @@ export default function Dashboard() {
       }
 
       try {
-        // Get complete user profile
         const profileData = await getSelf(accessToken);
-        
+
         localStorage.setItem("accessToken", accessToken);
         setEmail(profileData.email);
         setFirstName(profileData.firstName || "");
         setLastName(profileData.lastName || "");
-        setLoading(false);
 
+        if (typeof window !== "undefined") {
+          const savedCurrentScore = localStorage.getItem("currentCreditScore");
+          const savedGoalScore = localStorage.getItem("goalCreditScore");
+
+          setCurrentScore(savedCurrentScore ? Number(savedCurrentScore) : null);
+          setGoalScore(savedGoalScore ? Number(savedGoalScore) : null);
+        }
+
+        setLoading(false);
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred");
         setLoading(false);
@@ -56,30 +62,156 @@ export default function Dashboard() {
     };
 
     loadUserProfile();
+
+    const handleStorageRefresh = () => {
+      const savedCurrentScore = localStorage.getItem("currentCreditScore");
+      const savedGoalScore = localStorage.getItem("goalCreditScore");
+
+      setCurrentScore(savedCurrentScore ? Number(savedCurrentScore) : null);
+      setGoalScore(savedGoalScore ? Number(savedGoalScore) : null);
+    };
+
+    window.addEventListener("focus", handleStorageRefresh);
+    window.addEventListener("storage", handleStorageRefresh);
+
+    return () => {
+      window.removeEventListener("focus", handleStorageRefresh);
+      window.removeEventListener("storage", handleStorageRefresh);
+    };
   }, [router]);
 
-  // Loading state
+  const displayName = useMemo(() => {
+    if (firstName) return firstName;
+    if (firstName && lastName) return `${firstName} ${lastName}`;
+    return email || "there";
+  }, [firstName, lastName, email]);
+
+  const timeGreeting = useMemo(() => {
+    const hour = new Date().getHours();
+
+    if (hour < 12) return "Good morning ☀️";
+    if (hour < 18) return "Good afternoon ✨";
+    return "Good evening 🌙";
+  }, []);
+
+  const scoreRange = useMemo(() => {
+    if (currentScore === null) {
+      return { label: "Not set", className: styles.dScoreNeutral };
+    }
+    if (currentScore < 580) {
+      return { label: "Poor", className: styles.dScorePoor };
+    }
+    if (currentScore < 670) {
+      return { label: "Fair", className: styles.dScoreFair };
+    }
+    if (currentScore < 740) {
+      return { label: "Good", className: styles.dScoreGood };
+    }
+    if (currentScore < 800) {
+      return { label: "Very Good", className: styles.dScoreVeryGood };
+    }
+    return { label: "Excellent", className: styles.dScoreExcellent };
+  }, [currentScore]);
+
+  const meterProgress = useMemo(() => {
+    if (currentScore === null) return 0;
+    const min = 300;
+    const max = 850;
+    return ((currentScore - min) / (max - min)) * 100;
+  }, [currentScore]);
+
+  const progressToGoal = useMemo(() => {
+    if (currentScore === null || goalScore === null) return 0;
+    const safeGoal = Math.max(goalScore, currentScore);
+    const min = currentScore;
+    const max = safeGoal;
+    if (max === min) return 100;
+    return ((currentScore - min) / (max - min || 1)) * 100;
+  }, [currentScore, goalScore]);
+
+  const pointsToGoal = useMemo(() => {
+    if (currentScore === null || goalScore === null) return null;
+    return Math.max(goalScore - currentScore, 0);
+  }, [currentScore, goalScore]);
+
+  const insightText = useMemo(() => {
+    if (currentScore === null && goalScore === null) {
+      return "Add your current and goal credit scores in your profile to unlock personalized dashboard insights.";
+    }
+
+    if (currentScore !== null && goalScore !== null) {
+      if (currentScore >= goalScore) {
+        return "Amazing work — you’ve reached your score goal. Keep building healthy habits to maintain it.";
+      }
+
+      if (goalScore - currentScore <= 20) {
+        return "You’re very close to your goal. A few consistent moves could push you over the line.";
+      }
+
+      if (currentScore < 670) {
+        return "You’re in building mode. Small steady improvements can make a big difference over time.";
+      }
+
+      if (currentScore < 740) {
+        return "You already have a solid base. Staying consistent can move you into an even stronger range.";
+      }
+
+      return "You’re doing great. Now it’s about refining your habits and closing the gap to your target.";
+    }
+
+    return "Your dashboard is ready. Add both scores to track progress more clearly.";
+  }, [currentScore, goalScore]);
+
+  const nextSteps = useMemo(() => {
+    if (currentScore === null && goalScore === null) {
+      return [
+        "Add your current credit score",
+        "Set a goal score to track progress",
+        "Visit your profile to save your score details",
+      ];
+    }
+
+    if (currentScore !== null && goalScore === null) {
+      return [
+        "Set a goal score",
+        "Check your profile and add your target",
+        "Come back here to track your progress visually",
+      ];
+    }
+
+    if (currentScore !== null && goalScore !== null && currentScore >= goalScore) {
+      return [
+        "Celebrate hitting your goal 🎉",
+        "Keep your score stable with consistent habits",
+        "Set a new stretch goal when you're ready",
+      ];
+    }
+
+    return [
+      "Keep updating your score regularly",
+      "Watch your progress toward your target",
+      "Use your dashboard insights to stay motivated",
+    ];
+  }, [currentScore, goalScore]);
+
   if (loading) {
     return (
-      <div className={`min-h-screen ${styles.pageBg} bg-gray-100 flex items-center justify-center`}>
-        <div className={`bg-white/80 backdrop-blur p-6 rounded-xl ${styles.cardShadow}`}>
-          <p className="text-lg text-gray-700">Loading...</p>
+      <div className={styles.dPage}>
+        <div className={styles.dLoadingCard}>
+          <p>Loading your dashboard...</p>
         </div>
       </div>
     );
   }
 
-  // Error state
   if (error) {
     return (
-      <div className={`min-h-screen ${styles.pageBg} bg-gray-100 flex items-center justify-center px-4`}>
-        <div
-          className={`bg-white p-6 rounded-xl w-full max-w-sm text-center ${styles.cardShadow} ${styles.fadeIn}`}
-        >
-          <p className="text-red-600 mb-4 font-medium">{error}</p>
+      <div className={styles.dPage}>
+        <div className={styles.dErrorCard}>
+          <p className={styles.dErrorText}>{error}</p>
           <button
             onClick={() => router.push("/login")}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition"
+            className={styles.dPrimaryButton}
           >
             Back to Login
           </button>
@@ -88,17 +220,65 @@ export default function Dashboard() {
     );
   }
 
- // Sucess state
+  const circumference = 2 * Math.PI * 70;
+  const strokeDashoffset = circumference - (meterProgress / 100) * circumference;
+
   return (
-    <div className={`min-h-screen ${styles.pageBg} bg-gray-100 flex items-center justify-center px-4`}>
-      <div className={`bg-white p-8 rounded-2xl w-full max-w-xl text-center ${styles.cardShadow} ${styles.fadeIn}`}>
-        <h1 className="text-3xl font-extrabold mb-3 text-gray-900">Dashboard</h1>
-        <p className="text-lg text-gray-700">
-          Welcome to the dashboard, <span className="font-semibold">
-            {firstName && lastName ? `${firstName} ${lastName}` : email}
-          </span>!
-        </p>
-      </div>
-    </div>
+    <main className={styles.dPage}>
+      <section className={styles.dContainer}>
+        <div className={styles.dHeroCard}>
+          <div>
+            <p className={styles.dGreeting}>{timeGreeting}</p>
+            <h1 className={styles.dTitle}>
+              Welcome, {displayName}!
+            </h1>
+            <p className={styles.dSubtitle}>
+              Here is your personalized dashboard. You can see your credit score, have some personalized insight, and recommended next steps to boost your credit!
+            </p>
+          </div>
+
+          <div className={styles.dHeroGlow}></div>
+        </div>
+
+        <div className={styles.dQuickActions}>
+          <button
+            type="button"
+            className={styles.dQuickActionCard}
+            onClick={() => router.push("/profile")}
+          >
+            <span className={styles.dQuickActionEmoji}>✨</span>
+            <span className={styles.dQuickActionText}>Update Score</span>
+          </button>
+
+          <button
+            type="button"
+            className={styles.dQuickActionCard}
+            onClick={() => router.push("/cards")}
+          >
+            <span className={styles.dQuickActionEmoji}>💳</span>
+            <span className={styles.dQuickActionText}>View Cards</span>
+          </button>
+
+          <button
+            type="button"
+            className={styles.dQuickActionCard}
+            onClick={() => router.push("/help")}
+          >
+            <span className={styles.dQuickActionEmoji}>💡</span>
+            <span className={styles.dQuickActionText}>Get Tips</span>
+          </button>
+
+          <button
+            type="button"
+            className={styles.dQuickActionCard}
+            onClick={() => router.push("/profile")}
+          >
+            <span className={styles.dQuickActionEmoji}>🎯</span>
+            <span className={styles.dQuickActionText}>View Goals</span>
+          </button>
+        </div>
+
+      </section>
+    </main>
   );
 }

@@ -1,4 +1,37 @@
 @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500&display=swap');
+.modular-form .form-field {
+  background: #f8fafc;
+  border: 1px solid #dde8e1;
+  border-radius: 12px;
+  padding: 1.1rem 1.2rem 1.2rem 1.2rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 8px rgba(31, 77, 58, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.modular-form .form-field label {
+  font-weight: 600;
+  font-size: 1.05rem;
+  margin-bottom: 0.2rem;
+}
+
+.modular-form .form-field input,
+.modular-form .form-field select,
+.modular-form .form-field textarea {
+  font-size: 1rem;
+  padding: 0.55rem 0.8rem;
+  border-radius: 7px;
+  border: 1px solid #c1ccca;
+  background: #fff;
+  margin-top: 0.1rem;
+}
+
+.modular-form .form-field textarea {
+  min-height: 80px;
+  resize: vertical;
+}
 
 #root {
   max-width: 1280px;
@@ -57,9 +90,8 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 2rem;
+  padding: 0.8rem 1rem;
   background-color: #9ecfad;
-  border-bottom: 1px solid #ddd;
   width: 100%;
   box-sizing: border-box;
   position: fixed;
@@ -73,10 +105,10 @@ html, body {
   color: white;
 }
 .nav-button {
-  background-color: grey;
+  background-color: rgb(39, 65, 33);
   color: white;
   font-weight: 600;
-  padding: 0.5rem 1.2rem;
+  padding: 0.45rem 1rem;
   border-radius: 0.5rem;
   border: none;
   cursor: pointer;
@@ -89,6 +121,7 @@ html, body {
 .nav-logo {
   height: 50px;
   cursor: pointer;
+  width: auto;
   transition: transform 0.2s ease;
 }
 .nav-logo:hover {
@@ -97,23 +130,31 @@ html, body {
 .nav-left {
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 22px;
 }
 .nav-link {
   text-decoration: none;
-  color: #333;
-  font-weight: bold;
-  font-size: 1rem;
-  transition: color 0.2s;
+  color: #324330;
+  font-size: 14px;
+  font-weight: 300;
+  transition: color 0.2s ease;
+  white-space: nowrap;
 }
 .nav-links-container {
   display: flex;
-  gap: 1.5rem;
+  align-items: center;
+  gap: 20px;
 }
 .nav-link:hover {
   color: #A6A969; 
 }
+.nav-auth-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 /* ------------------------------------------------ */
+
 
 h1,
 .h1 {
@@ -177,12 +218,19 @@ h1,
 }
 .rewards-page {
   padding: 3rem 2rem;
+  color: #555;
 }
 .transactions-page {
   padding: 3rem 2rem;
+  color: #555;
+  text-align: left;
+  max-width: 1100px;
+  margin: 0 auto;
 }
 .help-page {
   padding: 3rem 2rem;
+  color: #555;
+
 }
 /* ---------------------------------- */
 
@@ -247,6 +295,151 @@ h1,
   margin: 10px 0;
   line-height: 1.5;
   color: #617672;
+}
+
+/* Transactions module shared with card dashboard */
+.CardDetailsPage {
+  padding: 2rem 1.2rem 3rem;
+  background: #f3f4f6;
+}
+
+.CardDetailsSection {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #dde8e1;
+  border-radius: 20px;
+  padding: 1.25rem;
+  box-shadow: 0 10px 24px rgba(31, 77, 58, 0.12);
+  margin-bottom: 1rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-grid label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 500;
+  font-size: 1rem;
+  gap: 0.4rem;
+}
+
+.form-grid textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.CardDetailsSection h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1f3b2d;
+}
+
+.CardDetailsActionRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1.5rem 2.5rem; /* row gap, column gap */
+  margin-bottom: 1.5rem;
+}
+
+.CardDetailsActionRow label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 500;
+  font-size: 1rem;
+  gap: 0.4rem;
+  background: #f8fafc;
+  padding: 0.7rem 1rem 0.9rem 1rem;
+  border-radius: 10px;
+  border: 1px solid #dde8e1;
+  min-width: 160px;
+  margin-bottom: 0.2rem;
+}
+
+.CardDetailsActionRow input,
+.CardDetailsActionRow select {
+  font-size: 1rem;
+  padding: 0.45rem 0.7rem;
+  border-radius: 7px;
+  border: 1px solid #c1ccca;
+  background: #fff;
+  margin-top: 0.1rem;
+}
+
+.CardDetailsActionRow button {
+  margin-left: 0.2rem;
+  margin-right: 0.2rem;
+  margin-top: 0.5rem;
+}
+
+.CardDetailsButtonPrimary,
+.CardDetailsButtonSecondary {
+  border-radius: 12px;
+  padding: 0.7rem 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.CardDetailsButtonPrimary {
+  border: none;
+  background: linear-gradient(135deg, #1f4d3a, #2d6a4f);
+  color: #fff;
+}
+
+.CardDetailsButtonSecondary {
+  border: 1px solid #dde8e1;
+  background: #fff;
+  color: #294838;
+}
+
+.CardDashboardTable {
+  width: 100%;
+  min-width: 700px;
+  border-collapse: collapse;
+  background: #ffffff;
+}
+
+.CardDashboardTable th,
+.CardDashboardTable td {
+  padding: 0.9rem 0.95rem;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 0.95rem;
+  color: #163827;
+  width: 150px; /* Set a fixed width for consistent column sizes */
+  box-sizing: border-box; /* Ensure padding is included in the width */
+}
+
+.CardDashboardTable th {
+  background: #f8fafc;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.CardDashboardTable tbody tr:hover {
+  background: #f6fbf9;
+}
+
+.transactions-table-wrapper {
+  border: 1px solid #dde8e1;
+  border-radius: 14px;
+  background: #fff;
+  padding: 1rem;
+  box-shadow: 0 10px 18px rgba(31, 77, 58, 0.08);
+}
+
+.transactions-pagination {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
 }
 .home-feature-grid {
   margin-top: 14px;
@@ -320,4 +513,174 @@ h1,
 }
 .login-btn {
   background-color: #A6A969;
+}
+.profile-menu {
+  position: relative;
+  display: inline-block;
+}
+/* ------------------------------------- */
+
+
+/* ----------------Profile Section---------------- */
+.profile-menu {
+  position: relative;
+  display: inline-block;
+}
+
+.profile-button,
+.compact-profile-button {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.45rem;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.profile-button:hover,
+.compact-profile-button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+.profile-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: white;
+  color: #4f7c6b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.profile-name {
+  font-size: 0.85rem;
+}
+
+.dropdown-arrow {
+  font-size: 0.65rem;
+  color: #2f3e39;
+}
+
+.profile-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 180px;
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.14);
+  padding: 0.4rem;
+  z-index: 1000;
+}
+
+.dropdown-user-name {
+  padding: 0.7rem 0.9rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #4f5c58;
+  border-bottom: 1px solid #edf1ef;
+  margin-bottom: 0.25rem;
+}
+
+.dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  border: none;
+  background: transparent;
+  color: #2c2c2c;
+  text-align: left;
+  text-decoration: none;
+  font-size: 0.85rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background: #f3f7f5;
+  color: #23473b;
+}
+
+.logout-item {
+  font-family: inherit;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.NavDropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.NavDropdown-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2c2c2c;
+  padding: 0.5rem .3rem;
+  transition: color 0.2s ease;
+}
+
+.NavDropdown-button:hover {
+  color: #6d8c6e;
+}
+
+.NavDropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 160px;
+  background-color: #e3eee3;
+  border-radius: 8px;
+  box-shadow: 0 8px 16px rgba(98, 150, 96, 0.15);
+  z-index: 1000;
+  padding: 0.5rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  animation: NavDropdown-fadeIn 0.2s ease-out;
+}
+
+.NavDropdown-item {
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  color: #2c2c2c;
+  font-weight: 300;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.NavDropdown-item:hover {
+  background-color: #f0f0f0;
+  color: #8fad8c;
+  border-radius: 6px;
+}
+
+@keyframes NavDropdown-fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
 }

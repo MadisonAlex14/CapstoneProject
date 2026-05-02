@@ -277,6 +277,16 @@ cd backend
 npx supabase functions deploy my-feature --no-verify-jwt
 ```
 
+### How to Create a Migration File
+```bash
+git checkout <branch name>
+cd backend/supabase
+npx supabase login
+npx supabase link --project-ref <project-id>
+npx supabase db diff -f <migration name> --linked
+```
+The project-id can be found on Supabase -> Project Settings -> Project ID
+
 ### Security Notes
 - RLS policies enforce data access at the database level
 - Frontend should validate user input before calling functions
