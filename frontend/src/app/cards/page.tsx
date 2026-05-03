@@ -656,6 +656,25 @@ export default function CardsPage() {
     }
   };
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   return (
     <div className={styles.PageContainer}>
       <div className={styles.PageHero}>
@@ -666,7 +685,7 @@ export default function CardsPage() {
        </div>
 
 
-       <button className={styles.ModalButton}
+       <button className={styles.ModalButton} style={{ marginBottom: "30px" }}
           onClick={handleOpenAddCard}
           >
           + Add Card
@@ -703,31 +722,11 @@ export default function CardsPage() {
               }}
             >
               <div
-                style={{
-                  position: 'relative',
-                  width: '100%',
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  backgroundImage: card.image_url ? `url('${card.image_url}')` : 'none',
-                }}
+                className={styles.CardInner}
+                style={{ backgroundImage: card.image_url ? `url('${card.image_url}')` : 'none', }}
               >
                 {/* Background overlay for better text readability */}
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.4) 100%)',
-                    borderRadius: 'inherit',
-                    zIndex: 1,
-                  }}
-                />
+                <div className={styles.CardOverlay} />
 
 
 
@@ -750,7 +749,7 @@ export default function CardsPage() {
                     </button>
 
                     {openMenuId === card.credit_card_type_id && (
-                      <div className={styles.CardMenuDropdown}>
+                      <div className={styles.dropdownCardsPage}>
                         <button
                           type="button"
                           className={styles.CardMenuItem}
@@ -776,7 +775,7 @@ export default function CardsPage() {
                   </div>
                 </div>
 
-                <div className={styles.CardCardBody} style={{ position: 'relative', zIndex: 2 }}>
+                <div className={styles.CardCardBody}>
                   <h2 className={styles.CardName}>{card.cardName}</h2>
 
                   {card.cardNickname && card.cardNickname !== card.cardName && (
@@ -784,7 +783,7 @@ export default function CardsPage() {
                   )}
                 </div>
 
-                <div className={styles.CardBottomRow} style={{ position: 'relative', zIndex: 2 }}>
+                <div className={styles.CardBottomRow}>
                   <p className={styles.CardNumber}>•••• {card.last4}</p>
                 </div>
               </div>
@@ -1206,10 +1205,10 @@ export default function CardsPage() {
 
               {formError && <p className={styles.CardError}>{formError}</p>}
 
-              <div className={styles.CardActions}>
+              <div className={styles.buttonRow}>
                 <button
                   type="button"
-                  className={styles.CardCancelButton}
+                  className={styles.cancelBtn}
                   onClick={handleCloseAddCard}
                 >
                   Cancel
@@ -1217,7 +1216,7 @@ export default function CardsPage() {
 
                 <button
                   type="submit"
-                  className={styles.CardSaveButton}
+                  className={styles.saveBtn}
                   disabled={!step1Complete || !step2Complete}
                 >
                   {editingCardId ? "Update Card" : "Save Card"}

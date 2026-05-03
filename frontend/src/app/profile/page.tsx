@@ -60,7 +60,6 @@ export default function ProfilePage() {
     <main className={styles.Page}>
       <section className={styles.PageContainer}>
 
-        {/* HERO (clean like other pages) */}
         <div className={styles.PageHero}>
           <div>
             <h1 className={styles.PageTitle}>My Profile</h1>
