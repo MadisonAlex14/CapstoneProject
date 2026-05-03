@@ -384,11 +384,22 @@ export default function RewardsPage() {
           + Log Redemption
         </button>
 
-      {/* ================= USAGE MODAL (FIXED) ================= */}
+      {/* ================= USAGE MODAL ================= */}
       {showUsageModal && selectedCard && (
         <div className={styles.ModalOverlay}>
           <div className={styles.Modal}>
             <h3>Track Usage</h3>
+
+
+            <button
+              type="button"
+               className={styles.ModalXBtn}
+               onClick={() => setShowUsageModal(false)}
+               >
+               x
+              </button>
+
+
 
             <input
               className={styles.ModalInput}
@@ -413,9 +424,22 @@ export default function RewardsPage() {
             </div>
 
            <div className={styles.buttonRow}>
-              <button className={styles.cancelBtn}>Cancel</button>
-             <button className={styles.saveBtn}>Save</button>
-            </div>
+            <button
+             type="button"
+            className={styles.cancelBtn}
+            onClick={() => setShowUsageModal(false)}
+            >
+            Cancel
+            </button>
+
+           <button
+              type="button"
+              className={styles.saveBtn}
+             onClick={addUsage}
+             >
+            Save
+           </button>
+          </div>
 
           </div>
         </div>
@@ -426,6 +450,15 @@ export default function RewardsPage() {
         <div className={styles.ModalOverlay}>
           <div className={styles.Modal}>
             <h3>Log Redemption</h3>
+
+
+        <button
+         type="button"
+         className={styles.ModalXBtn}
+         onClick={() => setShowRedemptionModal(false)}
+         >
+         x
+        </button>
 
             <select
               className={styles.ModalInput}
@@ -485,19 +518,23 @@ export default function RewardsPage() {
               placeholder="Notes"
             />
 
-            <div className={styles.buttonRow}>
-              <div className={styles.cancelBtn}>
-                <button onClick={() => setShowRedemptionModal(false)}>
-                 Cancel
-               </button>
-              </div>
+           <div className={styles.buttonRow}>
+             <button
+               type="button"
+               className={styles.cancelBtn}
+               onClick={() => setShowRedemptionModal(false)}
+             >
+              Cancel
+             </button>
 
-              <div className={styles.saveBtn}>
-               <button onClick={addRedemption}>
-                Save
-              </button>
-              </div>
-            </div>
+             <button
+              type="button"
+              className={styles.saveBtn}
+               onClick={addRedemption}
+               >
+               Save
+           </button>
+          </div>
 
           </div>
         </div>
