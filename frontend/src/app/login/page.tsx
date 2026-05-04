@@ -61,17 +61,16 @@ export default function Login() {
 
   return (
     <main className={styles.page}>
-      <form onSubmit={handleSubmit} className={styles.card}>
+      <form onSubmit={handleSubmit} className={`${styles.card} modular-form`}>
         <h2 className={styles.title}>Login</h2>
 
         {error && <div className={styles.error}>{error}</div>}
 
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="email">
+        <div className="form-field">
+          <label htmlFor="email">
             Email
           </label>
           <input
-            className={styles.input}
             id="email"
             type="email"
             value={email}
@@ -81,12 +80,11 @@ export default function Login() {
           />
         </div>
 
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="password">
+        <div className="form-field">
+          <label htmlFor="password">
             Password
           </label>
           <input
-            className={styles.input}
             id="password"
             type="password"
             value={password}
@@ -94,14 +92,15 @@ export default function Login() {
             required
             placeholder="Enter your password"
           />
-          <button
-            type="button"
-            onClick={() => setShowForgotPassword(true)}
-            style={forgotPasswordLinkStyles}
-          >
-            Forgot Password?
-          </button>
         </div>
+
+        <button
+          type="button"
+          onClick={() => setShowForgotPassword(true)}
+          style={forgotPasswordLinkStyles}
+        >
+          Forgot Password?
+        </button>
 
         <button className={styles.button} type="submit" disabled={loading}>
           {loading ? 'Logging in...' : 'Sign In'}
