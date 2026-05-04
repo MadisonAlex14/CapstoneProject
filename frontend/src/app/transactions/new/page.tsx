@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import styles from '../../../styles/auth.module.css';
 import { getUserCards } from '../../../lib/functions/getUserCards';
 import { getMccLookup } from '../../../lib/functions/getMccLookup';
@@ -34,6 +34,7 @@ const todayIso = () => new Date().toISOString().slice(0, 10);
 
 export default function Page() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [userCards, setUserCards] = useState<UserCard[]>([]);
   const [loadingCards, setLoadingCards] = useState(true);
@@ -50,6 +51,9 @@ export default function Page() {
     notes: '',
     bookedThroughPortal: false,
   });
+
+  // Merchant options from benefit (pre-populated from query params)
+  const [merchantOptions, setMerchantOptions] = useState<string[]>([]);
 
   const [mccSearch, setMccSearch] = useState('');
   const [mccResults, setMccResults] = useState<MccResult[]>([]);
@@ -86,8 +90,20 @@ export default function Page() {
 
         const cards = await getUserCards(accessToken);
         setUserCards(cards ?? []);
-        if (cards?.length > 0) {
+        
+        // Pre-select card from query params if provided
+        const cardIdParam = searchParams.get('card_id');
+        if (cardIdParam) {
+          setForm((f) => ({ ...f, credit_card_id: cardIdParam }));
+        } else if (cards?.length > 0) {
           setForm((f) => ({ ...f, credit_card_id: cards[0].credit_card_id }));
+        }
+
+        // Pre-populate merchant options from query params if provided
+        const merchantsParam = searchParams.get('merchants');
+        if (merchantsParam) {
+          const options = merchantsParam.split(',').filter(Boolean);
+          setMerchantOptions(options);
         }
       } catch (err) {
         console.error('Failed to load cards', err);
@@ -97,7 +113,7 @@ export default function Page() {
     };
 
     loadCards();
-  }, []);
+  }, [searchParams]);
 
   // -------------------- MCC SEARCH --------------------
   useEffect(() => {
@@ -304,13 +320,28 @@ export default function Page() {
 
         <div className="form-field">
           <label>Merchant Name (Required)</label>
-          <input
-            type="text"
-            value={form.merchant}
-            onChange={(e) => setForm((prev) => ({ ...prev, merchant: e.target.value }))}
-            placeholder="e.g. Chipotle Mexican Grill"
-            required
-          />
+          {merchantOptions.length > 0 ? (
+            <select
+              value={form.merchant}
+              onChange={(e) => setForm((prev) => ({ ...prev, merchant: e.target.value }))}
+              required
+            >
+              <option value="">Select a merchant</option>
+              {merchantOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <input
+              type="text"
+              value={form.merchant}
+              onChange={(e) => setForm((prev) => ({ ...prev, merchant: e.target.value }))}
+              placeholder="e.g. Chipotle Mexican Grill"
+              required
+            />
+          )}
         </div>
 
         <div className="form-field">

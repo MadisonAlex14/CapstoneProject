@@ -1,0 +1,14 @@
+transaction_date,merchant_name,mcc_id,amount,notes
+2026-03-31,Amazon,5311,42.17,New headphones
+2026-03-30,Starbucks,5812,6.89,Latte and croissant
+2026-03-29,Shell,5541,55.00,Gas fill-up
+
+# INSTRUCTIONS:
+# - Fill out each row with a transaction.
+# - transaction_date: YYYY-MM-DD (required)
+# - merchant_name: Name of the merchant (required)
+# - mcc_id: Merchant Category Code (required, e.g. 5411 for groceries)
+# - amount: Transaction amount in USD (required)
+# - notes: Optional notes for your reference
+# - Do not remove the header row.
+# - Save as CSV before uploading.

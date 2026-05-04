@@ -26,8 +26,8 @@ export const supabaseConfig = {
  * These can be added to .env.local as TEST_USER_EMAIL and TEST_USER_PASSWORD
  */
 export const testUserCredentials = {
-  email: getEnvVar('TEST_USER_EMAIL', 'test@example.com'),
-  password: getEnvVar('TEST_USER_PASSWORD', 'testpassword123'),
+  email: getEnvVar('TEST_USER_EMAIL', 'abbygerstner16@gmail.com'),
+  password: getEnvVar('TEST_USER_PASSWORD', 'creditmaxxing123!'),
 };
 
 /**

@@ -1,7 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import styles from "../../styles/auth.module.css";
+
+import { getUserBenefits } from "../../lib/functions/getUserBenefits";
+import { deleteBenefitEntry } from "../../lib/functions/deleteBenefitEntry";
 
 // ---------------------- TYPES ----------------------
 type BenefitHistory = {
@@ -45,6 +49,9 @@ const CARD_THEMES: Record<string, { bg: string; gradient: string }> = {
 
 // ---------------------- COMPONENT ----------------------
 export default function BenefitsPage() {
+  // ---------------------- ROUTING ----------------------
+  const router = useRouter();
+  
   const [benefits, setBenefits] = useState<Benefit[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedCard, setSelectedCard] = useState("");
@@ -63,6 +70,18 @@ export default function BenefitsPage() {
     merchant: "",
     notes: "",
   });
+  
+  const [userBenefits, setUserBenefits] = useState<UserBenefit[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Filters
+  const [filterCardId, setFilterCardId] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterReset, setFilterReset] = useState("all");
+
+  // Expanded history row
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   // ---------------------- EFFECTS ----------------------
   useEffect(() => {
@@ -73,6 +92,9 @@ export default function BenefitsPage() {
       console.error("Failed to load benefits from localStorage", err);
     }
   }, []);
+  
+ 
+  // ---------------------- DATA LOAD ----------------------
 
   const saveBenefitsToStorage = (data: Benefit[]) => {
     try {
@@ -182,7 +204,21 @@ export default function BenefitsPage() {
     } else {
       updatedBenefits = [...benefits, benefitData];
     }
-
+    
+    function openLogModal(ub: typeof enriched[number]) {
+      // Build the merchant options from the benefit targeting
+      const merchantOptions = ub.benefit.targeting_type === "merchant"
+        ? ub.benefit.benefit_merchant?.map((m) => m.merchant_name ?? m.merchant_keyword).filter(Boolean) ?? []
+      : [];
+    
+      // Navigate to transactions/new with pre-filled params
+      const params = new URLSearchParams({
+        card_id: ub.credit_card.credit_card_id,
+        merchants: merchantOptions.join(","),
+      });
+      
+      router.push(`/transactions/new?${params.toString()}`);
+    }
     setBenefits(updatedBenefits);
     saveBenefitsToStorage(updatedBenefits);
     resetForm();
@@ -227,8 +263,6 @@ export default function BenefitsPage() {
            Maximize the value of your credit cards with curated perks, cash back, and exclusive offers.
           </p>
       </div>
-
-
 
       <section className={styles.Summary}>
        <div className={styles.SummaryCards}>
