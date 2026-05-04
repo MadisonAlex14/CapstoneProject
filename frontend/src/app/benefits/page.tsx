@@ -240,7 +240,7 @@ export default function BenefitsPage() {
 
       {/* Filters + Table */}
       <div className="CardDetailsSection" style={{ marginTop: "1.5rem" }}>
-        <h2>Tracked Benefits</h2>
+        <h2 className={styles.SummaryTitle}>Tracked Benefits</h2>
 
         {/* Filter row — matches transaction page pattern */}
         <div className="CardDetailsActionRow">
@@ -290,7 +290,7 @@ export default function BenefitsPage() {
           </p>
         ) : (
           <div className="transactions-table-wrapper">
-            <table className="CardDashboardTable">
+            <table className={styles.table}>
               <thead>
                 <tr>
                   <th>Card</th>
@@ -371,8 +371,7 @@ export default function BenefitsPage() {
                             <span style={{ fontSize: "0.8rem", color: "#9ca3af" }}>—</span>
                           ) : (
                             <button
-                              className="CardDetailsButtonPrimary"
-                              style={{ fontSize: "0.8rem", padding: "0.35rem 0.75rem" }}
+                              className={styles.ModalButton}
                               onClick={() => openLogModal(ub)}
                             >
                               Log Usage

@@ -561,6 +561,16 @@ export default function PromotionsPage() {
               </>
             )}
 
+
+
+
+
+
+
+
+
+
+
             {/* Start date + initial spend */}
             {enrollPromotionId && (
               <>
@@ -590,12 +600,12 @@ export default function PromotionsPage() {
               <p style={{ color: "#dc2626", fontSize: "0.9rem" }}>{enrollError}</p>
             )}
 
-            <div className={styles.promotionsPopupActions}>
-              <button className={styles.promotionsPopupCancel} onClick={resetEnrollModal}>
+            <div className={styles.buttonRow}>
+              <button className={styles.cancelBtn} onClick={resetEnrollModal}>
                 Cancel
               </button>
               <button
-                className={styles.promotionsPopupAdd}
+                className={styles.saveBtn}
                 onClick={handleEnroll}
                 disabled={enrollLoading}
               >
@@ -634,6 +644,9 @@ export default function PromotionsPage() {
             </div>
           </div>
         </div>
+
+
+
       )}
     </div>
   );
