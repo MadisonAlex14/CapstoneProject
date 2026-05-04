@@ -129,7 +129,7 @@ export default function ForgotPassword({ isOpen, onClose }: ForgotPasswordProps)
             </p>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="modular-form" style={{ marginTop: '0' }}>
+          <form onSubmit={handleSubmit}>
             {error && (
               <div className={styles.error}>
                 <p style={{ margin: 0, marginBottom: '0.5rem' }}>{error}</p>
@@ -141,11 +141,12 @@ export default function ForgotPassword({ isOpen, onClose }: ForgotPasswordProps)
               </div>
             )}
 
-            <div className="form-field">
-              <label htmlFor="reset-email">
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="reset-email">
                 Email Address
               </label>
               <input
+                className={styles.input}
                 id="reset-email"
                 type="email"
                 value={email}
