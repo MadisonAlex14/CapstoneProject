@@ -656,40 +656,23 @@ export default function CardsPage() {
     }
   };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   return (
-    <div className={styles.PageContainer}>
+    <div className={styles.CardPage}>
       <div className={styles.PageHero}>
         <h1 className={styles.PageTitle}>Your Cards</h1>
           <p className={styles.PageSubtitle}>
             Manage your credit cards, track usage, and explore available rewards and benefits.
           </p>
        </div>
+      <div className={styles.CardHeader}>
+        
 
-
-       <button className={styles.ModalButton} style={{ marginBottom: "30px" }}
+        <button className={styles.CardAddButton}
           onClick={handleOpenAddCard}
           >
           + Add Card
         </button>
+      </div>
 
       {cards.length === 0 ? (
         <div className={styles.CardEmptyState}>
@@ -722,16 +705,37 @@ export default function CardsPage() {
               }}
             >
               <div
-                className={styles.CardInner}
-                style={{ backgroundImage: card.image_url ? `url('${card.image_url}')` : 'none', }}
+                style={{
+                  position: 'relative',
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  backgroundImage: card.image_url ? `url('${card.image_url}')` : 'none',
+                }}
               >
                 {/* Background overlay for better text readability */}
-                <div className={styles.CardOverlay} />
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.4) 100%)',
+                    borderRadius: 'inherit',
+                    zIndex: 1,
+                  }}
+                />
+
+                <div className={styles.CardTop} style={{ position: 'relative', zIndex: 2 }}>
 
 
-
-                <div className={styles.CardMenuWrapper}>
                   <div
+                    className={styles.CardMenuWrapper}
                     onClick={(e) => e.stopPropagation()}
                   >
                     <button
@@ -749,7 +753,7 @@ export default function CardsPage() {
                     </button>
 
                     {openMenuId === card.credit_card_type_id && (
-                      <div className={styles.dropdownCardsPage}>
+                      <div className={styles.CardMenuDropdown}>
                         <button
                           type="button"
                           className={styles.CardMenuItem}
@@ -775,7 +779,7 @@ export default function CardsPage() {
                   </div>
                 </div>
 
-                <div className={styles.CardCardBody}>
+                <div className={styles.CardCardBody} style={{ position: 'relative', zIndex: 2 }}>
                   <h2 className={styles.CardName}>{card.cardName}</h2>
 
                   {card.cardNickname && card.cardNickname !== card.cardName && (
@@ -783,7 +787,7 @@ export default function CardsPage() {
                   )}
                 </div>
 
-                <div className={styles.CardBottomRow}>
+                <div className={styles.CardBottomRow} style={{ position: 'relative', zIndex: 2 }}>
                   <p className={styles.CardNumber}>•••• {card.last4}</p>
                 </div>
               </div>
@@ -1205,10 +1209,10 @@ export default function CardsPage() {
 
               {formError && <p className={styles.CardError}>{formError}</p>}
 
-              <div className={styles.buttonRow}>
+              <div className={styles.CardActions}>
                 <button
                   type="button"
-                  className={styles.cancelBtn}
+                  className={styles.CardCancelButton}
                   onClick={handleCloseAddCard}
                 >
                   Cancel
@@ -1216,7 +1220,7 @@ export default function CardsPage() {
 
                 <button
                   type="submit"
-                  className={styles.saveBtn}
+                  className={styles.CardSaveButton}
                   disabled={!step1Complete || !step2Complete}
                 >
                   {editingCardId ? "Update Card" : "Save Card"}

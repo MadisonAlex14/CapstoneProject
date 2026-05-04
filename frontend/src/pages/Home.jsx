@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
+import React from 'react'
 import { motion } from "framer-motion";
-import styles from "../styles/auth.module.css";
+import "../App.css";
 
 /* -----------Section photos-------------- */
 import HappyMoney from "../assets/HappyMoney.png";
@@ -31,68 +31,45 @@ export default function Home() {
   };
 
   return (
-    <div className={styles.PageContainer}>
-        <div className={styles.PageHero}>
-          <h1 className={styles.PageTitle}>Welcome to CreditMaxxing!</h1>
-            <p className={styles.PageSubtitle}>
-              Track your spending, maximize rewards, and take control of your financial future in one simple dashboard.
-           </p>
-         </div>
-         
+    <div className="home-page">
       <motion.div
-        className={styles.homeSections}
+        className="home-sections"
         variants={container}
         initial="hidden"
         animate="show"
       >
-        {/* Section 1 */}
-        <motion.section className={styles.Summary} variants={item}>
-          <div className={styles.homeSectionImgWrap}>
+        <motion.section className="home-section" variants={item}>
+          <div className="home-section-imgWrap">
             <img
-              className={styles.homeSectionImg}
+              className="home-section-img"
               src={HappyMoney.src ?? HappyMoney}
               alt="Happy Money"
             />
           </div>
 
-          <div>
-            <h2 className={styles.SummaryTitle}>
-              “Finances finally feel simple.”
-            </h2>
-
-            <p className={styles.homeSectionBody}>
+          <div className="home-section-text">
+            <h2 className="home-section-title">“Finances finally feel simple.”</h2>
+            <p className="home-section-body">
               “Before CreditMaxxing, I tracked rewards and spending in three different places.
-              Now everything is organized, I stay on budget, and I earn more rewards without thinking about it.”
+              Now everything is organized, I stay on budget, and I earn more rewards without
+              thinking about it.”
             </p>
-
-            <p className={styles.homeSectionSubtle}>
-              — Verified Customer
-            </p>
+            <p className="home-section-subtle">— Verified Customer</p>
           </div>
         </motion.section>
 
-
-
-
-
-
-
-        {/* Customer Review Section */}
-        <motion.section className={styles.Summary}
-          variants={item}
-        >
-          <div className={styles.homeSectionImgWrap}>
+        <motion.section className="home-section home-section-reverse" variants={item}>
+          <div className="home-section-imgWrap">
             <img
-              className={styles.homeSectionImg}
+              className="home-section-img"
               src={Saving.src ?? Saving}
               alt="Saving"
             />
           </div>
 
-          <div className={styles.homeSectionText}>
-            <h2 className={styles.SummaryTitle}>Customer Reviews</h2>
-
-            <ul className={styles.homeReviewList}>
+          <div className="home-section-text">
+            <h2 className="home-section-title">Customer Reviews</h2>
+            <ul className="home-review-list">
               <li>⭐⭐⭐⭐⭐ “My rewards actually add up now.”</li>
               <li>⭐⭐⭐⭐⭐ “The budgeting view helped me stop overspending.”</li>
               <li>⭐⭐⭐⭐⭐ “Clean, simple, and I understand my spending habits.”</li>
@@ -100,42 +77,36 @@ export default function Home() {
           </div>
         </motion.section>
 
-
-
-
-
-
-
-        {/* Creditmaxxing Section */}
-        <motion.section className={styles.Summary} variants={item}>
-          <div className={`${styles.homeSectionImgWrap} ${styles.homeImageContrast}`}>
+        <motion.section className="home-section" variants={item}>
+          <div className="home-section-imgWrap home-image-contrast">
             <img
-              className={`${styles.homeSectionImg} ${styles.homeLogoFix}`}
+              className="home-section-img home-logo-fix"
               src={CreditMaxxing.src ?? CreditMaxxing}
               alt="CreditMaxxing"
             />
           </div>
 
-          <div>
-            <h2 className={styles.SummaryTitle}>
-              Track Rewards, Benefits & Promotions
-            </h2>
-            <p className={styles.SummaryLabel}>
+          <div className="home-section-text">
+            <h2 className="home-section-title">Track Rewards, Benefits & Promotions</h2>
+            <p className="home-section-body">
               CreditMaxxing helps you stay on top of everything you earn—without the clutter.
               See reward activity, benefits you can use, and promotions worth claiming.
             </p>
-            <div className={styles.homeCardGrid}>
-              <div className={styles.Card}>
-                <h3 className={styles.CardHeader}>Rewards Tracking</h3>
-                <p className={styles.CardDescription}>Track points/cashback earned by card and category in one dashboard.</p>
+
+            <div className="home-feature-grid">
+              <div className="home-feature-card">
+                <h3>Rewards Tracking</h3>
+                <p>Track points/cashback earned by card and category in one dashboard.</p>
               </div>
-              <div className={styles.Card}>
-                <h3 className={styles.CardHeader}>Benefits Reminder</h3>
-                <p className={styles.CardDescription}>Keep up with perks like travel credits, warranties, and statement credits.</p>
+
+              <div className="home-feature-card">
+                <h3>Benefits Reminder</h3>
+                <p>Keep up with perks like travel credits, warranties, and statement credits.</p>
               </div>
-              <div className={styles.Card}>
-                <h3 className={styles.CardHeader}>Promotions Hub</h3>
-                <p className={styles.CardDescription}>Spot limited-time offers and bonus categories so you don’t miss out.</p>
+
+              <div className="home-feature-card">
+                <h3>Promotions Hub</h3>
+                <p>Spot limited-time offers and bonus categories so you don’t miss out.</p>
               </div>
             </div>
           </div>

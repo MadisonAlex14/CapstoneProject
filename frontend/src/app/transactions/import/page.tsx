@@ -339,11 +339,9 @@ export default function Page() {
 
         {step === 1 && (
           <div style={{ display: 'grid', gap: '0.85rem' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.7rem' }}>
-              <label style={{ fontWeight: 600, fontSize: '1.05rem', marginBottom: '0.2rem' }}>
-                Card
-              </label>
-              <select value={card} onChange={(e) => setCard(e.target.value)} disabled={loadingCards} style={{ fontSize: '1rem', padding: '0.55rem 0.8rem', borderRadius: '7px', border: '1px solid #c1ccca', background: '#fff', marginTop: '0.1rem' }}>
+            <label>
+              Card
+              <select value={card} onChange={(e) => setCard(e.target.value)} disabled={loadingCards}>
                 {loadingCards ? (
                   <option>Loading cards...</option>
                 ) : userCards.length === 0 ? (
@@ -356,7 +354,7 @@ export default function Page() {
                   ))
                 )}
               </select>
-            </div>
+            </label>
             <div className="CardDetailsActionRow">
               <button className="CardDetailsButtonSecondary" onClick={() => router.push('/transactions')}>Cancel</button>
               <button className="CardDetailsButtonPrimary" onClick={() => setStep(2)} disabled={!card}>Next</button>
@@ -374,8 +372,11 @@ export default function Page() {
               Drag and drop .csv (or .xlsx) here, or <label htmlFor="import-file" style={{ color: '#1f4d3a', cursor: 'pointer', textDecoration: 'underline' }}>browse</label>.
               <input id="import-file" type="file" accept=".csv,.xlsx" hidden onChange={onFileInput} />
             </div>
-            <a href="/transactions-import-template.csv" download style={{ color: "#285d46", textDecoration: "underline", fontSize: "0.9rem", cursor: "pointer" }}>
+            <p style={{ fontSize: "0.9rem", color: "#666", marginBottom: "0.75rem" }}>
               Download template file (transaction_date, merchant_name, mcc, amount, notes)
+            </p>
+            <a href="/transactions-import-template.csv" download style={{ color: "#0066cc", textDecoration: "underline", fontSize: "0.9rem", cursor: "pointer" }}>
+              Download template
             </a>
             {fileError && <p style={{ color: 'red' }}>{fileError}</p>}
             <div className="CardDetailsActionRow">

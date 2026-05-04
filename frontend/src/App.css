@@ -143,9 +143,7 @@ html, body {
 .nav-links-container {
   display: flex;
   align-items: center;
-  gap: 30px;
-  flex: 1;
-  justify-content: center;
+  gap: 20px;
 }
 .nav-link:hover {
   color: #A6A969; 
@@ -512,11 +510,9 @@ h1,
 }
 .signup-btn {
   background-color: #617672;
-  text-decoration: none;
 }
 .login-btn {
   background-color: #A6A969;
-  text-decoration: none;
 }
 .profile-menu {
   position: relative;
