@@ -113,6 +113,7 @@ html, body {
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
+  text-decoration: none;
 }
 .nav-button:hover {
   background-color: #e5e7eb; 

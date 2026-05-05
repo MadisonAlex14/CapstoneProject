@@ -468,8 +468,32 @@ export default function CardsPage() {
   };
 
   const handleEditCard = (card: CreditCard) => {
-    const matchedType =
+    let matchedType =
       cardTypes.find((type: CardType) => type.name === card.cardName) || null;
+
+    // If cardTypes isn't loaded yet, load it
+    if (cardTypes.length === 0) {
+      (async () => {
+        try {
+          const localToken = localStorage.getItem('accessToken');
+          const supabaseToken = localStorage.getItem('supabase.auth.token');
+          let accessToken: string | null = localToken;
+
+          if (!accessToken && supabaseToken) {
+            const session = JSON.parse(supabaseToken);
+            accessToken = session?.currentSession?.access_token || session?.access_token || null;
+          }
+
+          if (accessToken) {
+            const types = await getCardTypes(accessToken);
+            const loadedTypes = Array.isArray(types) ? types : [];
+            setCardTypes(loadedTypes);
+          }
+        } catch (error) {
+          console.error('Failed to load card types:', error);
+        }
+      })();
+    }
 
     setEditingCardId(card.credit_card_type_id);
     setFormError("");
@@ -694,13 +718,19 @@ export default function CardsPage() {
                   styles.defaultCard
                 }
               `}
-              onClick={() => handleCardClick(card.credit_card_type_id)}
+              onClick={(e) => {
+                if (openMenuId !== card.credit_card_type_id) {
+                  handleCardClick(card.credit_card_type_id);
+                }
+              }}
               role="button"
               tabIndex={0}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
-                  handleCardClick(card.credit_card_type_id);
+                  if (openMenuId !== card.credit_card_type_id) {
+                    handleCardClick(card.credit_card_type_id);
+                  }
                 }
               }}
             >
