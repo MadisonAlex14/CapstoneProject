@@ -305,10 +305,11 @@ export default function RewardsPage() {
         <p style={{ color: "#b42318", padding: "2rem 0" }}>{error}</p>
       ) : (
         <>
-          {/* Rewards Earned Over Time Chart */}
+          <h2 className={styles.SummaryTitle} style={{ marginBottom: "20px", textAlign: "center", fontSize: "25px", justifyContent: "center"}}>
+                Rewards Earned Over Time
+              </h2>
           <div className="CardDetailsSection" style={{ marginTop: "1.5rem" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.75rem", marginBottom: "1rem" }}>
-              <h2 style={{ margin: 0 }}>Rewards Earned Over Time</h2>
               <div className="CardDetailsActionRow" style={{ margin: 0 }}>
                 <label>
                   Card
@@ -363,9 +364,12 @@ export default function RewardsPage() {
           </div>
 
           {/* Rewards Balance Per Card */}
+          <h2 className={styles.SummaryTitle} style={{ marginTop: "30px", marginBottom: "30px", textAlign: "center", fontSize: "25px", justifyContent: "center"}}>
+                Rewards Balance
+              </h2>
           <div className="CardDetailsSection" style={{ marginTop: "1.5rem" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.75rem" }}>
-              <h2 style={{ margin: 0 }}>Rewards Balance</h2>
+              
               {eligibleCards.length > 0 && (
                <button className={styles.ModalButton} onClick={() => openLogModal()}>
                   + Log Redemption
@@ -437,9 +441,12 @@ export default function RewardsPage() {
           </div>
 
           {/* Redemption Log */}
+          <h2 className={styles.SummaryTitle} style={{ marginTop: "30px", marginBottom: "30px", textAlign: "center", fontSize: "25px", justifyContent: "center"}}>
+                Redemption Log
+              </h2>
           <div className="CardDetailsSection" style={{ marginTop: "1.5rem" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.75rem", marginBottom: "0.75rem" }}>
-              <h2 style={{ margin: 0 }}>Redemption Log</h2>
+              
               <div className="CardDetailsActionRow" style={{ margin: 0 }}>
                 <label>
                   Card

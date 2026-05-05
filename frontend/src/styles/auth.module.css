@@ -1638,28 +1638,45 @@
 
 .dQuickActions {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem;
   margin-bottom: 1.5rem;
+  align-items: stretch;
 }
 
 .dQuickActionCard {
   border: 1px solid #d8e5de;
   background: rgba(255, 255, 255, 0.88);
-  border-radius: 20px;
-  padding: 1rem;
+  border-radius: 16px;
+
+  padding: 0.6rem 0.8rem;
   display: flex;
   align-items: center;
-  gap: 0.8rem;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  box-sizing: border-box;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.04);
 }
 
 .dQuickActionCard:hover {
   transform: translateY(-3px);
   border-color: #bfd6ca;
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.07);
+}
+
+@media (max-width: 1024px) {
+  .dQuickActions {
+    grid-template-columns: repeat(2, minmax(160px, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .dQuickActions {
+    grid-template-columns: 1fr;
+  }
 }
 
 .dQuickActionEmoji {
@@ -2421,6 +2438,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
+  justify-content: center;
 }
 
 /* Responsive */
@@ -3063,11 +3081,12 @@
   display: flex;
   gap: 1rem;
   margin-top: 1rem;
+  justify-content: center;
 }
 
 .promotionsSelect {
   border: 1px solid #d1d5db;
-  border-radius: 0.75rem;
+  border-radius: .75rem;
   padding: 0.5rem 0.75rem;
   font-size: 1rem;
   outline: none;

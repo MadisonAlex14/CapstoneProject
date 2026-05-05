@@ -70,6 +70,14 @@ export default function Dashboard() {
     return "Good evening 🌙";
   }, []);
 
+
+  const [summary, setSummary] = useState({
+    totalCards: 0,
+    rewardsYTD: 0,
+    benefitsRemaining: 0,
+    netValue: 0,
+  });
+
   if (loading) {
     return (
       <div className={styles.PageContainer}>
@@ -113,6 +121,9 @@ export default function Dashboard() {
         </div>
 
         {/* QUICK ACTIONS */}
+        <div className={styles.SummaryTitle} style={{ marginBottom: "20px"}}>
+          Quick Actions
+        </div>
         <div className={styles.dQuickActions}>
           <button
             type="button"
@@ -141,19 +152,56 @@ export default function Dashboard() {
             <span className={styles.dQuickActionText}>View Profile</span>
           </button>
 
-
           <button
             type="button"
             className={styles.dQuickActionCard}
             onClick={() => router.push("/help")}
           >
             <span className={styles.dQuickActionEmoji}>💡</span>
-            <span className={styles.dQuickActionText}>Get Tips</span>
+            <span className={styles.dQuickActionText}>Get Help</span>
           </button>
 
-
-
         </div>
+
+
+
+         {/* TOP SUMMARY BAR */}
+        <section className={styles.Summary}>
+          <div className={styles.SummaryCards}>
+
+            <div className={styles.SummaryCard}>
+              <p className={styles.SummaryLabel}>Total Cards</p>
+              <p className={styles.SummaryValue}>{summary.totalCards}</p>
+            </div>
+
+            <div className={styles.SummaryCard}>
+              <p className={styles.SummaryLabel}>Total Rewards Earned (YTD)</p>
+              <p className={styles.SummaryValue}>
+                ${summary.rewardsYTD.toFixed(2)}
+              </p>
+            </div>
+
+            <div className={styles.SummaryCard}>
+              <p className={styles.SummaryLabel}>
+                Total Benefit Value Remaining
+              </p>
+              <p className={styles.SummaryValue}>
+                ${summary.benefitsRemaining.toFixed(2)}
+              </p>
+            </div>
+
+            <div className={styles.SummaryCard}>
+              <p className={styles.SummaryLabel}>Net Value (YTD)</p>
+              <p className={styles.SummaryValue}>
+                ${summary.netValue.toFixed(2)}
+              </p>
+            </div>
+
+          </div>
+        </section>
+
+
+
       </section>
     </main>
   );

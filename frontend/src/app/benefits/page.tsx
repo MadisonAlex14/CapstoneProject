@@ -239,13 +239,17 @@ export default function BenefitsPage() {
       </section>
 
       {/* Filters + Table */}
+      <h2 className={styles.SummaryTitle} style={{ marginTop: "30px", marginBottom: "30px", textAlign: "center", fontSize: "25px", justifyContent: "center"}}>
+                Tracked Benefits
+              </h2>
       <div className="CardDetailsSection" style={{ marginTop: "1.5rem" }}>
-        <h2 className={styles.SummaryTitle}>Tracked Benefits</h2>
+
+        
 
         {/* Filter row — matches transaction page pattern */}
-        <div className="CardDetailsActionRow">
+        <div className="CardDetailsActionRow" style={{ justifyContent: "center"}}>
           <label>
-            Card
+            Card: 
             <select value={filterCardId} onChange={(e) => setFilterCardId(e.target.value)}>
               <option value="all">All Cards</option>
               {cards.map((c) => (
@@ -290,7 +294,7 @@ export default function BenefitsPage() {
           </p>
         ) : (
           <div className="transactions-table-wrapper">
-            <table className={styles.table}>
+            <table className="CardDashboardTable">
               <thead>
                 <tr>
                   <th>Card</th>

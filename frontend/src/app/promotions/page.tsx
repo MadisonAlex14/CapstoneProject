@@ -451,14 +451,10 @@ export default function PromotionsPage() {
 
       {/* Main promotions list */}
       <section>
-        <h2 className={styles.promotionsListTitle}>
-          {filterStatus === "Completed" ? "Completed Promotions"
-            : filterStatus === "Expired" ? "Expired Promotions"
-            : filterStatus === "AtRisk" ? "At Risk Promotions"
-            : "Your Promotions"}
-        </h2>
+
         <button
           className={styles.promotionsEnrollButton}
+          style={{ marginBottom: "60px", marginTop: "60px"}}
           onClick={(e) => {
             e.stopPropagation();
             setShowEnrollModal(true);
@@ -466,6 +462,17 @@ export default function PromotionsPage() {
         >
           + Enroll in Promotion
         </button>
+
+
+
+
+        <h2 className={styles.SummaryTitle} style={{ marginBottom: "20px", textAlign: "center", fontSize: "25px"}}>
+          {filterStatus === "Completed" ? "Completed Promotions"
+            : filterStatus === "Expired" ? "Expired Promotions"
+            : filterStatus === "AtRisk" ? "At Risk Promotions"
+            : "Your Promotions"}
+        </h2>
+        
         <div className={styles.promotionsList}>
           {activePromotions.length === 0 ? (
             <p style={{ color: "#6b7280", padding: "1rem 0" }}>No promotions found.</p>
@@ -561,16 +568,6 @@ export default function PromotionsPage() {
               </>
             )}
 
-
-
-
-
-
-
-
-
-
-
             {/* Start date + initial spend */}
             {enrollPromotionId && (
               <>
@@ -644,8 +641,6 @@ export default function PromotionsPage() {
             </div>
           </div>
         </div>
-
-
 
       )}
     </div>

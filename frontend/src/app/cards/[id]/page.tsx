@@ -430,7 +430,8 @@ export default function CardDashboard({
                   onDrop={(e) => handleDrop(e, moduleId)}
                 >
                   <div>
-                    <h2 className={styles.SummaryTitle}>
+                    <h2 className={styles.SummaryTitle} style={{ marginTop: "30px", marginBottom: "30px", textAlign: "center", fontSize: "25px", justifyContent: "center"}}
+                     >
                       {isRewards
                         ? "Rewards Breakdown"
                         : isBenefits
@@ -574,6 +575,8 @@ export default function CardDashboard({
                     </>
                   )}
 
+
+                  
                   {isBenefits && (
                     <>
                       <div className={styles.buttonRow}>
