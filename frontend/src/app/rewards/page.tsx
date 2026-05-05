@@ -17,6 +17,7 @@ import { getRewardsEarnedOverTime, type RewardsEarnedEntry } from "../../lib/fun
 import { getUserRedemptions, type UserRedemption } from "../../lib/functions/getUserRedemptions";
 import { logUserRedemption } from "../../lib/functions/logUserRedemption";
 import { deleteUserRedemption } from "../../lib/functions/deleteUserRedemption";
+import { px } from "framer-motion";
 
 // -------------------- CONSTANTS --------------------
 
@@ -304,11 +305,17 @@ export default function RewardsPage() {
         <p style={{ color: "#b42318", padding: "2rem 0" }}>{error}</p>
       ) : (
         <>
-          {/* Rewards Earned Over Time Chart */}
+          <h2 className={styles.SummaryTitle} style={{ marginBottom: "20px", textAlign: "center", fontSize: "25px", justifyContent: "center"}}>
+                Rewards Earned Over Time
+              </h2>
+
+
           <div className="CardDetailsSection" style={{ marginTop: "1.5rem" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.75rem", marginBottom: "1rem" }}>
-              <h2 style={{ margin: 0 }}>Rewards Earned Over Time</h2>
-              <div className="CardDetailsActionRow" style={{ margin: 0 }}>
+                <div className="CardDetailsActionRow" style={{ justifyContent: "center"}}>
+
+               
+          
                 <label>
                   Card
                   <select value={chartCardId} onChange={(e) => setChartCardId(e.target.value)}>
@@ -362,13 +369,17 @@ export default function RewardsPage() {
           </div>
 
           {/* Rewards Balance Per Card */}
+          <h2 className={styles.SummaryTitle} style={{ marginTop: "30px", marginBottom: "30px", textAlign: "center", fontSize: "25px", justifyContent: "center"}}>
+                Rewards Balance
+              </h2>
           <div className="CardDetailsSection" style={{ marginTop: "1.5rem" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.75rem" }}>
-              <h2 style={{ margin: 0 }}>Rewards Balance</h2>
+              
               {eligibleCards.length > 0 && (
-                <button className="CardDetailsButtonPrimary" onClick={() => openLogModal()}>
+               <button className={styles.ModalButton} onClick={() => openLogModal()}>
                   + Log Redemption
                 </button>
+
               )}
             </div>
 
@@ -418,12 +429,10 @@ export default function RewardsPage() {
                           </td>
                           <td>
                             {card.reward_currency_type !== "cash" && (
-                              <button
-                                className="CardDetailsButtonPrimary"
-                                style={{ fontSize: "0.8rem", padding: "0.35rem 0.75rem" }}
+                              <button className={styles.ModalButton}
                                 onClick={() => openLogModal(card.credit_card_id)}
                               >
-                                Log Redemption
+                              Log Redemption
                               </button>
                             )}
                           </td>
@@ -437,9 +446,12 @@ export default function RewardsPage() {
           </div>
 
           {/* Redemption Log */}
+          <h2 className={styles.SummaryTitle} style={{ marginTop: "30px", marginBottom: "30px", textAlign: "center", fontSize: "25px", justifyContent: "center"}}>
+                Redemption Log
+              </h2>
           <div className="CardDetailsSection" style={{ marginTop: "1.5rem" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.75rem", marginBottom: "0.75rem" }}>
-              <h2 style={{ margin: 0 }}>Redemption Log</h2>
+              
               <div className="CardDetailsActionRow" style={{ margin: 0 }}>
                 <label>
                   Card
@@ -463,7 +475,7 @@ export default function RewardsPage() {
               </p>
             ) : (
               <div className="transactions-table-wrapper">
-                <table className="CardDashboardTable">
+                <table className={styles.table}>
                   <thead>
                     <tr>
                       <th>Date</th>
@@ -520,12 +532,11 @@ export default function RewardsPage() {
 
       {/* Log Redemption Modal */}
       {showLogModal && (
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2000 }}>
-          <div style={{ background: "#fff", borderRadius: "16px", width: "520px", maxWidth: "95%", padding: "1.5rem", boxShadow: "0 16px 34px rgba(0,0,0,0.25)", maxHeight: "90vh", overflowY: "auto" }}>
-            <h2 style={{ margin: "0 0 1rem" }}>Log Redemption</h2>
+        <div className={styles.ModalOverlay}>
+          <div className={styles.Modal}>
+            <h2 className={styles.ModalTitle}>Log Redemption</h2>
             <form style={{ display: "grid", gap: "0.75rem" }} onSubmit={handleLogRedemption}>
-              <label>
-                Card
+              <label> Card
                 <select
                   required
                   style={inputStyle}
@@ -601,10 +612,10 @@ export default function RewardsPage() {
                 <p style={{ color: "#b42318", fontSize: "0.875rem", margin: 0 }}>{logError}</p>
               )}
 
-              <div style={{ display: "flex", gap: "0.6rem", justifyContent: "flex-end", marginTop: "0.5rem" }}>
+              <div className={styles.buttonRow}>
                 <button
                   type="button"
-                  className="CardDetailsButtonSecondary"
+                  className={styles.cancelBtn}
                   onClick={closeLogModal}
                   disabled={logLoading}
                 >
@@ -612,7 +623,7 @@ export default function RewardsPage() {
                 </button>
                 <button
                   type="submit"
-                  className="CardDetailsButtonPrimary"
+                  className={styles.saveBtn}
                   disabled={logLoading || !logForm.cardId || !logForm.type}
                 >
                   {logLoading ? "Saving…" : "Save"}
@@ -627,21 +638,21 @@ export default function RewardsPage() {
       {deleteId && (
         <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2000 }}>
           <div style={{ background: "#fff", borderRadius: "16px", width: "400px", maxWidth: "95%", padding: "1.5rem", boxShadow: "0 16px 34px rgba(0,0,0,0.25)" }}>
-            <h2 style={{ margin: "0 0 0.75rem" }}>Delete Redemption</h2>
+            <h2 style={{ margin: "0 0 0.75rem", textAlign:"center", padding:"20px"  }}>Delete Redemption</h2>
             <p style={{ color: "#6b7280", marginBottom: "1.25rem" }}>
               Are you sure you want to delete this redemption? This cannot be undone.
             </p>
-            <div style={{ display: "flex", gap: "0.6rem", justifyContent: "flex-end" }}>
+            <div className={styles.buttonRow}>
               <button
-                className="CardDetailsButtonSecondary"
+                className={styles.cancelBtn}
                 onClick={() => setDeleteId(null)}
                 disabled={deleteLoading}
               >
                 Cancel
               </button>
               <button
-                className="CardDetailsButtonPrimary"
-                style={{ background: "#b42318", borderColor: "#b42318" }}
+                className={styles.saveBtn}
+                style={{ background: "#b42318", borderColor: "#b42318", color:"white"}}
                 onClick={() => handleDeleteRedemption(deleteId)}
                 disabled={deleteLoading}
               >

@@ -346,8 +346,8 @@ export default function CardDashboard({
 
   if (!card) {
     return (
-      <main className={styles.CardDetailsPage}>
-        <div className={styles.CardDetailsContainer}>
+      <main className={styles.Page}>
+        <div className={styles.PageContainer}>
           <section className={styles.CardDetailsSection}>
             <h2>Loading card...</h2>
             <p>Loading card details...</p>
@@ -358,50 +358,55 @@ export default function CardDashboard({
   }
 
   return (
-    <main className={styles.CardDetailsPage}>
-      <div className={styles.CardDetailsContainer}>
-        <button
-          className={styles.CardBackButton}
-          type="button"
-          onClick={() => router.push("/cards")}
-        >
-          ← Back to Cards
-        </button>
+    <main className={styles.Page}>
+      <div className={styles.PageContainer}>
 
-        <section className={styles.CardDetailsHero}>
-          <h1 className={styles.CardDetailsTitle}>{card.cardName}</h1>
-          <p className={styles.CardDetailsIssuerID}>
+        <section className={styles.PageHero}>
+          <h1 className={styles.PageTitle}>{card.cardName}</h1>
+          <p className={styles.PageSubtitle}>
             {card.issuer_id} • •••• {card.last4} • {card.rewardsType}
           </p>
         </section>
 
-        <section className={styles.CardDetailsSection}>
-          <div className={styles.CardDetailsMetaGrid}>
-            <div className={styles.CardDetailsStat}>
-              <span className={styles.CardDetailsStatLabel}>Annual fee</span>
-              <span className={styles.CardDetailsStatValue}>-${annual_feeValue.toFixed(2)}</span>
-            </div>
-            <div className={styles.CardDetailsStat}>
-              <span className={styles.CardDetailsStatLabel}>Rewards earned</span>
-              <span className={styles.CardDetailsStatValue}>${rewardsEarned.toFixed(2)}</span>
-            </div>
-            <div className={styles.CardDetailsStat}>
-              <span className={styles.CardDetailsStatLabel}>Benefits used</span>
-              <span className={styles.CardDetailsStatValue}>${benefitsUsed.toFixed(2)}</span>
-            </div>
-            <div className={styles.CardDetailsStat}>
-              <span className={styles.CardDetailsStatLabel}>Promotions earned</span>
-              <span className={styles.CardDetailsStatValue}>${promotionsEarned.toFixed(2)}</span>
-            </div>
-            <div className={styles.CardDetailsStat}>
-              <span className={styles.CardDetailsStatLabel}>Net value</span>
-              <span
-                className={styles.CardDetailsStatValue}
-                style={{ color: netValue < 0 ? "#b42318" : "#173b29" }}
-              >
-                {netValue < 0 ? "-" : "+"}${Math.abs(netValue).toFixed(2)}
-              </span>
-            </div>
+          <button
+            className={styles.BackButton}
+            type="button"
+            onClick={() => router.push("/cards")}
+           >
+             ← Back to Cards
+            </button>
+
+
+
+        <section className={styles.Summary}>
+           <div className={styles.SummaryCards}>
+            {[
+               { label: "Annual fee",
+                  value: `-$${annual_feeValue.toFixed(2)}`,},
+               { label: "Rewards earned",
+                value: `$${rewardsEarned.toFixed(2)}`,},
+               { label: "Benefits used",
+                 value: `$${benefitsUsed.toFixed(2)}`,},
+               { label: "Promotions earned",
+                  value: `$${promotionsEarned.toFixed(2)}`,},
+               { label: "Net value",
+                  value: (netValue < 0 ? "-" : "+") + `$${Math.abs(netValue).toFixed(2)}`, isNet: true, },
+                ].map((stat, idx) => (
+             <div key={idx} className={styles.SummaryCard}>
+               <p className={styles.SummaryLabel}>{stat.label}</p>
+               <p className={styles.SummaryValue}
+                  style={{
+                    color: stat.isNet
+                       ? netValue < 0
+                       ? "#b42318"
+                       : "#059669"
+                       : undefined,
+                   }}
+                  >
+               {stat.value}
+                </p>
+             </div>
+           ))}
           </div>
         </section>
 
@@ -424,8 +429,9 @@ export default function CardDashboard({
                   onDragOver={handleDragOver}
                   onDrop={(e) => handleDrop(e, moduleId)}
                 >
-                  <div className={styles.CardTop}>
-                    <h2>
+                  <div>
+                    <h2 className={styles.SummaryTitle} style={{ marginTop: "30px", marginBottom: "30px", textAlign: "center", fontSize: "25px", justifyContent: "center"}}
+                     >
                       {isRewards
                         ? "Rewards Breakdown"
                         : isBenefits
@@ -435,37 +441,37 @@ export default function CardDashboard({
                         : "Recent Transactions"}
                     </h2>
 
-                    <div className={styles.CardMoveMenuWrapper}>
+                    <div className={styles.MoveWrapper}>
                       <button
                         type="button"
-                        className={styles.CardMoveMenuButton}
+                        className={styles.MoveButton}
                         title="Reorder section"
                         onClick={() =>
                           setOpenMoveMenuId((prev) => (prev === moduleId ? null : moduleId))
                         }
                       >
-                        ☰
+                        ⋮
                       </button>
 
                       {openMoveMenuId === moduleId && (
-                        <div className={styles.CardMoveMenuDropdown}>
+                        <div className={styles.MoveDropdown}>
                           <button
                             type="button"
-                            className={styles.CardMoveMenuItem}
+                            className={styles.MoveMenu}
                             onClick={() => moveModuleToTop(moduleId)}
                           >
                             Move to Top
                           </button>
                           <button
                             type="button"
-                            className={styles.CardMoveMenuItem}
+                            className={styles.MoveMenu}
                             onClick={() => enableMoveMode(moduleId)}
                           >
                             Move
                           </button>
                           <button
                             type="button"
-                            className={styles.CardMoveMenuItem}
+                            className={styles.MoveMenu}
                             onClick={() => moveModuleToBottom(moduleId)}
                           >
                             Move to Bottom
@@ -537,7 +543,7 @@ export default function CardDashboard({
                       )}
 
                       <div style={{ overflowX: "auto", marginTop: "1rem" }}>
-                        <table className={styles.CardDashboardTable}>
+                        <table className={styles.table}>
                           <thead>
                             <tr>
                               <th>Category</th>
@@ -569,11 +575,13 @@ export default function CardDashboard({
                     </>
                   )}
 
+
+                  
                   {isBenefits && (
                     <>
-                      <div className={styles.CardDetailsActionRow}>
+                      <div className={styles.buttonRow}>
                         <button
-                          className={styles.CardDetailsButtonSecondary}
+                          className={styles.SecondaryButton}
                           type="button"
                           onClick={() => router.push(`/benefits?cardId=${cardId}`)}
                         >
@@ -626,7 +634,7 @@ export default function CardDashboard({
 
                                 <button
                                   type="button"
-                                  className={styles.CardDetailsButtonSecondary}
+                                  className={styles.SecondaryButton}
                                   onClick={() => {
                                     setSelectedBenefitId(benefit.credit_card_type_id);
                                     setShowBenefitModal(true);
@@ -668,9 +676,9 @@ export default function CardDashboard({
 
                   {isPromotions && (
                     <>
-                      <div className={styles.CardDetailsActionRow}>
+                      <div className={styles.buttonRow}>
                         <button
-                          className={styles.CardDetailsButtonPrimary}
+                          className={styles.ModalButton}
                           type="button"
                           onClick={() => setShowEnrollPromoModal(true)}
                         >
@@ -773,14 +781,14 @@ export default function CardDashboard({
                     <>
                       <div className={styles.CardDetailsActionRow}>
                         <button
-                          className={styles.CardDetailsButtonSecondary}
+                          className={styles.SecondaryButton}
                           type="button"
                           onClick={() => router.push(`/transactions?cardId=${cardId}`)}
                         >
                           View all
                         </button>
                         <button
-                          className={styles.CardDetailsButtonPrimary}
+                          className={styles.ModalButton}
                           type="button"
                           onClick={() => router.push(`/transactions/new?cardId=${cardId}`)}
                         >
@@ -789,7 +797,7 @@ export default function CardDashboard({
                       </div>
 
                       <div style={{ overflowX: "auto", marginTop: "1rem" }}>
-                        <table className={styles.CardDashboardTable}>
+                        <table className={styles.table}>
                           <thead>
                             <tr>
                               <th>Date</th>
@@ -830,30 +838,30 @@ export default function CardDashboard({
           </div>
 
           <aside className={styles.CardDetailsSidebar}>
-            <section className={styles.CardDetailsSection}>
-              <h2>Card Snapshot</h2>
+            <section className={styles.Summary}>
+              <h2 className={styles.SummaryTitle}>Card Snapshot</h2>
               <p>
                 Track how this card performs over time, which perks you are actually using,
                 and whether the annual fee is worth it.
               </p>
             </section>
 
-            <section className={styles.CardDetailsSection}>
-              <h2>Quick Actions</h2>
-              <div className={styles.CardDetailsActionRow}>
+            <section className={styles.Summary}>
+              <h2 className={styles.SummaryTitle}>Quick Actions</h2>
+              <div className={styles.buttonRow}>
                 <button
                   type="button"
-                  className={styles.CardDetailsButtonPrimary}
+                  className={styles.ModalButton}
                   onClick={() => router.push(`/transactions/new?cardId=${cardId}`)}
                 >
-                  Add Transaction
+                  + Add Transaction
                 </button>
                 <button
                   type="button"
-                  className={styles.CardDetailsButtonSecondary}
+                  className={styles.ModalButton}
                   onClick={() => setShowEnrollPromoModal(true)}
                 >
-                  Add Promotion
+                  + Add Promotion
                 </button>
               </div>
             </section>
@@ -864,8 +872,8 @@ export default function CardDashboard({
       {showBenefitModal && selectedBenefit && (
         <div className={styles.ModalOverlay}>
           <div className={styles.Modal}>
-            <h2 className={styles.ModalTitle}>Log benefit use</h2>
-            <p style={{ color: "#476154", marginTop: 0 }}>
+            <h2 className={styles.ModalTitle}>Log Benefit Use For:</h2>
+            <p className={styles.SummaryValue}>
               {selectedBenefit.name} ({selectedBenefit.merchant ?? "Any merchant"})
             </p>
 
@@ -879,7 +887,7 @@ export default function CardDashboard({
                   placeholder="Amount used"
                   value={benefitUseAmount}
                   onChange={(e) => setBenefitUseAmount(e.target.value)}
-                  className={styles.CardInput}
+                  className={styles.ModalInput}
                 />
               </div>
 
@@ -889,19 +897,19 @@ export default function CardDashboard({
                   placeholder="Merchant / notes (optional)"
                   value={benefitNote}
                   onChange={(e) => setBenefitNote(e.target.value)}
-                  className={styles.CardInput}
+                  className={styles.ModalInput}
                 />
               </div>
 
-              <div className={styles.CardActions}>
+              <div className={styles.buttonRow}>
                 <button
                   type="button"
-                  className={styles.CardCancelButton}
+                  className={styles.cancelBtn}
                   onClick={() => setShowBenefitModal(false)}
                 >
                   Cancel
                 </button>
-                <button type="submit" className={styles.CardSaveButton}>
+                <button type="submit" className={styles.saveBtn}>
                   Save
                 </button>
               </div>
@@ -922,7 +930,7 @@ export default function CardDashboard({
                   placeholder="Promotion name"
                   value={newPromoTitle}
                   onChange={(e) => setNewPromoTitle(e.target.value)}
-                  className={styles.CardInput}
+                  className={styles.ModalInput}
                 />
               </div>
 
@@ -933,7 +941,7 @@ export default function CardDashboard({
                     type="date"
                     value={newPromoStart}
                     onChange={(e) => setNewPromoStart(e.target.value)}
-                    className={styles.CardInput}
+                    className={styles.ModalInput}
                   />
                 </div>
 
