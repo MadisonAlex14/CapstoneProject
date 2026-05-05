@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSelf } from "@/lib/functions/getSelf";
 import styles from "../../styles/auth.module.css";
+import { getUserCards } from "@/lib/functions/getUserCards";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -44,7 +45,10 @@ export default function Dashboard() {
         localStorage.setItem("accessToken", accessToken);
         setEmail(profileData.email);
         setFirstName(profileData.firstName || "");
-        setLastName(profileData.lastName || "");
+        setLastName(profileData.lastName || "");     
+
+
+
 
         setLoading(false);
       } catch (err) {
@@ -78,6 +82,16 @@ export default function Dashboard() {
     netValue: 0,
   });
 
+
+
+
+
+
+
+
+
+
+/* MAIN content area*/
   if (loading) {
     return (
       <div className={styles.PageContainer}>

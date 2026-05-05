@@ -292,6 +292,8 @@ export default function CardsPage() {
     return cardTypes.find((card: CardType) => card.credit_card_type_id === selectedCardTypeId) || null;
   }, [selectedCardTypeId, cardTypes]);
 
+  const totalCards = useMemo(() => cards.length, [cards]);
+
   const step1Complete = !!selectedCardTypeId;
 
   const step2Complete =
