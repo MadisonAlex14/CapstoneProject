@@ -1958,11 +1958,12 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1.25rem;
+  text-align: center;
 }
 
 .CardBox {
   position: relative;
-  color: rgb(102, 176, 97);
+  color: rgb(255, 255, 255);
   border-radius: 18px;
   padding: 1.4rem;
   overflow: visible;
@@ -1992,7 +1993,6 @@
   left: -50%;
   pointer-events: none;
 }
-
 
 .CardBox:hover {
   transform: translateY(-6px) scale(1.02);

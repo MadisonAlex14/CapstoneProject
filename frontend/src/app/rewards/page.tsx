@@ -308,9 +308,14 @@ export default function RewardsPage() {
           <h2 className={styles.SummaryTitle} style={{ marginBottom: "20px", textAlign: "center", fontSize: "25px", justifyContent: "center"}}>
                 Rewards Earned Over Time
               </h2>
+
+
           <div className="CardDetailsSection" style={{ marginTop: "1.5rem" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.75rem", marginBottom: "1rem" }}>
-              <div className="CardDetailsActionRow" style={{ margin: 0 }}>
+                <div className="CardDetailsActionRow" style={{ justifyContent: "center"}}>
+
+               
+          
                 <label>
                   Card
                   <select value={chartCardId} onChange={(e) => setChartCardId(e.target.value)}>

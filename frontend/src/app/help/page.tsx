@@ -112,7 +112,7 @@ ${formData.message}`
   }
 
   return (
-
+  <div className="main-content transactions-page CardDetailsPage" style={{ alignItems: "center", textAlign: "center"}}>
     <div className={styles.PageContainer}>
        <div className={styles.PageHero}>
         <h1 className={styles.PageTitle}>Help Center</h1>
@@ -257,6 +257,7 @@ ${formData.message}`
           </div>
         </section>
       </div>
+    </div>
     </div>
   )
 }

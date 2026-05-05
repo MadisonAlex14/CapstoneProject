@@ -373,36 +373,38 @@ export default function PromotionsPage() {
 
   // ---------------------- RENDER ----------------------
 
-  if (loading) {
-    return (
-      <div className={styles.PageContainer}>
-        <div className={styles.PageHero}>
-          <h1 className={styles.PageTitle}>Promotions</h1>
+    if (loading) {
+      return (
+      <div className="main-content transactions-page CardDetailsPage">
+           <div className={styles.PageContainer}>
+              <div className={styles.PageHero}>
+                  <h1 className={styles.PageTitle}>Promotions</h1>
+                </div>
+                  <p style={{ padding: "2rem", color: "#6b7280" }}>Loading promotions...</p>
+            </div>
         </div>
-        <p style={{ padding: "2rem", color: "#6b7280" }}>Loading promotions...</p>
-      </div>
-    );
-  }
+          );
+         }
 
-  if (error) {
-    return (
-      <div className={styles.PageContainer}>
-        <div className={styles.PageHero}>
-          <h1 className={styles.PageTitle}>Promotions</h1>
-        </div>
-        <p style={{ padding: "2rem", color: "#dc2626" }}>{error}</p>
-      </div>
-    );
-  }
+     if (error) {
+       return (
+          <div className="main-content transactions-page CardDetailsPage">
+            <div className={styles.PageHero}>
+             <h1 className={styles.PageTitle}>Promotions</h1>
+            </div>
+            <p style={{ padding: "2rem", color: "#dc2626" }}>{error}</p>
+          </div>
+        );
+      }
   
-  return (
-    <div className={styles.PageContainer} onClick={() => setMenuOpenId(null)}>
-      <div className={styles.PageHero}>
-        <h1 className={styles.PageTitle}>Promotions</h1>
-        <p className={styles.PageSubtitle}>
-          Discover limited-time offers, bonus rewards, and special credit card deals.
-        </p>
-      </div>
+      return (
+        <div className={styles.PageContainer} onClick={() => setMenuOpenId(null)}>
+          <div className={styles.PageHero}>
+           <h1 className={styles.PageTitle}>Promotions</h1>
+           <p className={styles.PageSubtitle}>
+              Discover limited-time offers, bonus rewards, and special credit card deals.
+           </p>
+          </div>
 
       {/* Summary */}
       <section className={styles.Summary}>
@@ -641,7 +643,6 @@ export default function PromotionsPage() {
             </div>
           </div>
         </div>
-
       )}
     </div>
   );

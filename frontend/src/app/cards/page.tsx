@@ -681,7 +681,7 @@ export default function CardsPage() {
   };
 
   return (
-    <div className={styles.CardPage}>
+    <div className="main-content transactions-page CardDetailsPage">
       <div className={styles.PageHero}>
         <h1 className={styles.PageTitle}>Your Cards</h1>
           <p className={styles.PageSubtitle}>
@@ -691,7 +691,9 @@ export default function CardsPage() {
       <div className={styles.CardHeader}>
         
 
-        <button className={styles.CardAddButton}
+        <button 
+          className={styles.CardAddButton}
+          style={{ marginBottom: "40px", marginTop: "40px"}}
           onClick={handleOpenAddCard}
           >
           + Add Card
