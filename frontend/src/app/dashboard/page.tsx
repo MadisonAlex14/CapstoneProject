@@ -3,8 +3,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSelf } from "@/lib/functions/getSelf";
-import styles from "../../styles/auth.module.css";
 import { getUserCards } from "@/lib/functions/getUserCards";
+import { getRewardsBalance } from "@/lib/functions/getRewardsBalance";
+import { getUserBenefits } from "@/lib/functions/getUserBenefits";
+import styles from "../../styles/auth.module.css";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -45,10 +47,44 @@ export default function Dashboard() {
         localStorage.setItem("accessToken", accessToken);
         setEmail(profileData.email);
         setFirstName(profileData.firstName || "");
-        setLastName(profileData.lastName || "");     
+        setLastName(profileData.lastName || "");
 
+        // Fetch summary data
+        const [cardsData, rewardsData, benefitsData] = await Promise.all([
+          getUserCards(accessToken),
+          getRewardsBalance(accessToken),
+          getUserBenefits(accessToken),
+        ]);
 
+        // Calculate summary values
+        const totalCards = cardsData?.length || 0;
+        const rewardsYTD = rewardsData?.summary?.total_rewards_value || 0;
 
+        // Calculate benefits remaining: sum of (value_amount - amount_used) for all benefits
+        let benefitsRemaining = 0;
+        if (Array.isArray(benefitsData)) {
+          benefitsRemaining = benefitsData.reduce((total, benefit) => {
+            const benefitValue = benefit.benefit?.value_amount || 0;
+            const amountUsed = benefit.amount_used || 0;
+            return total + Math.max(0, benefitValue - amountUsed);
+          }, 0);
+        }
+
+        // Calculate net value: rewards earned minus total benefits used
+        let totalBenefitsUsed = 0;
+        if (Array.isArray(benefitsData)) {
+          totalBenefitsUsed = benefitsData.reduce((total, benefit) => {
+            return total + (benefit.amount_used || 0);
+          }, 0);
+        }
+        const netValue = rewardsYTD - totalBenefitsUsed;
+
+        setSummary({
+          totalCards,
+          rewardsYTD,
+          benefitsRemaining,
+          netValue,
+        });
 
         setLoading(false);
       } catch (err) {
