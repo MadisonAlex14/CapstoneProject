@@ -117,10 +117,10 @@ export default function Dashboard() {
           <button
             type="button"
             className={styles.dQuickActionCard}
-            onClick={() => router.push("/profile")}
+            onClick={() => router.push("/")}
           >
-            <span className={styles.dQuickActionEmoji}>✨</span>
-            <span className={styles.dQuickActionText}>Update Score</span>
+            <span className={styles.dQuickActionEmoji}>🏠</span>
+            <span className={styles.dQuickActionText}>Home Page</span>
           </button>
 
           <button
@@ -135,20 +135,24 @@ export default function Dashboard() {
           <button
             type="button"
             className={styles.dQuickActionCard}
+            onClick={() => router.push("/profile")}
+          >
+            <span className={styles.dQuickActionEmoji}>🪪</span>
+            <span className={styles.dQuickActionText}>View Profile</span>
+          </button>
+
+
+          <button
+            type="button"
+            className={styles.dQuickActionCard}
             onClick={() => router.push("/help")}
           >
             <span className={styles.dQuickActionEmoji}>💡</span>
             <span className={styles.dQuickActionText}>Get Tips</span>
           </button>
 
-          <button
-            type="button"
-            className={styles.dQuickActionCard}
-            onClick={() => router.push("/profile")}
-          >
-            <span className={styles.dQuickActionEmoji}>🎯</span>
-            <span className={styles.dQuickActionText}>View Goals</span>
-          </button>
+
+
         </div>
       </section>
     </main>

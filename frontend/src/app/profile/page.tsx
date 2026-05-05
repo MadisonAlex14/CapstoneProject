@@ -186,10 +186,10 @@ export default function ProfilePage() {
             </div>
 
             {isEditing && (
-              <div className={styles['p-editActions']}>
+              <div className={styles.buttonRow}>
 
                 <button
-                  className={styles['p-saveButton']}
+                  className={styles.saveBtn}
                   onClick={() => {
                     setFirstName(editFirstName)
                     setEmail(editEmail)
@@ -204,7 +204,7 @@ export default function ProfilePage() {
                 </button>
 
                 <button
-                  className={styles['p-cancelButton']}
+                  className={styles.cancelBtn}
                   onClick={() => {
                     setEditFirstName(firstName)
                     setEditEmail(email)

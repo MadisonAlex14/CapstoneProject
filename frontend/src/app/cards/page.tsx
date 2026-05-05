@@ -1209,10 +1209,10 @@ export default function CardsPage() {
 
               {formError && <p className={styles.CardError}>{formError}</p>}
 
-              <div className={styles.CardActions}>
+              <div className={styles.buttonRow}>
                 <button
                   type="button"
-                  className={styles.CardCancelButton}
+                  className={styles.cancelBtn}
                   onClick={handleCloseAddCard}
                 >
                   Cancel
@@ -1220,7 +1220,7 @@ export default function CardsPage() {
 
                 <button
                   type="submit"
-                  className={styles.CardSaveButton}
+                  className={styles.saveBtn}
                   disabled={!step1Complete || !step2Complete}
                 >
                   {editingCardId ? "Update Card" : "Save Card"}

@@ -1106,11 +1106,13 @@
   cursor: pointer;
 }
 
-.cardMenuWrapper {
+.CardMenuWrapper {
   position: absolute;
-  top: 14px;
-  right: 14px;
+  top: 10px;
+  right: 10px;
+  z-index: 50;
 }
+
 
 .cardMenuButton {
   border: none;
@@ -2058,15 +2060,16 @@
 }
 
 .CardMenuWrapper {
-  position: relative;
-  top: 1rem;
-  right: 1rem;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 50;
 }
 
 .CardMenuButton {
   border: none;
   background: rgba(255, 255, 255, 0.14);
-  color: rgb(28, 58, 13);
+  color: rgb(255, 255, 255);
   width: 34px;
   height: 34px;
   border-radius: 10px;
@@ -2080,6 +2083,7 @@
   background: rgba(255, 255, 255, 0.22);
   transform: scale(1.04);
 }
+
 
 .CardMenuItem,
 .CardMenuDelete {
@@ -2911,9 +2915,119 @@
 
 
 
+.CardInner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 18px;
+  overflow: hidden;
+  padding: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: white;
+}
 
+/* Background image */
+.CardBackground {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 
+/* Dark overlay for readability */
+.CardOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0,0,0,0.2),
+    rgba(0,0,0,0.5)
+  );
+}
 
+/* Content sits above */
+.CardInner > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Top row */
+.CardTopRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Fake chip */
+.CardChip {
+  width: 40px;
+  height: 28px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #d4af37, #b8962e);
+}
+
+/* Brand */
+.CardBrand {
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-align: right;
+}
+
+/* Card number */
+.CardNumber {
+  font-size: 1.1rem;
+  letter-spacing: 3px;
+  font-weight: 600;
+  margin-top: 1rem;
+}
+
+/* Bottom */
+.CardBottomRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+/* Labels */
+.CardLabel {
+  font-size: 0.65rem;
+  opacity: 0.8;
+  margin: 0;
+}
+
+.CardHolder {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Network (Visa/Mastercard) */
+.CardNetwork {
+  font-weight: 800;
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+}
+
+.CardBox::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent 40%,
+    rgba(255,255,255,0.25),
+    transparent 60%
+  );
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.CardBox:hover::after {
+  opacity: 1;
+}
 
 
 
@@ -3705,10 +3819,6 @@
   font-size: 1.75rem;
   font-weight: 700;
   color: #065f46; 
-}
-
-.SummaryCard p {
-
 }
 
 .SummaryLabel {
