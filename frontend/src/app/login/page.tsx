@@ -66,12 +66,13 @@ export default function Login() {
 
         {error && <div className={styles.error}>{error}</div>}
 
-        <div className={styles.field}>
+        <div className={styles.field} style={{ textAlign: "left"}}>
           <label className={styles.label} htmlFor="email">
             Email
           </label>
           <input
             className={styles.input}
+            style={{ textAlign: "left"}}
             id="email"
             type="email"
             value={email}
@@ -82,11 +83,12 @@ export default function Login() {
         </div>
 
         <div className={styles.field}>
-          <label className={styles.label} htmlFor="password">
+          <label className={styles.label} htmlFor="password" style={{ textAlign: "left"}}>
             Password
           </label>
           <input
             className={styles.input}
+            style={{ textAlign: "left"}}
             id="password"
             type="password"
             value={password}

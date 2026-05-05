@@ -57,6 +57,7 @@ export default function ProfilePage() {
     : 'U'
 
   return (
+  <div className="main-content transactions-page CardDetailsPage">
     <main className={styles.Page}>
       <section className={styles.PageContainer}>
 
@@ -155,6 +156,7 @@ export default function ProfilePage() {
                 Personal Information
                   <button
                      className={styles['p-menuButton']}
+                     style={{ marginLeft: "10px"}}
                      onClick={() => setIsEditing(!isEditing)}
                     >
                      ⋮
@@ -223,5 +225,6 @@ export default function ProfilePage() {
 
       </section>
     </main>
+    </div>
   )
 }

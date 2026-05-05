@@ -31,7 +31,8 @@ export default function Home() {
   };
 
   return (
-    <div className={styles.PageContainer}>
+    <div className="main-content transactions-page CardDetailsPage" style={{ justifyContent: "center", textAlign: "center"}}>
+      <div className={styles.PageContainer}>
         <div className={styles.PageHero}>
           <h1 className={styles.PageTitle}>Welcome to CreditMaxxing!</h1>
             <p className={styles.PageSubtitle}>
@@ -141,6 +142,7 @@ export default function Home() {
           </div>
         </motion.section>
       </motion.div>
+    </div>
     </div>
   );
 }

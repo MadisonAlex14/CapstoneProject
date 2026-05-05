@@ -87,12 +87,13 @@ export default function Signup() {
 
         {error && <div className={styles.error}>{error}</div>}
 
-        <div className={styles.field}>
+        <div className={styles.field} style={{ textAlign: "left"}}>
           <label className={styles.label} htmlFor="firstName">
             First Name
           </label>
           <input
             className={styles.input}
+            style={{ textAlign: "left"}}
             id="firstName"
             type="text"
             value={firstName}
@@ -102,12 +103,13 @@ export default function Signup() {
           />
         </div>
 
-        <div className={styles.field}>
+        <div className={styles.field} style={{ textAlign: "left"}}>
           <label className={styles.label} htmlFor="lastName">
             Last Name
           </label>
           <input
             className={styles.input}
+            style={{ textAlign: "left"}}
             id="lastName"
             type="text"
             value={lastName}
@@ -117,12 +119,13 @@ export default function Signup() {
           />
         </div>
 
-        <div className={styles.field}>
+        <div className={styles.field} style={{ textAlign: "left"}}>
           <label className={styles.label} htmlFor="birthdate">
             Date of Birth
           </label>
           <input
             className={styles.input}
+            style={{ textAlign: "left"}}
             id="birthdate"
             type="date"
             value={birthdate}
@@ -131,12 +134,13 @@ export default function Signup() {
           />
         </div>
 
-        <div className={styles.field}>
+        <div className={styles.field} style={{ textAlign: "left"}}>
           <label className={styles.label} htmlFor="email">
             Email
           </label>
           <input
             className={styles.input}
+            style={{ textAlign: "left"}}
             id="email"
             type="email"
             value={email}
@@ -146,12 +150,13 @@ export default function Signup() {
           />
         </div>
 
-        <div className={styles.field}>
+        <div className={styles.field} style={{ textAlign: "left"}}>
           <label className={styles.label} htmlFor="password">
             Password
           </label>
           <input
             className={styles.input}
+            style={{ textAlign: "left"}}
             id="password"
             type="password"
             value={password}
