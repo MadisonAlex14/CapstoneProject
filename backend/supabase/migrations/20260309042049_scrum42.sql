@@ -282,7 +282,7 @@ alter table "public"."promotion" alter column "name" set data type text using "n
 
 alter table "public"."promotion" alter column "promotion_category" set data type public.promotion_category_type using "promotion_category"::public.promotion_category_type;
 
-alter table "public"."promotion_reward" alter column "cap_period" set data type public.cap_period_type using "cap_period"::public.cap_period_type;
+alter table "public"."promotion_reward" alter column "cap_period" set data type public.cap_period_type using null::public.cap_period_type;
 
 alter table "public"."reward" drop column "spending_category_id";
 
