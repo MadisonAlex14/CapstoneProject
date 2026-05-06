@@ -56,6 +56,7 @@ Deno.serve(async (req) => {
 
     const url = new URL(req.url)
     const limitParam = url.searchParams.get('limit')
+    const cardIdParam = url.searchParams.get('card_id')
     const limit = limitParam ? Number(limitParam) : null
 
     let query = supabase
@@ -73,7 +74,13 @@ Deno.serve(async (req) => {
         mcc(code, description)
       `)
       .eq('credit_card.profile_id', profileId)
-      .order('transaction_date', { ascending: false })
+
+    // If card_id is provided, filter to that specific card
+    if (cardIdParam) {
+      query = query.eq('credit_card_id', cardIdParam)
+    }
+
+    query = query.order('transaction_date', { ascending: false })
 
     if (limit != null && Number.isFinite(limit) && limit > 0) {
       query = query.limit(limit)
