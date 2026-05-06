@@ -112,8 +112,8 @@ ${formData.message}`
   }
 
   return (
-
-    <div className={styles.helpPage}>
+  <div className="main-content transactions-page CardDetailsPage" style={{ alignItems: "center", textAlign: "center"}}>
+    <div className={styles.PageContainer}>
        <div className={styles.PageHero}>
         <h1 className={styles.PageTitle}>Help Center</h1>
         <p className={styles.PageSubtitle}>
@@ -121,125 +121,21 @@ ${formData.message}`
          </p>
        </div>
 
-      <div className={styles.helpContainer}>
-        <section className={styles.helpHero}>
+      <div>
+        <section className={styles.Summary}>
           <div className={styles.helpHeroBadge}>Support Center</div>
-          <h1 className={styles.helpTitle}>How can we help you today?</h1>
-          <p className={styles.helpSubtitle}>
+          <h1 className={styles.SummaryTitle}>How can we help you today?</h1>
+          <p className={styles.SummaryLabel}>
             Find quick answers, report issues, and get support for anything in
             CreditMaxxing.
           </p>
         </section>
 
-        <section className={styles.helpAiSection}>
-          <div className={styles.helpAiCard}>
-            <div className={styles.helpAiGlow}></div>
-            <div className={styles.helpAiBadge}>AI Support</div>
-            <h2>Uh-oh, need some extra help?</h2>
-            <p>
-              Choose a help topic below and get quick guidance before submitting
-              a support request.
-            </p>
 
-            <div className={styles.helpAiHighlights}>
-              <button
-                type="button"
-                className={styles.helpAiChip}
-                onClick={() => openHelper('bug')}
-              >
-                Bug Reports
-              </button>
-
-              <button
-                type="button"
-                className={styles.helpAiChip}
-                onClick={() => openHelper('feature')}
-              >
-                Feature Requests
-              </button>
-
-              <button
-                type="button"
-                className={styles.helpAiChip}
-                onClick={() => openHelper('general')}
-              >
-                General Help
-              </button>
-            </div>
-
-            {activeHelper && (
-              <div className={styles.helpChatBox}>
-                <div className={styles.helpChatHeader}>
-                  <span className={styles.helpChatTitle}>CreditMaxxing Helper</span>
-                  <button
-                    type="button"
-                    className={styles.helpChatClose}
-                    onClick={closeHelper}
-                  >
-                    ×
-                  </button>
-                </div>
-
-                <div className={styles.helpChatMessages}>
-                  <div className={styles.helpBotMessage}>
-                    Hi! I can help point you in the right direction.
-                  </div>
-
-                  {activeHelper === 'general' && (
-                    <>
-                      <div className={styles.helpUserMessage}>I need general help.</div>
-                      <div className={styles.helpBotMessage}>
-                        No problem — for general help, you can start by checking the
-                        FAQ section below for common questions about adding cards,
-                        editing cards, or fixing loading issues.
-                      </div>
-                      <div className={styles.helpBotMessage}>
-                        If you still need help, scroll down to the support form and
-                        choose <strong>General Question</strong> as your issue type.
-                      </div>
-                    </>
-                  )}
-
-                  {activeHelper === 'bug' && (
-                    <>
-                      <div className={styles.helpUserMessage}>I found a bug.</div>
-                      <div className={styles.helpBotMessage}>
-                        Thanks for reporting it. Try to include what page you were on,
-                        what button or action caused the issue, and what you expected
-                        to happen instead.
-                      </div>
-                      <div className={styles.helpBotMessage}>
-                        I already set the form below to <strong>Bug Report</strong> to
-                        make reporting faster.
-                      </div>
-                    </>
-                  )}
-
-                  {activeHelper === 'feature' && (
-                    <>
-                      <div className={styles.helpUserMessage}>
-                        I want to request a feature.
-                      </div>
-                      <div className={styles.helpBotMessage}>
-                        Great idea. When submitting a feature request, explain what
-                        you want added, why it would be useful, and how it would improve
-                        the CreditMaxxing experience.
-                      </div>
-                      <div className={styles.helpBotMessage}>
-                        I already set the form below to <strong>Feature Request</strong>.
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        </section>
-
-        <section className={styles.helpSection}>
-          <div className={styles.helpSectionHeader}>
-            <h2>Frequently Asked Questions</h2>
-            <p>Click a question below to expand the answer.</p>
+        <section className={styles.Summary} style={{ marginTop: "20px" }}>
+          <div>
+            <h2 className={styles.SummaryTitle}>Frequently Asked Questions</h2>
+            <p className={styles.SummaryLabel}>Click a question below to expand the answer.</p>
           </div>
 
           <div className={styles.helpFaqAccordion}>
@@ -270,20 +166,22 @@ ${formData.message}`
           </div>
         </section>
 
-        <section className={styles.helpSection}>
-          <div className={styles.helpSectionHeader}>
-            <h2>AI Assistant</h2>
-            <p>Ask our AI assistant powered by project knowledge base for instant help.</p>
-          </div>
+        <section className={styles.Section} style={{ marginTop: "20px" }}>
+          <div className={styles.helpAiCard}>
+            <div className={styles.helpAiGlow}></div>
+            <div className={styles.helpAiBadge}>AI Assistant</div>
+            <h2>Ask our AI assistant powered by project knowledge base for instant help.</h2>
+          
           <CreditCardAssistant />
+          </div>
         </section>
 
-        <section className={styles.helpContactSection}>
+
+        <section className={styles.Summary} style={{ marginTop: "20px" }}>
           <div className={styles.helpFormCard}>
-            <div className={styles.helpSectionHeader}>
-              <h2>Contact Support</h2>
-              <p>
-                Report a bug, ask a question, or let us know what needs attention.
+            <div>
+              <h2 className={styles.SummaryTitle}>Contact Support</h2>
+              <p className={styles.SummaryLabel}> Report a bug, ask a question, or let us know what needs attention.
               </p>
             </div>
 
@@ -344,8 +242,8 @@ ${formData.message}`
                 />
               </div>
 
-              <div className={styles.helpFormActions}>
-                <button type="submit" className={styles.helpSubmitButton}>
+              <div className={styles.buttonRow}>
+                <button type="submit" className={styles.ModalButton}>
                   Send Support Request
                 </button>
               </div>
@@ -359,6 +257,7 @@ ${formData.message}`
           </div>
         </section>
       </div>
+    </div>
     </div>
   )
 }

@@ -94,25 +94,25 @@ export function CreditCardAssistant() {
       <div
         style={{
           padding: "2rem",
-          backgroundColor: "#fff3cd",
-          border: "1px solid #ffc107",
-          borderRadius: "8px",
+          backgroundColor: "#fef5e7",
+          border: "1px solid #e8d4b3",
+          borderRadius: "16px",
           margin: "2rem auto",
           maxWidth: "600px",
         }}
       >
-        <h3 style={{ marginTop: 0, color: "#856404" }}>LLM Service Unavailable</h3>
-        <p style={{ color: "#856404", marginBottom: "0.5rem" }}>
+        <h3 style={{ marginTop: 0, color: "#5c4b28" }}>LLM Service Unavailable</h3>
+        <p style={{ color: "#5c4b28", marginBottom: "0.5rem" }}>
           The self-hosted LLM service is not running. Make sure:
         </p>
-        <ul style={{ color: "#856404", paddingLeft: "1.5rem" }}>
+        <ul style={{ color: "#5c4b28", paddingLeft: "1.5rem" }}>
           <li>Ollama is running and accessible at http://localhost:11434</li>
           <li>The LLM service has started</li>
         </ul>
-        <p style={{ color: "#856404", marginBottom: 0 }}>
+        <p style={{ color: "#5c4b28", marginBottom: 0 }}>
           <strong>Start the service:</strong>
           <br />
-          <code style={{ backgroundColor: "#fff8e1", padding: "0.25rem 0.5rem", borderRadius: "3px" }}>
+          <code style={{ backgroundColor: "#f9f6f0", padding: "0.25rem 0.5rem", borderRadius: "6px" }}>
             cd llm && python main.py
           </code>
         </p>
@@ -124,16 +124,16 @@ export function CreditCardAssistant() {
     <div style={{ maxWidth: "700px", margin: "2rem auto", fontFamily: "sans-serif" }}>
       <div
         style={{
-          backgroundColor: "#f8f9fa",
+          backgroundColor: "#f9fcfa",
           padding: "1rem",
-          borderRadius: "8px",
+          borderRadius: "16px",
           marginBottom: "1rem",
-          border: "1px solid #e9ecef",
+          border: "1px solid #dbe6df",
         }}
       >
-        <h2 style={{ marginTop: 0, marginBottom: "0.5rem" }}>💡 Creditmaxxing AI Assistant</h2>
+        <h2 style={{ marginTop: 0, marginBottom: "0.5rem", color: "#1d4b33" }}>💡 Creditmaxxing AI Assistant</h2>
         {health && (
-          <p style={{ margin: 0, fontSize: "0.9rem", color: "#666" }}>
+          <p style={{ margin: 0, fontSize: "0.9rem", color: "#5e7166" }}>
             Model: <strong>{health.model}</strong>
           </p>
         )}
@@ -141,27 +141,27 @@ export function CreditCardAssistant() {
 
       <div
         style={{
-          border: "1px solid #ddd",
-          borderRadius: "8px",
+          border: "1px solid #dbe6df",
+          borderRadius: "16px",
           height: "450px",
           overflowY: "auto",
           padding: "1rem",
           marginBottom: "1rem",
-          backgroundColor: "#fafafa",
+          backgroundColor: "#f9fcfa",
           display: "flex",
           flexDirection: "column",
         }}
       >
         {messages.length === 0 ? (
           <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <div style={{ textAlign: "center", color: "#999" }}>
-              <p style={{ fontSize: "1.1rem", marginBottom: "0.5rem" }}>
+            <div style={{ textAlign: "center", color: "#7b8d82" }}>
+              <p style={{ fontSize: "1.1rem", marginBottom: "0.5rem", color: "#5e7166" }}>
                 🤖 Ask me anything about Creditmaxxing!
               </p>
-              <p style={{ fontSize: "0.9rem", marginBottom: "1rem" }}>
+              <p style={{ fontSize: "0.9rem", marginBottom: "1rem", color: "#7b8d82" }}>
                 Try asking:
               </p>
-              <ul style={{ fontSize: "0.9rem", textAlign: "left", display: "inline-block", color: "#666" }}>
+              <ul style={{ fontSize: "0.9rem", textAlign: "left", display: "inline-block", color: "#5e7166" }}>
                 <li>"What pages are in the app?"</li>
                 <li>"How do rewards work?"</li>
                 <li>"Walk me through adding a card"</li>
@@ -177,47 +177,47 @@ export function CreditCardAssistant() {
                 style={{
                   marginBottom: "1rem",
                   padding: "0.75rem",
-                  backgroundColor: msg.role === "user" ? "#d1ecf1" : "#e7e7ff",
-                  borderLeft: `4px solid ${msg.role === "user" ? "#0c5460" : "#5a5aff"}`,
-                  borderRadius: "4px",
+                  backgroundColor: msg.role === "user" ? "#edf7f1" : "#f9fcfa",
+                  borderLeft: `4px solid ${msg.role === "user" ? "#225c3d" : "#5c9b79"}`,
+                  borderRadius: "8px",
                   textAlign: msg.role === "user" ? "right" : "left",
                 }}
               >
-                <strong style={{ color: msg.role === "user" ? "#0c5460" : "#4a4a9f" }}>
+                <strong style={{ color: msg.role === "user" ? "#1d4b33" : "#225c3d" }}>
                   {msg.role === "user" ? "You" : "Assistant"}:
                 </strong>
                 <div style={{ margin: "0.5rem 0 0 0" }}>
                   {msg.role === "assistant" ? (
                     <ReactMarkdown
                       components={{
-                        h1: ({ node, ...props }) => <h1 style={{ margin: "1rem 0 0.5rem 0", fontSize: "1.2rem" }} {...props} />,
-                        h2: ({ node, ...props }) => <h2 style={{ margin: "1rem 0 0.5rem 0", fontSize: "1.1rem" }} {...props} />,
-                        h3: ({ node, ...props }) => <h3 style={{ margin: "0.75rem 0 0.5rem 0", fontSize: "1rem" }} {...props} />,
-                        p: ({ node, ...props }) => <p style={{ margin: "0.5rem 0", lineHeight: "1.6" }} {...props} />,
-                        ul: ({ node, ...props }) => <ul style={{ margin: "0.5rem 0", paddingLeft: "1.5rem" }} {...props} />,
-                        ol: ({ node, ...props }) => <ol style={{ margin: "0.5rem 0", paddingLeft: "1.5rem" }} {...props} />,
-                        li: ({ node, ...props }) => <li style={{ marginBottom: "0.25rem" }} {...props} />,
+                        h1: ({ node, ...props }) => <h1 style={{ margin: "1rem 0 0.5rem 0", fontSize: "1.2rem", color: "#1d4b33" }} {...props} />,
+                        h2: ({ node, ...props }) => <h2 style={{ margin: "1rem 0 0.5rem 0", fontSize: "1.1rem", color: "#1d4b33" }} {...props} />,
+                        h3: ({ node, ...props }) => <h3 style={{ margin: "0.75rem 0 0.5rem 0", fontSize: "1rem", color: "#1d4b33" }} {...props} />,
+                        p: ({ node, ...props }) => <p style={{ margin: "0.5rem 0", lineHeight: "1.6", color: "#5e7166" }} {...props} />,
+                        ul: ({ node, ...props }) => <ul style={{ margin: "0.5rem 0", paddingLeft: "1.5rem", color: "#5e7166" }} {...props} />,
+                        ol: ({ node, ...props }) => <ol style={{ margin: "0.5rem 0", paddingLeft: "1.5rem", color: "#5e7166" }} {...props} />,
+                        li: ({ node, ...props }) => <li style={{ marginBottom: "0.25rem", color: "#5e7166" }} {...props} />,
                         code: ({ inline, ...props }: any) =>
                           inline ? (
-                            <code style={{ backgroundColor: "#f0f0f0", padding: "0.2rem 0.4rem", borderRadius: "3px", fontFamily: "monospace" }} {...props} />
+                            <code style={{ backgroundColor: "#edf7f1", padding: "0.2rem 0.4rem", borderRadius: "6px", fontFamily: "monospace", color: "#225c3d" }} {...props} />
                           ) : (
-                            <code style={{ backgroundColor: "#f0f0f0", padding: "0.5rem", borderRadius: "3px", fontFamily: "monospace", display: "block", overflow: "auto" }} {...props} />
+                            <code style={{ backgroundColor: "#edf7f1", padding: "0.5rem", borderRadius: "6px", fontFamily: "monospace", display: "block", overflow: "auto", color: "#225c3d" }} {...props} />
                           ),
-                        a: ({ node, ...props }) => <a style={{ color: "#0066cc", textDecoration: "underline" }} target="_blank" rel="noopener noreferrer" {...props} />,
+                        a: ({ node, ...props }) => <a style={{ color: "#5c9b79", textDecoration: "underline" }} target="_blank" rel="noopener noreferrer" {...props} />,
                       }}
                     >
                       {msg.content}
                     </ReactMarkdown>
                   ) : (
-                    <p style={{ margin: 0 }}>{msg.content}</p>
+                    <p style={{ margin: 0, color: "#5e7166" }}>{msg.content}</p>
                   )}
                 </div>
                 {msg.knowledge_used && (
-                  <small style={{ color: "#666", display: "block", marginTop: "0.25rem" }}>
+                  <small style={{ color: "#7b8d82", display: "block", marginTop: "0.25rem" }}>
                     📚 (using project charter knowledge base)
                   </small>
                 )}
-                <small style={{ color: "#999", display: "block", marginTop: "0.25rem" }}>
+                <small style={{ color: "#9ca9a0", display: "block", marginTop: "0.25rem" }}>
                   {msg.timestamp.toLocaleTimeString()}
                 </small>
               </div>
@@ -236,12 +236,22 @@ export function CreditCardAssistant() {
           disabled={loading}
           style={{
             flex: 1,
-            padding: "0.75rem",
-            border: "1px solid #ddd",
-            borderRadius: "4px",
+            padding: "0.75rem 1rem",
+            border: "1px solid #cfdcd4",
+            borderRadius: "12px",
             fontSize: "1rem",
             fontFamily: "inherit",
-            backgroundColor: loading ? "#f5f5f5" : "white",
+            backgroundColor: loading ? "#f9fcfa" : "white",
+            color: "#1f3529",
+            transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+          }}
+          onFocus={(e) => {
+            e.currentTarget.style.borderColor = "#5c9b79";
+            e.currentTarget.style.boxShadow = "0 0 0 4px rgba(92, 155, 121, 0.12)";
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.borderColor = "#cfdcd4";
+            e.currentTarget.style.boxShadow = "none";
           }}
         />
         <button
@@ -249,14 +259,24 @@ export function CreditCardAssistant() {
           disabled={loading || !input.trim()}
           style={{
             padding: "0.75rem 1.5rem",
-            backgroundColor: "#0066cc",
+            backgroundColor: "#5c9b79",
             color: "white",
             border: "none",
-            borderRadius: "4px",
+            borderRadius: "12px",
             cursor: loading || !input.trim() ? "not-allowed" : "pointer",
             opacity: loading || !input.trim() ? 0.6 : 1,
             fontWeight: "bold",
             transition: "all 0.2s",
+          }}
+          onMouseEnter={(e) => {
+            if (!loading && input.trim()) {
+              e.currentTarget.style.backgroundColor = "#4a7a66";
+              e.currentTarget.style.transform = "translateY(-2px)";
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "#5c9b79";
+            e.currentTarget.style.transform = "translateY(0)";
           }}
         >
           {loading ? "⏳ Thinking..." : "Send"}

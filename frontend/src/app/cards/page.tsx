@@ -292,6 +292,8 @@ export default function CardsPage() {
     return cardTypes.find((card: CardType) => card.credit_card_type_id === selectedCardTypeId) || null;
   }, [selectedCardTypeId, cardTypes]);
 
+  const totalCards = useMemo(() => cards.length, [cards]);
+
   const step1Complete = !!selectedCardTypeId;
 
   const step2Complete =
@@ -468,8 +470,32 @@ export default function CardsPage() {
   };
 
   const handleEditCard = (card: CreditCard) => {
-    const matchedType =
+    let matchedType =
       cardTypes.find((type: CardType) => type.name === card.cardName) || null;
+
+    // If cardTypes isn't loaded yet, load it
+    if (cardTypes.length === 0) {
+      (async () => {
+        try {
+          const localToken = localStorage.getItem('accessToken');
+          const supabaseToken = localStorage.getItem('supabase.auth.token');
+          let accessToken: string | null = localToken;
+
+          if (!accessToken && supabaseToken) {
+            const session = JSON.parse(supabaseToken);
+            accessToken = session?.currentSession?.access_token || session?.access_token || null;
+          }
+
+          if (accessToken) {
+            const types = await getCardTypes(accessToken);
+            const loadedTypes = Array.isArray(types) ? types : [];
+            setCardTypes(loadedTypes);
+          }
+        } catch (error) {
+          console.error('Failed to load card types:', error);
+        }
+      })();
+    }
 
     setEditingCardId(card.credit_card_type_id);
     setFormError("");
@@ -657,7 +683,7 @@ export default function CardsPage() {
   };
 
   return (
-    <div className={styles.CardPage}>
+    <div className="main-content transactions-page CardDetailsPage">
       <div className={styles.PageHero}>
         <h1 className={styles.PageTitle}>Your Cards</h1>
           <p className={styles.PageSubtitle}>
@@ -667,7 +693,9 @@ export default function CardsPage() {
       <div className={styles.CardHeader}>
         
 
-        <button className={styles.CardAddButton}
+        <button 
+          className={styles.CardAddButton}
+          style={{ marginBottom: "40px", marginTop: "40px"}}
           onClick={handleOpenAddCard}
           >
           + Add Card
@@ -694,13 +722,19 @@ export default function CardsPage() {
                   styles.defaultCard
                 }
               `}
-              onClick={() => handleCardClick(card.credit_card_type_id)}
+              onClick={(e) => {
+                if (openMenuId !== card.credit_card_type_id) {
+                  handleCardClick(card.credit_card_type_id);
+                }
+              }}
               role="button"
               tabIndex={0}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
-                  handleCardClick(card.credit_card_type_id);
+                  if (openMenuId !== card.credit_card_type_id) {
+                    handleCardClick(card.credit_card_type_id);
+                  }
                 }
               }}
             >
@@ -1209,10 +1243,10 @@ export default function CardsPage() {
 
               {formError && <p className={styles.CardError}>{formError}</p>}
 
-              <div className={styles.CardActions}>
+              <div className={styles.buttonRow}>
                 <button
                   type="button"
-                  className={styles.CardCancelButton}
+                  className={styles.cancelBtn}
                   onClick={handleCloseAddCard}
                 >
                   Cancel
@@ -1220,7 +1254,7 @@ export default function CardsPage() {
 
                 <button
                   type="submit"
-                  className={styles.CardSaveButton}
+                  className={styles.saveBtn}
                   disabled={!step1Complete || !step2Complete}
                 >
                   {editingCardId ? "Update Card" : "Save Card"}

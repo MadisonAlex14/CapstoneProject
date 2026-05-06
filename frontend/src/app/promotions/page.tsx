@@ -373,36 +373,38 @@ export default function PromotionsPage() {
 
   // ---------------------- RENDER ----------------------
 
-  if (loading) {
-    return (
-      <div className={styles.PageContainer}>
-        <div className={styles.PageHero}>
-          <h1 className={styles.PageTitle}>Promotions</h1>
+    if (loading) {
+      return (
+      <div className="main-content transactions-page CardDetailsPage">
+           <div className={styles.PageContainer}>
+              <div className={styles.PageHero}>
+                  <h1 className={styles.PageTitle}>Promotions</h1>
+                </div>
+                  <p style={{ padding: "2rem", color: "#6b7280" }}>Loading promotions...</p>
+            </div>
         </div>
-        <p style={{ padding: "2rem", color: "#6b7280" }}>Loading promotions...</p>
-      </div>
-    );
-  }
+          );
+         }
 
-  if (error) {
-    return (
-      <div className={styles.PageContainer}>
-        <div className={styles.PageHero}>
-          <h1 className={styles.PageTitle}>Promotions</h1>
-        </div>
-        <p style={{ padding: "2rem", color: "#dc2626" }}>{error}</p>
-      </div>
-    );
-  }
+     if (error) {
+       return (
+          <div className="main-content transactions-page CardDetailsPage">
+            <div className={styles.PageHero}>
+             <h1 className={styles.PageTitle}>Promotions</h1>
+            </div>
+            <p style={{ padding: "2rem", color: "#dc2626" }}>{error}</p>
+          </div>
+        );
+      }
   
-  return (
-    <div className={styles.PageContainer} onClick={() => setMenuOpenId(null)}>
-      <div className={styles.PageHero}>
-        <h1 className={styles.PageTitle}>Promotions</h1>
-        <p className={styles.PageSubtitle}>
-          Discover limited-time offers, bonus rewards, and special credit card deals.
-        </p>
-      </div>
+      return (
+        <div className={styles.PageContainer} onClick={() => setMenuOpenId(null)}>
+          <div className={styles.PageHero}>
+           <h1 className={styles.PageTitle}>Promotions</h1>
+           <p className={styles.PageSubtitle}>
+              Discover limited-time offers, bonus rewards, and special credit card deals.
+           </p>
+          </div>
 
       {/* Summary */}
       <section className={styles.Summary}>
@@ -451,14 +453,10 @@ export default function PromotionsPage() {
 
       {/* Main promotions list */}
       <section>
-        <h2 className={styles.promotionsListTitle}>
-          {filterStatus === "Completed" ? "Completed Promotions"
-            : filterStatus === "Expired" ? "Expired Promotions"
-            : filterStatus === "AtRisk" ? "At Risk Promotions"
-            : "Your Promotions"}
-        </h2>
+
         <button
           className={styles.promotionsEnrollButton}
+          style={{ marginBottom: "60px", marginTop: "60px"}}
           onClick={(e) => {
             e.stopPropagation();
             setShowEnrollModal(true);
@@ -466,6 +464,17 @@ export default function PromotionsPage() {
         >
           + Enroll in Promotion
         </button>
+
+
+
+
+        <h2 className={styles.SummaryTitle} style={{ marginBottom: "20px", textAlign: "center", fontSize: "25px"}}>
+          {filterStatus === "Completed" ? "Completed Promotions"
+            : filterStatus === "Expired" ? "Expired Promotions"
+            : filterStatus === "AtRisk" ? "At Risk Promotions"
+            : "Your Promotions"}
+        </h2>
+        
         <div className={styles.promotionsList}>
           {activePromotions.length === 0 ? (
             <p style={{ color: "#6b7280", padding: "1rem 0" }}>No promotions found.</p>
@@ -590,12 +599,12 @@ export default function PromotionsPage() {
               <p style={{ color: "#dc2626", fontSize: "0.9rem" }}>{enrollError}</p>
             )}
 
-            <div className={styles.promotionsPopupActions}>
-              <button className={styles.promotionsPopupCancel} onClick={resetEnrollModal}>
+            <div className={styles.buttonRow}>
+              <button className={styles.cancelBtn} onClick={resetEnrollModal}>
                 Cancel
               </button>
               <button
-                className={styles.promotionsPopupAdd}
+                className={styles.saveBtn}
                 onClick={handleEnroll}
                 disabled={enrollLoading}
               >
