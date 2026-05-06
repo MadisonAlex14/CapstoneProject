@@ -37,10 +37,10 @@ A full-stack web application built with Next.js (frontend) and Supabase Edge Fun
 
 4. **Create environment file**
    - Create a `.env.local` file in the `frontend/` directory (NOT root)
-   - Add your Supabase credentials:
+   - Add the following Supabase credentials:
      ```
-     NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-     NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+      NEXT_PUBLIC_SUPABASE_URL=https://gprmtqximfxtrtowwkbe.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_I6dsPqTyeZUKYq2i-8X_4A_Pb3BOyxe
      ```
    - Get these values from your Supabase project: Settings → API
 
